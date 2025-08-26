@@ -1,0 +1,804 @@
+Project CDU {
+  database_type: "PostgreSQL"
+}
+
+// ------------------ ENUMS ------------------
+enum staff_role {
+  super_admin // global admin, can do everything across all boxes
+  admin // box admin, can do everything regarding a specific box
+  coach // can manage classes, everything regarding the workouts  
+  receptionist // same as admin minus expense and workouts access
+}
+
+enum payment_status {
+  not_paid
+  paid
+  pending
+  failed
+}
+
+enum payment_method {
+  card
+  mbway
+  cash
+  bank_transfer
+}
+
+enum attendance_status {
+  present
+  no_show
+  cancelled
+}
+
+enum workout_type {
+  amrap
+  for_time
+  emom
+  tabata
+  not_timed
+}
+
+enum movement_unit {
+  reps
+  kg
+  meters
+  minutes
+}
+
+enum movement_category {
+  weightlifting
+  gymnastics
+  cardio
+  accessory
+}
+
+enum result_type {
+  time
+  reps
+  weight
+  distance
+  rounds_plus_reps
+  calories
+  time(max. time)
+}
+
+enum discount_type {
+  percent
+  fixed
+}
+
+enum discount_applies_to {
+  plan
+  session_pack
+  all
+}
+
+enum expense_type {
+  cleaning
+  maintenance
+  material
+  equipment
+  marketing
+  others
+}
+
+enum membership_request_status {
+  pending
+  approved
+  rejected
+  cancelled
+}
+
+// ------------------ USERS ------------------
+Table User_detail {
+  id UUID [pk, ref: > auth.users.id] // References Supabase Auth user ID
+  name VARCHAR(100) [not null]
+  email VARCHAR(255) [not null]
+  phone VARCHAR(20)
+  notification_token VARCHAR(255)
+  email_confirmed_at TIMESTAMP [null] // Synced from Supabase Auth
+  last_sign_in_at TIMESTAMP [null] // Synced from Supabase Auth
+  deleted_at TIMESTAMP [null]
+  created_at TIMESTAMP [not null, default: `now()`]
+  updated_at TIMESTAMP [not null, default: `now()`]
+
+  indexes {
+    (email) [unique]
+    // (email) [unique, where: "deleted_at IS NULL"]
+    created_at
+    email_confirmed_at
+    last_sign_in_at
+  }
+
+  Note: 'Automatically created and updated via Supabase Auth triggers'
+}
+
+// ------------------ PERSONAL RECORDS (PRs) ------------------
+Table PR {
+  id UUID [pk]
+  user_id UUID [not null]
+  movement_id UUID [not null]
+  value INT [not null] // PR value achieved
+  unit movement_unit [not null]
+  achieved_at TIMESTAMP [not null]
+  public BOOLEAN [not null, default: false]
+  deleted_at TIMESTAMP [null]
+  created_at TIMESTAMP [not null, default: `now()`]
+  updated_at TIMESTAMP [not null, default: `now()`]
+
+  Note: 'CHECK (value > 0)'
+
+  indexes {
+    user_id
+    movement_id
+    (user_id, movement_id, achieved_at)
+    (user_id, achieved_at)
+    (movement_id, value, unit) // Leaderboard queries
+    public
+    (user_id, public)
+  }
+}
+
+// When a user is deleted, all their PRs are removed; user IDs cannot change if PRs exist
+Ref: PR.user_id > User_detail.id [delete: cascade, update: no action]
+
+// When a movement is deleted, restrict deletion if PRs exist; movement IDs cannot change if PRs exist
+Ref: PR.movement_id > Movement.id [delete: restrict, update: no action]
+
+
+
+// ------------------ ACHIEVEMENTS ------------------
+Table Achievement {
+  id UUID [pk]
+  title VARCHAR(200) [not null] // ex: '10 Strict Pull-ups', '60kg Snatch'
+  target_value INT [not null] // ex: 10, 60, 10, 300 (for 5 minutes)
+  target_unit movement_unit [not null]
+  movement_id UUID [null] // Optional link to specific movement
+  badge_url VARCHAR(500) [null] // URL for achievement badge image
+  achieved_at TIMESTAMP [null] // When first achieved globally
+  is_active BOOLEAN [not null, default: true]
+  deleted_at TIMESTAMP [null]
+  created_at TIMESTAMP [not null, default: `now()`]
+  updated_at TIMESTAMP [not null, default: `now()`]
+
+  Note: 'CHECK (target_value > 0)'
+
+  indexes {
+    movement_id
+    (achieved_at)
+    (target_unit, target_value)
+  }
+}
+
+// When a movement is deleted, set movement_id to NULL on achievements; movement IDs cannot change if achievements exist
+Ref: Achievement.movement_id > Movement.id [delete: set null, update: no action]
+
+// ------------------ GOAL ACHIEVEMENTS ------------------
+Table Achievement_Unlocked {
+  id UUID [pk]
+  achievement_id UUID [not null]
+  user_id UUID [not null]
+  workout_result_id UUID [not null]
+  achieved_at TIMESTAMP [not null]
+  created_at TIMESTAMP [not null, default: `now()`]
+
+  indexes {
+    (user_id, achievement_id) [unique]
+    achievement_id
+    user_id
+    workout_result_id
+    achieved_at
+    (user_id, achieved_at)
+  }
+}
+
+// When an achievement is deleted, all its achievement records are removed; achievement IDs cannot change if achievement records exist
+Ref: Achievement_Unlocked.achievement_id > Achievement.id [delete: cascade, update: no action]
+
+// When a user is deleted, all their achievement unlocks are removed; user IDs cannot change if achievement unlocks exist
+Ref: Achievement_Unlocked.user_id > User_detail.id [delete: cascade, update: no action]
+
+// When a workout result is deleted, all its goal achievements are removed; workout result IDs cannot change if achievements exist
+Ref: Achievement_Unlocked.workout_result_id > Workout_Result.id [delete: cascade, update: no action]
+
+// ------------------ BOX MEMBERSHIP REQUESTS ------------------
+Table Box_Membership_Request {
+  id UUID [pk]
+  user_id UUID [not null]
+  box_id UUID [not null]
+  status membership_request_status [not null, default: 'pending']
+  processed_by UUID
+  processed_at TIMESTAMP
+  created_at TIMESTAMP [not null, default: `now()`]
+  updated_at TIMESTAMP [not null, default: `now()`]
+
+  Note: 'CHECK (status != \'approved\' OR processed_by IS NOT NULL)'
+
+  indexes {
+    (user_id, box_id) [unique]
+    // (user_id, box_id) [unique, where: "status = 'pending'"]
+    user_id
+    box_id
+    status
+    (box_id, status)
+    processed_by
+    created_at
+  }
+}
+
+// When a user is deleted, all their membership requests are removed; user IDs cannot change if requests exist
+Ref: Box_Membership_Request.user_id > User_detail.id [delete: cascade, update: no action]
+
+// When a box is deleted, all its membership requests are removed; box IDs cannot change if requests exist
+Ref: Box_Membership_Request.box_id > Box.id [delete: cascade, update: no action]
+
+// When a staff member is deleted, set processed_by to NULL on requests; staff IDs cannot change if requests exist
+Ref: Box_Membership_Request.processed_by > Box_Staff.id [delete: set null, update: no action]
+
+// ------------------ BOXES ------------------
+Table Box {
+  id UUID [pk]
+  name VARCHAR [not null]
+  location VARCHAR [not null]
+  latitude FLOAT8
+  longitude FLOAT8 
+  timezone VARCHAR [not null, default: 'Europe/Lisbon']
+  currency VARCHAR(3) [not null, default: 'EUR']
+  active BOOLEAN [not null, default: true]
+  created_at TIMESTAMP [not null, default: `now()`]
+  updated_at TIMESTAMP [not null, default: `now()`]
+
+  indexes {
+    (latitude, longitude)
+    active
+  }
+}
+
+// ------------------ BOX STAFF ------------------
+Table Box_Staff {
+  id UUID [pk]
+  box_id UUID [not null]
+  user_id UUID [not null]
+  role staff_role [not null]
+  start_date DATE [not null]
+  end_date DATE [null] // null = ainda ativo
+  created_at TIMESTAMP [not null, default: `now()`]
+  updated_at TIMESTAMP [not null, default: `now()`]
+
+  Note: 'CHECK (end_date IS NULL OR end_date > start_date)'
+
+  indexes {
+    (box_id, user_id) [unique, where: "end_date IS NULL"]  // Prevent duplicate active assignments in same box
+    (box_id, role)
+    (user_id)
+    (user_id) [where: "end_date IS NULL"]  // User's active positions
+    (role) [where: "end_date IS NULL"]  // Active staff by role
+    (user_id, role) [where: "end_date IS NULL"]  // User's active roles across all boxes
+  }
+}
+
+// Cascade delete relationship - when a box is deleted, all box staff are deleted
+
+// When a box is deleted, remove its staff assignments; prevent box ID changes if staff exist
+Ref: Box_Staff.box_id > Box.id [delete: cascade, update: no action]
+
+// When a user is deleted, remove their staff roles in all boxes; prevent user ID changes if roles exist
+Ref: Box_Staff.user_id > User_detail.id [delete: cascade, update: no action]
+
+// ------------------ BOX MEMBERS ------------------
+Table Box_Member {
+  id UUID [pk]
+  box_id UUID [not null]
+  user_id UUID [not null]
+  seguro_validade DATE
+  joined_at DATE [not null]
+  notes TEXT
+  deleted_at TIMESTAMP [null]
+  created_at TIMESTAMP [not null, default: `now()`]
+  updated_at TIMESTAMP [not null, default: `now()`]
+
+  indexes {
+    (box_id, user_id) [unique]
+    //(box_id, user_id) [unique, where: "deleted_at IS NULL"]
+    box_id
+    user_id
+  }
+}
+
+// When a box is deleted, remove all its members; prevent box ID changes if members exist
+Ref: Box_Member.box_id > Box.id [delete: cascade, update: no action]
+// When a user is deleted, remove them from all boxes; prevent user ID changes if member records exist
+Ref: Box_Member.user_id > User_detail.id [delete: cascade, update: no action]
+
+// ------------------ ANNOUNCEMENTS ------------------
+Table Announcement {
+  id UUID [pk]
+  box_id UUID [not null]
+  admin_id UUID [not null] // Admin who created the announcement
+  title VARCHAR(200) [not null]
+  message TEXT [not null]
+  send_date TIMESTAMP [not null]
+  deleted_at TIMESTAMP [null]
+  created_at TIMESTAMP [not null, default: `now()`]
+  updated_at TIMESTAMP [not null, default: `now()`]
+
+  indexes {
+    box_id
+    admin_id
+    (box_id, send_date)
+    (send_date)
+    (box_id, send_date)
+    // (box_id, send_date) [where: "deleted_at IS NULL"]
+  }
+}
+
+// When a box is deleted, all its announcements are removed; box IDs cannot change if announcements exist
+Ref: Announcement.box_id > Box.id [delete: cascade, update: no action]
+
+// When an admin user is deleted, restrict deletion if announcements exist; admin IDs cannot change if announcements exist
+Ref: Announcement.admin_id > User_detail.id [delete: restrict, update: no action]
+
+
+// ------------------ MEMBERSHIPS ------------------
+Table Membership {
+  id UUID [pk]
+  user_id UUID [not null]
+  plan_id UUID [not null]
+  start_date DATE [not null]
+  end_date DATE [not null]
+  is_active BOOLEAN [not null, default: true]
+  payment_status payment_status [not null]
+  deleted_at TIMESTAMP [null]
+  created_at TIMESTAMP [not null, default: `now()`]
+  updated_at TIMESTAMP [not null, default: `now()`]
+
+  Note: 'CHECK (end_date > start_date)'
+
+  indexes {
+    user_id
+    is_active
+    payment_status
+    (user_id, start_date, end_date)
+    (user_id, is_active)
+    (is_active, end_date)
+    (end_date)
+    //(user_id, is_active) [where: "is_active = true AND deleted_at IS NULL"]
+    //(is_active, end_date) [where: "is_active = true AND deleted_at IS NULL"]
+    //(end_date) [where: "is_active = true AND deleted_at IS NULL"]  // NEW: Expiring memberships
+  }
+}
+
+// When a user is deleted, all their memberships are removed; user IDs cannot change if memberships exist
+Ref: Membership.user_id > User_detail.id [delete: cascade, update: no action]   
+// When a plan is deleted, all related memberships are removed; plan IDs cannot change if memberships exist
+Ref: Membership.plan_id > Plan.id [delete: cascade, update: no action]
+
+// ------------------ PLANS (Mensalidades) ------------------
+Table Plan {
+  id UUID [pk]
+  box_id UUID [not null]
+  name VARCHAR [not null]
+  description TEXT
+  price DECIMAL(10,2) [not null]
+  max_sessions INT [not null]
+  created_at TIMESTAMP [not null, default: `now()`]
+  updated_at TIMESTAMP [not null, default: `now()`]
+
+  Note: 'CHECK (price >= 0 AND max_sessions > 0)'
+}
+
+// When a box is deleted, all its plans are removed; box IDs cannot change if plans exist
+Ref: Plan.box_id > Box.id [delete: cascade, update: no action]
+
+// ------------------ SESSION PACKS ------------------
+Table Session_Pack {
+  id UUID [pk]
+  name VARCHAR [not null]
+  description TEXT
+  price DECIMAL(10,2) [not null]
+  session_count INT [not null]
+  validity_days INT [not null]
+  box_id UUID [not null]
+  created_at TIMESTAMP [not null, default: `now()`]
+  updated_at TIMESTAMP [not null, default: `now()`]
+
+  Note: 'CHECK (price >= 0 AND session_count > 0 AND validity_days > 0)'
+
+  indexes {
+    box_id
+  }
+}
+
+// When a box is deleted, all its session packs are removed; box IDs cannot change if session packs exist
+Ref: Session_Pack.box_id > Box.id [delete: cascade, update: no action]
+
+// ------------------ USER SESSION PACKS ------------------
+Table User_Session_Pack {
+  id UUID [pk]
+  user_id UUID [not null]
+  session_pack_id UUID [not null]
+  start_date DATE [not null]
+  expiration_date DATE [not null]
+  sessions_used INT [not null, default: 0]
+  is_active BOOLEAN [not null, default: true]
+  created_at TIMESTAMP [not null, default: `now()`]
+  updated_at TIMESTAMP [not null, default: `now()`]
+
+  Note: 'CHECK (expiration_date > start_date AND sessions_used >= 0)'
+  indexes {
+    user_id
+    session_pack_id
+    (user_id, is_active)
+    (expiration_date)
+    //(user_id, is_active) [where: "is_active = true"]
+    //(expiration_date) [where: "is_active = true"]
+  }
+}
+
+// When a user is deleted, all their session pack assignments are removed; user IDs cannot change if user session packs exist
+Ref: User_Session_Pack.user_id > User_detail.id [delete: cascade, update: no action]
+
+// When a session pack is deleted, all related user assignments are removed; session pack IDs cannot change if user session packs exist
+Ref: User_Session_Pack.session_pack_id > Session_Pack.id [delete: cascade, update: no action]
+
+// ------------------ CLASSES ------------------
+Table Class {
+  id UUID [pk]
+  box_id UUID [not null]
+  coach_id UUID [null]
+  datetime TIMESTAMP [not null]
+  duration INT [not null]
+  max_capacity INT [not null]
+  type VARCHAR [not null]
+  waitlist_max INT [null]  // Optional max waitlist size
+  deleted_at TIMESTAMP [null]
+  created_at TIMESTAMP [not null, default: `now()`]
+  updated_at TIMESTAMP [not null, default: `now()`]
+
+  Note: 'CHECK (duration > 0 AND max_capacity > 0 AND (waitlist_max IS NULL OR waitlist_max > 0))'
+
+  indexes {
+    (box_id, datetime)
+    coach_id
+    datetime
+    (box_id, deleted_at)
+    (box_id, datetime)
+    //(box_id, datetime) [where: "deleted_at IS NULL"]
+  }
+}
+
+// When a box is deleted, all its classes are removed; box IDs cannot change if a class exist
+Ref: Class.box_id > Box.id [delete: cascade, update: no action]
+
+// When a coach is deleted, set coach_id to NULL for their classes; coach IDs cannot change if classes exist
+Ref: Class.coach_id > User_detail.id [delete: set null, update: no action]
+
+// ------------------ CLASS ATTENDANCE ------------------
+Table Class_Attendance {
+  id UUID [pk]
+  class_id UUID [not null]
+  user_id UUID [not null]
+  membership_id UUID [null]
+  session_pack_id UUID [null]
+  status attendance_status [not null]
+  is_dropin BOOLEAN [not null, default: false]
+  deleted_at TIMESTAMP [null]
+  created_at TIMESTAMP [not null, default: `now()`]
+  updated_at TIMESTAMP [not null, default: `now()`]
+
+  indexes {
+    class_id
+    user_id
+    status
+    (class_id, user_id) [unique]
+    (class_id, status)
+    (class_id, status)
+    (user_id, status)
+    //(class_id, user_id) [unique, where: "deleted_at IS NULL"]
+    //(class_id, status) [where: "status = 'present' AND deleted_at IS NULL"]  // NEW: Count attendees
+    //(class_id, status) [where: "status = 'no_show' AND deleted_at IS NULL"]  // NEW: Track no-shows
+    //(user_id, status) [where: "deleted_at IS NULL"]  // NEW: User attendance history
+  }
+}
+
+// When a class is deleted, all its attendance records are removed; class IDs cannot change if attendance exists
+Ref: Class_Attendance.class_id > Class.id [delete: cascade, update: no action]
+
+// When a user is deleted, all their attendance records are removed; user IDs cannot change if attendance exists
+Ref: Class_Attendance.user_id > User_detail.id [delete: cascade, update: no action]
+
+// When a membership is deleted, set membership_id to NULL on attendance; membership IDs cannot change if attendance exists
+Ref: Class_Attendance.membership_id > Membership.id [delete: set null, update: no action]
+
+// When a user session pack is deleted, set session_pack_id to NULL on attendance; session pack IDs cannot change if attendance exists
+Ref: Class_Attendance.session_pack_id > User_Session_Pack.id [delete: set null, update: no action]
+
+// ------------------ CLASS WAITLIST ------------------
+Table Class_Waitlist {
+  id UUID [pk]
+  class_id UUID [not null]
+  user_id UUID [not null]
+  position INT [not null]  // Queue position (1 = first in line)
+  joined_at TIMESTAMP [not null, default: `now()`]
+  notified_at TIMESTAMP [null]  // When user was notified of available spot
+  notification_expires_at TIMESTAMP [null]  // Deadline to claim the spot
+  created_at TIMESTAMP [not null, default: `now()`]
+  updated_at TIMESTAMP [not null, default: `now()`]
+  
+  indexes {
+    (class_id, position)  // Ordered queue per class
+    (class_id, user_id) [unique]  // Prevent duplicate waitlist entries
+    (user_id, joined_at)  // User's waitlist history
+    notification_expires_at  // Find expired notifications
+  }
+  
+  Note: 'CHECK (position > 0)'
+}
+
+// When a class is deleted, all its waitlist entries are removed; class IDs cannot change if waitlist entries exist
+Ref: Class_Waitlist.class_id > Class.id [delete: cascade, update: no action]
+
+// When a user is deleted, all their waitlist entries are removed; user IDs cannot change if waitlist entries exist
+Ref: Class_Waitlist.user_id > User_detail.id [delete: cascade, update: no action]
+
+
+// ------------------ WORKOUTS ------------------
+Table Workout {
+  id UUID [pk]
+  class_id UUID [null]
+  name VARCHAR [not null]
+  description TEXT
+  type workout_type [not null]
+  deleted_at TIMESTAMP [null]
+  created_at TIMESTAMP [not null, default: `now()`]
+  updated_at TIMESTAMP [not null, default: `now()`]
+}
+
+// When a class is deleted, set class_id to NULL on workouts; class IDs cannot change if workouts exist
+Ref: Workout.class_id > Class.id [delete: set null, update: no action]
+
+// ------------------ WORKOUT SECTIONS ------------------
+Table Workout_Section {
+  id UUID [pk]
+  workout_id UUID [not null]
+  title VARCHAR [not null] // ex: 'Part A – Strength'
+  type workout_type [not null]
+  duration_minutes INT
+  notes TEXT
+  created_at TIMESTAMP [not null, default: `now()`]
+  updated_at TIMESTAMP [not null, default: `now()`]
+
+  indexes {
+    workout_id
+  }
+}
+
+// When a workout is deleted, all its sections are removed; workout IDs cannot change if sections exist
+Ref: Workout_Section.workout_id > Workout.id [delete: cascade, update: no action]
+
+// ------------------ MOVEMENTS ------------------
+Table Movement {
+  id UUID [pk]
+  name VARCHAR(100) [unique, not null] // ex: 'Back Squat'
+  category movement_category [not null]
+  url VARCHAR(500) [null] // Optional URL for demo videos, instructions, etc.
+  created_at TIMESTAMP [not null, default: `now()`]
+  updated_at TIMESTAMP [not null, default: `now()`]
+
+  indexes {
+    name  // Already has unique constraint
+    category  // NEW: Find movements by category
+    (category, name)  // NEW: Sorted category listing
+    (url) // URL lookups for movements with references
+    // (url) [where: "url IS NOT NULL"]  // URL lookups for movements with references
+  }
+}
+
+// ------------------ WORKOUT SECTION EXERCISES ------------------
+Table Workout_Section_Exercise {
+  id UUID [pk]
+  section_id UUID [not null]
+  movement_id UUID [not null]
+  objective VARCHAR // ex: 'strength', 'technique', 'conditioning'
+  reps INT
+  sets INT
+  load VARCHAR // ex: '70%', 'bodyweight', etc.
+  order_number INT [not null]
+  notes TEXT
+  created_at TIMESTAMP [not null, default: `now()`]
+  updated_at TIMESTAMP [not null, default: `now()`]
+
+  indexes {
+    (section_id, order_number)
+    movement_id
+  }
+}
+
+// When a workout section is deleted, all its exercises are removed; section IDs cannot change if exercises exist
+Ref: Workout_Section_Exercise.section_id > Workout_Section.id [delete: cascade, update: no action]
+
+// When a movement is deleted, restrict deletion if referenced by any exercise; movement IDs cannot change if exercises exist
+Ref: Workout_Section_Exercise.movement_id > Movement.id [delete: restrict, update: no action]
+
+// ------------------ WORKOUT RESULTS ------------------
+Table Workout_Result {
+  id UUID [pk]
+  user_id UUID [not null]
+  workout_id UUID [not null]
+  result_type result_type [not null]
+  value VARCHAR [not null]
+  date DATE [not null]
+  public BOOLEAN [not null, default: false]
+  deleted_at TIMESTAMP [null]
+  created_at TIMESTAMP [not null, default: `now()`]
+  updated_at TIMESTAMP [not null, default: `now()`]
+
+  indexes {
+    (user_id, workout_id)
+    (workout_id, date)
+    user_id
+    (user_id, date)
+    //(user_id, date) [where: "deleted_at IS NULL"]  // NEW: User progress timeline
+    (workout_id, date, result_type)  // NEW: Leaderboard queries
+    date  // NEW: Daily results
+    public
+    (workout_id, public)
+    (user_id, public)
+  }
+}
+
+// When a user is deleted, all their workout results are removed; user IDs cannot change if results exist
+Ref: Workout_Result.user_id > User_detail.id [delete: cascade, update: no action]
+
+// When a workout is deleted, all its results are removed; workout IDs cannot change if results exist
+Ref: Workout_Result.workout_id > Workout.id [delete: cascade, update: no action]
+
+// ------------------ WORKOUT RESULT LIKES ------------------
+Table Workout_Result_Like {
+  id UUID [pk]
+  result_id UUID [not null]
+  user_id UUID [not null]
+  icon VARCHAR [not null] // emoji ou nome de reação
+  created_at TIMESTAMP [not null, default: `now()`]
+
+  indexes {
+    (result_id, user_id) [unique]
+    result_id
+  }
+}
+
+// When a workout result is deleted, remove all likes for that result; result IDs cannot change if likes exist
+Ref: Workout_Result_Like.result_id > Workout_Result.id [delete: cascade, update: no action]
+
+// When a user is deleted, remove all their likes on workout results; user IDs cannot change if likes exist
+Ref: Workout_Result_Like.user_id > User_detail.id [delete: cascade, update: no action]
+
+
+
+// ------------------ PAYMENTS ------------------
+Table Payment {
+  id UUID [pk]
+  user_id UUID [not null]
+  membership_id UUID [null]
+  session_pack_id UUID [null]
+  amount DECIMAL(10,2) [not null]
+  method payment_method [not null]
+  status payment_status [not null]
+  paid_at TIMESTAMP
+  deleted_at TIMESTAMP [null]
+  created_at TIMESTAMP [not null, default: `now()`]
+  updated_at TIMESTAMP [not null, default: `now()`]
+
+  indexes {
+    user_id
+    status
+    paid_at
+    (user_id, paid_at)
+    (membership_id)
+    (session_pack_id)
+    (status, paid_at)
+    (status)
+    //(membership_id) [where: "membership_id IS NOT NULL"]  // NEW: Membership payments only
+    //(session_pack_id) [where: "session_pack_id IS NOT NULL"]  // NEW: Pack payments only
+    //(status, paid_at) [where: "status = 'paid'"]  // NEW: Successful payments
+    //(status) [where: "status = 'pending'"]  // NEW: Pending payments queue
+  }
+}
+
+// When a user is deleted, all their payments are removed; user IDs cannot change if payments exist
+Ref: Payment.user_id > User_detail.id [delete: cascade, update: no action]
+
+// When a membership is deleted, set membership_id to NULL on payments; membership IDs cannot change if payments exist
+Ref: Payment.membership_id > Membership.id [delete: set null, update: no action]
+
+// When a user session pack is deleted, set session_pack_id to NULL on payments; session pack IDs cannot change if payments exist
+Ref: Payment.session_pack_id > User_Session_Pack.id [delete: set null, update: no action]
+
+// ------------------ DISCOUNTS ------------------
+Table Discount {
+  id UUID [pk]
+  code VARCHAR(50) [not null]
+  type discount_type [not null]
+  amount DECIMAL(10,2) [not null]
+  applies_to discount_applies_to [not null]
+  start_date DATE [not null]
+  end_date DATE [not null]
+  max_uses INT
+  usage_count INT [not null, default: 0]
+  active BOOLEAN [not null, default: true]
+  deleted_at TIMESTAMP [null]
+  created_at TIMESTAMP [not null, default: `now()`]
+  updated_at TIMESTAMP [not null, default: `now()`]
+
+  indexes {
+    (code) [unique]
+    (start_date, end_date)
+    (end_date)
+    (applies_to, start_date, end_date)
+    //(code) [unique, where: "deleted_at IS NULL"]
+    //(start_date, end_date) [where: "active = true AND deleted_at IS NULL"]  // NEW: Validate range
+    //(end_date) [where: "active = true AND deleted_at IS NULL"]  // NEW: Expiring discounts
+    //(applies_to, start_date, end_date) [where: "active = true"]  // NEW: Valid by type
+  }
+
+  Note: 'CHECK (end_date > start_date AND amount > 0 AND usage_count >= 0 AND (max_uses IS NULL OR max_uses > 0))'
+}
+
+// ------------------ APPLIED DISCOUNTS ------------------
+Table Applied_Discount {
+  id UUID [pk]
+  user_id UUID [not null]
+  discount_id UUID [not null]
+  membership_id UUID [null]
+  session_pack_id UUID [null]
+  amount_applied DECIMAL(10,2) [not null]
+  applied_at TIMESTAMP [not null, default: `now()`]
+
+  Note: 'CHECK ((membership_id IS NOT NULL) OR (session_pack_id IS NOT NULL))'
+
+  indexes {
+    user_id  // NEW: User's discount history
+    discount_id  // NEW: Discount usage tracking
+    membership_id  // NEW: Discounts per membership
+    session_pack_id  // NEW: Discounts per pack
+    (user_id, applied_at)  // NEW: Recent discounts
+  }
+}
+
+// When a user is deleted, all their applied discounts are removed; user IDs cannot change if applied discounts exist
+Ref: Applied_Discount.user_id > User_detail.id [delete: cascade, update: no action]
+
+// When a discount is deleted, all its applications are removed; discount IDs cannot change if applied discounts exist
+Ref: Applied_Discount.discount_id > Discount.id [delete: cascade, update: no action]
+
+// When a membership is deleted, set membership_id to NULL on applied discounts; membership IDs cannot change if discounts exist
+Ref: Applied_Discount.membership_id > Membership.id [delete: set null, update: no action]
+
+// When a user session pack is deleted, set session_pack_id to NULL on applied discounts; session pack IDs cannot change if discounts exist
+Ref: Applied_Discount.session_pack_id > User_Session_Pack.id [delete: set null, update: no action]
+
+// ------------------ EXPENSES ------------------
+Table Expense {
+  id UUID [pk]
+  box_id UUID [not null]
+  user_id UUID [not null]
+  description TEXT [not null]
+  amount DECIMAL(10,2) [not null]
+  type expense_type [not null]
+  expense_date DATE [not null]
+  created_at TIMESTAMP [not null, default: `now()`]
+  updated_at TIMESTAMP [not null, default: `now()`]
+
+  Note: 'CHECK (amount > 0)'
+
+  indexes {
+    (box_id, expense_date)
+    (user_id, created_at)
+  }
+}
+
+// When a box is deleted, all its expenses are removed; box IDs cannot change if expenses exist
+Ref: Expense.box_id > Box.id [delete: cascade, update: no action]
+
+// When a user is deleted, all their expenses are removed; user IDs cannot change if expenses exist
+Ref: Expense.user_id > User_detail.id [delete: cascade, update: no action]
