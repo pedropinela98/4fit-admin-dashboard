@@ -34,12 +34,14 @@ class MembersService {
       .from('Box_Member')
       .select(`
         *,
-        User_detail (*),
-        Box (*),
-        Membership (
+        User_detail (
           *,
-          Plan (*)
-        )
+          Membership (
+            *,
+            Plan (*)
+          )
+        ),
+        Box (*)
       `)
       .eq('box_id', boxId)
       .is('deleted_at', null)
@@ -57,12 +59,14 @@ class MembersService {
       .from('Box_Member')
       .select(`
         *,
-        User_detail (*),
-        Box (*),
-        Membership (
+        User_detail (
           *,
-          Plan (*)
-        )
+          Membership (
+            *,
+            Plan (*)
+          )
+        ),
+        Box (*)
       `)
       .eq('id', memberId)
       .is('deleted_at', null)
@@ -80,12 +84,14 @@ class MembersService {
       .from('Box_Member')
       .select(`
         *,
-        User_detail (*),
-        Box (*),
-        Membership (
+        User_detail (
           *,
-          Plan (*)
-        )
+          Membership (
+            *,
+            Plan (*)
+          )
+        ),
+        Box (*)
       `)
       .eq('user_id', userId)
       .eq('box_id', boxId)
@@ -301,14 +307,16 @@ class MembersService {
 
     if (totalError) throw totalError;
 
-    // Get active memberships count
+    // Get active memberships count for users in this box
     const { count: activeMembers, error: activeError } = await supabase
       .from('Membership')
       .select(`
         *,
-        Box_Member!inner (box_id)
+        User_detail!inner (
+          Box_Member!inner (box_id)
+        )
       `, { count: 'exact', head: true })
-      .eq('Box_Member.box_id', boxId)
+      .eq('User_detail.Box_Member.box_id', boxId)
       .eq('is_active', true)
       .is('deleted_at', null);
 

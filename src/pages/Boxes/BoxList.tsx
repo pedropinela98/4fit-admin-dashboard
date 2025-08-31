@@ -11,16 +11,15 @@ export default function BoxList() {
 
   // Handle search with debouncing
   useEffect(() => {
+    // Only trigger search when there's an actual search query
+    if (!searchQuery.trim()) return;
+    
     const timeoutId = setTimeout(() => {
-      if (searchQuery.trim()) {
-        searchBoxes(searchQuery);
-      } else {
-        refetch();
-      }
+      searchBoxes(searchQuery);
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [searchQuery, searchBoxes, refetch]);
+  }, [searchQuery, searchBoxes]);
 
   if (error) {
     return (

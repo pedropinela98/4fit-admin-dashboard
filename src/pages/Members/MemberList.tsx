@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import PageMeta from "../../components/common/PageMeta";
 import Button from "../../components/ui/button/Button";
-import { PlusIcon, GridIcon, MoreDotIcon, ListIcon } from "../../icons";
+import { PlusIcon, GridIcon, MoreDotIcon, ListIcon, BoxIcon } from "../../icons";
 import { useMembers, type Member } from "../../hooks/useMembers";
+import { useBoxes } from "../../hooks/useBoxes";
 
-// For now, we'll use a hardcoded box ID - later this will come from auth context
-const DEMO_BOX_ID = '550e8400-e29b-41d4-a716-446655440000'; // Replace with actual box ID
+// Default box ID for initial load
+const DEMO_BOX_ID = '550e8400-e29b-41d4-a716-446655440000';
 
 type MembershipStatus = 'active' | 'inactive' | 'expired';
 
@@ -37,9 +38,21 @@ const getMembershipType = (member: Member): string => {
 };
 
 export default function MemberList() {
+  const [selectedBoxId, setSelectedBoxId] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const { members, loading, error, stats, searchMembers, refetch } = useMembers(DEMO_BOX_ID);
+  
+  const { boxes, loading: boxesLoading } = useBoxes();
+  const { members, loading, error, stats, searchMembers, refetch, resetSearch } = useMembers(selectedBoxId);
+
+  // Set default box when boxes load
+  useEffect(() => {
+    if (!boxesLoading && boxes.length > 0 && !selectedBoxId) {
+      // Try to find the demo box first, otherwise use the first box
+      const defaultBox = boxes.find(box => box.id === DEMO_BOX_ID) || boxes[0];
+      setSelectedBoxId(defaultBox.id);
+    }
+  }, [boxes, boxesLoading, selectedBoxId]);
 
   // Handle search with debouncing
   useEffect(() => {
@@ -47,12 +60,12 @@ export default function MemberList() {
       if (searchQuery.trim()) {
         searchMembers(searchQuery);
       } else {
-        refetch();
+        resetSearch();
       }
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [searchQuery, searchMembers, refetch]);
+  }, [searchQuery, searchMembers, resetSearch]);
 
   // Filter members by status
   const filteredMembers = members.filter(member => {
@@ -91,8 +104,8 @@ export default function MemberList() {
             </p>
           </div>
           
-          <Link to="/members/new">
-            <Button className="w-full sm:w-auto">
+          <Link to={selectedBoxId ? `/members/new?boxId=${selectedBoxId}` : "/members/new"}>
+            <Button className="w-full sm:w-auto" disabled={!selectedBoxId}>
               <PlusIcon className="h-4 w-4 mr-2" />
               Add Member
             </Button>
@@ -114,6 +127,29 @@ export default function MemberList() {
               />
             </div>
             
+            {/* Box Selection */}
+            <div className="flex items-center gap-2 sm:min-w-0 sm:w-auto">
+              <BoxIcon className="h-4 w-4 text-gray-400" />
+              <select
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                value={selectedBoxId}
+                onChange={(e) => setSelectedBoxId(e.target.value)}
+                disabled={boxesLoading}
+              >
+                {boxesLoading ? (
+                  <option value="">Loading boxes...</option>
+                ) : boxes.length === 0 ? (
+                  <option value="">No boxes found</option>
+                ) : (
+                  boxes.map((box) => (
+                    <option key={box.id} value={box.id}>
+                      {box.name} - {box.location}
+                    </option>
+                  ))
+                )}
+              </select>
+            </div>
+            
             {/* Status Filter */}
             <div className="flex items-center gap-2 sm:min-w-0 sm:w-auto">
               <ListIcon className="h-4 w-4 text-gray-400" />
@@ -133,7 +169,13 @@ export default function MemberList() {
 
         {/* Members List - Mobile Cards / Desktop Table */}
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-          {loading ? (
+          {!selectedBoxId ? (
+            <div className="p-8 text-center">
+              <BoxIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500 dark:text-gray-400 mb-2">Select a box to view members</p>
+              <p className="text-sm text-gray-400 dark:text-gray-500">Choose a box from the dropdown above to see its members</p>
+            </div>
+          ) : loading ? (
             <div className="p-8 text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
               <p className="text-gray-500 dark:text-gray-400">Loading members...</p>
@@ -147,8 +189,8 @@ export default function MemberList() {
                     <p className="text-gray-500 dark:text-gray-400">
                       {searchQuery ? 'No members found matching your search' : 'No members found'}
                     </p>
-                    {!searchQuery && (
-                      <Link to="/members/new">
+                    {!searchQuery && selectedBoxId && (
+                      <Link to={`/members/new?boxId=${selectedBoxId}`}>
                         <Button className="mt-4">Add First Member</Button>
                       </Link>
                     )}
