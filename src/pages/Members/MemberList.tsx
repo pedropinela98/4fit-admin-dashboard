@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import PageMeta from "../../components/common/PageMeta";
 import Button from "../../components/ui/button/Button";
 import { PlusIcon, GridIcon, MoreDotIcon, ListIcon, BoxIcon } from "../../icons";
@@ -38,6 +38,7 @@ const getMembershipType = (member: Member): string => {
 };
 
 export default function MemberList() {
+  const [searchParams] = useSearchParams();
   const [selectedBoxId, setSelectedBoxId] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -45,14 +46,23 @@ export default function MemberList() {
   const { boxes, loading: boxesLoading } = useBoxes();
   const { members, loading, error, stats, searchMembers, refetch, resetSearch } = useMembers(selectedBoxId);
 
-  // Set default box when boxes load
+  // Handle boxId from URL parameter
   useEffect(() => {
-    if (!boxesLoading && boxes.length > 0 && !selectedBoxId) {
+    const boxIdFromUrl = searchParams.get('boxId');
+    if (boxIdFromUrl) {
+      setSelectedBoxId(boxIdFromUrl);
+    }
+  }, [searchParams]);
+
+  // Set default box when boxes load (if no URL parameter)
+  useEffect(() => {
+    const boxIdFromUrl = searchParams.get('boxId');
+    if (!boxesLoading && boxes.length > 0 && !selectedBoxId && !boxIdFromUrl) {
       // Try to find the demo box first, otherwise use the first box
       const defaultBox = boxes.find(box => box.id === DEMO_BOX_ID) || boxes[0];
       setSelectedBoxId(defaultBox.id);
     }
-  }, [boxes, boxesLoading, selectedBoxId]);
+  }, [boxes, boxesLoading, selectedBoxId, searchParams]);
 
   // Handle search with debouncing
   useEffect(() => {

@@ -2,6 +2,51 @@
 
 All notable changes to this CrossFit Box Management Dashboard will be documented in this file.
 
+## [2025-08-31] - Query Optimization & Navigation Improvements
+
+### Added
+- **Box Selection Dropdown** in Members page
+  - Dynamic box filtering with real-time member updates
+  - Auto-selects box from URL parameter (`/members?boxId=123`)
+  - Fallback to demo/first box if no parameter provided
+  - Consistent styling with existing dropdowns
+
+- **Box Actions Dropdown** in Box List
+  - "View Members" action navigates to `/members?boxId={boxId}`
+  - "Edit Box" and "Delete Box" actions with confirmation
+  - React Portal implementation for proper z-index handling
+  - Click-outside-to-close functionality
+
+### Optimized
+- **Members Page Queries** - Reduced database calls by 50%
+  - Eliminated redundant `getMemberStats()` query
+  - Calculate stats from existing member data in frontend
+  - Fixed search debounce to prevent unnecessary queries on empty input
+  - Single query load: `getMembersByBox()` only
+
+- **Boxes Page Queries** - Fixed duplicate query issue
+  - Removed redundant search effect trigger on initial render
+  - Optimized search-only behavior for actual user input
+
+### Fixed
+- **Database Relationship Issues** - Resolved foreign key relationship errors
+  - Fixed `Box_Member` to `Membership` queries via `User_detail` junction
+  - Updated all member service queries to use proper relationship chain
+  - Corrected member stats query to use proper joins
+
+- **Dropdown Visibility Issues** - Box actions dropdown
+  - Implemented React Portal rendering to document.body
+  - Dynamic position calculation with scroll awareness
+  - Fixed z-index conflicts with `z-50` and backdrop layer
+
+### Technical Improvements
+- URL parameter integration with `useSearchParams`
+- Proper state synchronization between URL and component state  
+- Enhanced UX with loading states and proper error handling
+- Mobile-responsive dropdown positioning
+
+---
+
 ## [Unreleased]
 
 ### Added
