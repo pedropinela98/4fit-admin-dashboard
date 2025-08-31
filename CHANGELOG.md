@@ -18,6 +18,7 @@ All notable changes to this CrossFit Box Management Dashboard will be documented
 - **PR History Tracking**: Added `PR_History` table with composite PK to track historical personal records when new PRs are achieved
 - **Weight History Tracking**: Added `Weight_History` table with composite PK to track user weight progression over time
 - **Coach Role Validation**: Added trigger function to ensure only users with coach, admin, or super_admin roles can be assigned to classes
+- **Customizable Class Types**: Added `Class_Type` table to allow each box to define custom class types instead of hardcoded VARCHAR values
 
 ### Database Changes
 - New `Room` table with foreign key to `Box`
@@ -27,6 +28,8 @@ All notable changes to this CrossFit Box Management Dashboard will be documented
 - New `athlete_type` enum with values: 'Rx', 'Scaled'
 - Added `PR_History` table with composite primary key (user_id, movement_id, value)
 - Added `Weight_History` table with composite primary key (user_id, weight, created_at) for tracking weight progression
+- Added `Class_Type` table with unique constraint (box_id, name) for customizable class types per box
+- Updated `Class` table to reference `Class_Type` instead of VARCHAR type column
 - Added `validate_class_coach()` trigger function to enforce coach role requirements for class assignments
 - Enhanced triggers for automatic session pack lifecycle management and PR history saving
 - Comprehensive validation constraints and indexes

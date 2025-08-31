@@ -296,15 +296,26 @@ CREATE TABLE "User_Session_Pack" (
   CHECK (expiration_date > start_date AND sessions_used >= 0)
 );
 
+CREATE TABLE "Class_Type" (
+  "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  "box_id" UUID NOT NULL,
+  "name" VARCHAR(100) NOT NULL,
+  "description" TEXT,
+  "active" BOOLEAN NOT NULL DEFAULT true,
+  "created_at" TIMESTAMP NOT NULL DEFAULT (now()),
+  "updated_at" TIMESTAMP NOT NULL DEFAULT (now()),
+  UNIQUE(box_id, name)
+);
+
 CREATE TABLE "Class" (
   "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   "box_id" UUID NOT NULL,
   "room_id" UUID NOT NULL,
   "coach_id" UUID,
+  "class_type_id" UUID NOT NULL,
   "datetime" TIMESTAMP NOT NULL,
   "duration" INT NOT NULL,
   "max_capacity" INT NOT NULL,
-  "type" VARCHAR NOT NULL,
   "waitlist_max" INT,
   "deleted_at" TIMESTAMP,
   "created_at" TIMESTAMP NOT NULL DEFAULT (now()),
@@ -737,6 +748,10 @@ ALTER TABLE "Class" ADD FOREIGN KEY ("box_id") REFERENCES "Box" ("id") ON DELETE
 ALTER TABLE "Class" ADD FOREIGN KEY ("room_id") REFERENCES "Room" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 ALTER TABLE "Class" ADD FOREIGN KEY ("coach_id") REFERENCES "User_detail" ("id") ON DELETE SET NULL ON UPDATE NO ACTION;
+
+ALTER TABLE "Class" ADD FOREIGN KEY ("class_type_id") REFERENCES "Class_Type" ("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
+ALTER TABLE "Class_Type" ADD FOREIGN KEY ("box_id") REFERENCES "Box" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 ALTER TABLE "Class_Attendance" ADD FOREIGN KEY ("class_id") REFERENCES "Class" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
