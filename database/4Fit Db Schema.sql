@@ -1201,3 +1201,218 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE TRIGGER on_auth_user_updated
   AFTER UPDATE ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_user_update();
+
+-- ==================================================
+-- CLASS REGISTRATION AND WAITLIST FUNCTIONS
+-- ==================================================
+
+-- Function to register for class with automatic waitlist handling
+CREATE OR REPLACE FUNCTION register_for_class(
+  p_class_id UUID,
+  p_user_id UUID,
+  p_box_id UUID,
+  p_membership_id UUID DEFAULT NULL,
+  p_session_pack_id UUID DEFAULT NULL,
+  p_is_dropin BOOLEAN DEFAULT false
+)
+RETURNS JSON AS $$
+DECLARE
+  v_current_count INT;
+  v_max_capacity INT;
+  v_waitlist_max INT;
+  v_waitlist_count INT;
+  v_next_position INT;
+  v_result JSON;
+BEGIN
+  -- Get class capacity information
+  SELECT max_capacity, waitlist_max
+  INTO v_max_capacity, v_waitlist_max
+  FROM "Class"
+  WHERE id = p_class_id;
+  
+  IF NOT FOUND THEN
+    RETURN json_build_object(
+      'success', false,
+      'error', 'Class not found',
+      'action', 'error'
+    );
+  END IF;
+  
+  -- Check if user is already registered or waitlisted
+  IF EXISTS (
+    SELECT 1 FROM "Class_Attendance" 
+    WHERE class_id = p_class_id AND user_id = p_user_id AND deleted_at IS NULL
+  ) THEN
+    RETURN json_build_object(
+      'success', false,
+      'error', 'User already registered for this class',
+      'action', 'error'
+    );
+  END IF;
+  
+  IF EXISTS (
+    SELECT 1 FROM "Class_Waitlist"
+    WHERE class_id = p_class_id AND user_id = p_user_id
+  ) THEN
+    RETURN json_build_object(
+      'success', false,
+      'error', 'User already on waitlist for this class',
+      'action', 'error'
+    );
+  END IF;
+  
+  -- Count current attendees
+  SELECT COUNT(*)
+  INTO v_current_count
+  FROM "Class_Attendance"
+  WHERE class_id = p_class_id AND deleted_at IS NULL;
+  
+  -- If class is not full, register directly
+  IF v_current_count < v_max_capacity THEN
+    INSERT INTO "Class_Attendance" (
+      class_id, user_id, box_id, membership_id, session_pack_id, 
+      status, is_dropin
+    ) VALUES (
+      p_class_id, p_user_id, p_box_id, p_membership_id, p_session_pack_id,
+      'present', p_is_dropin
+    );
+    
+    RETURN json_build_object(
+      'success', true,
+      'action', 'registered',
+      'message', 'Successfully registered for class'
+    );
+  END IF;
+  
+  -- Class is full, check if waitlist is available
+  IF v_waitlist_max IS NULL THEN
+    RETURN json_build_object(
+      'success', false,
+      'error', 'Class is full and waitlist is disabled',
+      'action', 'error'
+    );
+  END IF;
+  
+  -- Count current waitlist
+  SELECT COUNT(*)
+  INTO v_waitlist_count
+  FROM "Class_Waitlist"
+  WHERE class_id = p_class_id;
+  
+  -- Check if waitlist is full
+  IF v_waitlist_count >= v_waitlist_max THEN
+    RETURN json_build_object(
+      'success', false,
+      'error', 'Class and waitlist are both full',
+      'action', 'error'
+    );
+  END IF;
+  
+  -- Add to waitlist
+  SELECT COALESCE(MAX(position), 0) + 1
+  INTO v_next_position
+  FROM "Class_Waitlist"
+  WHERE class_id = p_class_id;
+  
+  INSERT INTO "Class_Waitlist" (
+    class_id, user_id, box_id, position
+  ) VALUES (
+    p_class_id, p_user_id, p_box_id, v_next_position
+  );
+  
+  RETURN json_build_object(
+    'success', true,
+    'action', 'waitlisted',
+    'message', 'Added to waitlist',
+    'position', v_next_position
+  );
+  
+EXCEPTION
+  WHEN OTHERS THEN
+    RETURN json_build_object(
+      'success', false,
+      'error', 'Database error: ' || SQLERRM,
+      'action', 'error'
+    );
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to promote next user from waitlist when spot becomes available
+CREATE OR REPLACE FUNCTION promote_from_waitlist(p_class_id UUID)
+RETURNS JSON AS $$
+DECLARE
+  v_current_count INT;
+  v_max_capacity INT;
+  v_next_user RECORD;
+  v_result JSON;
+BEGIN
+  -- Count current attendees
+  SELECT COUNT(*)
+  INTO v_current_count
+  FROM "Class_Attendance"
+  WHERE class_id = p_class_id AND deleted_at IS NULL;
+  
+  -- Get max capacity
+  SELECT max_capacity
+  INTO v_max_capacity
+  FROM "Class"
+  WHERE id = p_class_id;
+  
+  -- If class is still full, no promotion needed
+  IF v_current_count >= v_max_capacity THEN
+    RETURN json_build_object(
+      'success', false,
+      'message', 'Class is still full'
+    );
+  END IF;
+  
+  -- Get next person on waitlist
+  SELECT *
+  INTO v_next_user
+  FROM "Class_Waitlist"
+  WHERE class_id = p_class_id
+  ORDER BY position ASC
+  LIMIT 1;
+  
+  -- If no one on waitlist, return
+  IF NOT FOUND THEN
+    RETURN json_build_object(
+      'success', false,
+      'message', 'No one on waitlist'
+    );
+  END IF;
+  
+  -- Move from waitlist to attendance
+  INSERT INTO "Class_Attendance" (
+    class_id, user_id, box_id, status, is_dropin
+  ) VALUES (
+    v_next_user.class_id, 
+    v_next_user.user_id, 
+    v_next_user.box_id,
+    'present', 
+    false
+  );
+  
+  -- Remove from waitlist
+  DELETE FROM "Class_Waitlist"
+  WHERE id = v_next_user.id;
+  
+  -- Update positions for remaining waitlist
+  UPDATE "Class_Waitlist"
+  SET position = position - 1
+  WHERE class_id = p_class_id AND position > v_next_user.position;
+  
+  RETURN json_build_object(
+    'success', true,
+    'promoted_user_id', v_next_user.user_id,
+    'message', 'User promoted from waitlist'
+  );
+  
+EXCEPTION
+  WHEN OTHERS THEN
+    RETURN json_build_object(
+      'success', false,
+      'error', 'Database error: ' || SQLERRM
+    );
+END;
+$$ LANGUAGE plpgsql;
