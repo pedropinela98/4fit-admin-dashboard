@@ -478,6 +478,7 @@ Table Class_Attendance {
   id UUID [pk]
   class_id UUID [not null]
   user_id UUID [not null]
+  box_id UUID [not null]
   membership_id UUID [null]
   session_pack_id UUID [null]
   status attendance_status [not null]
@@ -490,6 +491,7 @@ Table Class_Attendance {
     class_id
     user_id
     status
+    box_id
     (class_id, user_id) [unique]
     (class_id, status)
     (class_id, status)
@@ -513,11 +515,15 @@ Ref: Class_Attendance.membership_id > Membership.id [delete: set null, update: n
 // When a user session pack is deleted, set session_pack_id to NULL on attendance; session pack IDs cannot change if attendance exists
 Ref: Class_Attendance.session_pack_id > User_Session_Pack.id [delete: set null, update: no action]
 
+// When a box is deleted, all its attendance records are removed; box IDs cannot change if attendance exists
+Ref: Class_Attendance.box_id > Box.id [delete: cascade, update: no action]
+
 // ------------------ CLASS WAITLIST ------------------
 Table Class_Waitlist {
   id UUID [pk]
   class_id UUID [not null]
   user_id UUID [not null]
+  box_id UUID [not null]
   position INT [not null]  // Queue position (1 = first in line)
   joined_at TIMESTAMP [not null, default: `now()`]
   notified_at TIMESTAMP [null]  // When user was notified of available spot
@@ -530,6 +536,7 @@ Table Class_Waitlist {
     (class_id, user_id) [unique]  // Prevent duplicate waitlist entries
     (user_id, joined_at)  // User's waitlist history
     notification_expires_at  // Find expired notifications
+    box_id  // Filter by box
   }
   
   Note: 'CHECK (position > 0)'
@@ -540,6 +547,9 @@ Ref: Class_Waitlist.class_id > Class.id [delete: cascade, update: no action]
 
 // When a user is deleted, all their waitlist entries are removed; user IDs cannot change if waitlist entries exist
 Ref: Class_Waitlist.user_id > User_detail.id [delete: cascade, update: no action]
+
+// When a box is deleted, all its waitlist entries are removed; box IDs cannot change if waitlist entries exist
+Ref: Class_Waitlist.box_id > Box.id [delete: cascade, update: no action]
 
 
 // ------------------ WORKOUTS ------------------

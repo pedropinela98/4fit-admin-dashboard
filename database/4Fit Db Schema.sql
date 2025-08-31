@@ -274,6 +274,7 @@ CREATE TABLE "Class_Attendance" (
   "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   "class_id" UUID NOT NULL,
   "user_id" UUID NOT NULL,
+  "box_id" UUID NOT NULL,
   "membership_id" UUID,
   "session_pack_id" UUID,
   "status" attendance_status NOT NULL,
@@ -287,6 +288,7 @@ CREATE TABLE "Class_Waitlist" (
   "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   "class_id" UUID NOT NULL,
   "user_id" UUID NOT NULL,
+  "box_id" UUID NOT NULL,
   "position" INT NOT NULL,
   "joined_at" TIMESTAMP NOT NULL DEFAULT (now()),
   "notified_at" TIMESTAMP,
@@ -525,6 +527,8 @@ CREATE INDEX ON "Class_Attendance" ("class_id", "status");
 
 CREATE INDEX ON "Class_Attendance" ("user_id", "status");
 
+CREATE INDEX ON "Class_Attendance" ("box_id");
+
 CREATE INDEX ON "Class_Waitlist" ("class_id", "position");
 
 CREATE UNIQUE INDEX ON "Class_Waitlist" ("class_id", "user_id");
@@ -532,6 +536,8 @@ CREATE UNIQUE INDEX ON "Class_Waitlist" ("class_id", "user_id");
 CREATE INDEX ON "Class_Waitlist" ("user_id", "joined_at");
 
 CREATE INDEX ON "Class_Waitlist" ("notification_expires_at");
+
+CREATE INDEX ON "Class_Waitlist" ("box_id");
 
 CREATE INDEX ON "Workout_Section" ("workout_id");
 
@@ -678,9 +684,13 @@ ALTER TABLE "Class_Attendance" ADD FOREIGN KEY ("membership_id") REFERENCES "Mem
 
 ALTER TABLE "Class_Attendance" ADD FOREIGN KEY ("session_pack_id") REFERENCES "User_Session_Pack" ("id") ON DELETE SET NULL ON UPDATE NO ACTION;
 
+ALTER TABLE "Class_Attendance" ADD FOREIGN KEY ("box_id") REFERENCES "Box" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+
 ALTER TABLE "Class_Waitlist" ADD FOREIGN KEY ("class_id") REFERENCES "Class" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 ALTER TABLE "Class_Waitlist" ADD FOREIGN KEY ("user_id") REFERENCES "User_detail" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+
+ALTER TABLE "Class_Waitlist" ADD FOREIGN KEY ("box_id") REFERENCES "Box" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 ALTER TABLE "Workout" ADD FOREIGN KEY ("class_id") REFERENCES "Class" ("id") ON DELETE SET NULL ON UPDATE NO ACTION;
 
