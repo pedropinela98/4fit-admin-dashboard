@@ -22,13 +22,18 @@ BEGIN;
 -- Note: In production with Supabase, users are created via auth.users first
 -- For testing, we'll insert directly into User_detail with test UUIDs
 
-INSERT INTO "User_detail" (id, name, email, phone, created_at, updated_at)
+INSERT INTO "User_detail" (id, name, email, phone, public_results, height, athlete_type, created_at, updated_at)
 VALUES 
-  ('9a38ac6f-7fcc-4f3e-be98-83fe4885bf72', 'Miguel Coach', 'miguel.coach@test.com', '+351912345678', NOW(), NOW()),
-  ('d9bbcfa3-027a-4b7c-881e-7f8c163949d7', 'Pedro Member', 'pedro.member@test.com', '+351923456789', NOW(), NOW()),
-  ('82296266-8f1c-41c0-a1ef-45bef7f64bd3', 'Natan Admin', 'natan.admin@test.com', '+351934567890', NOW(), NOW()),
-  ('fb76cc05-e9c4-4a04-b929-b2e89d793e09', 'Camila Athlete', 'camila.athlete@test.com', '+351945678901', NOW(), NOW()),
-  ('a41a1153-5668-4d3f-942d-2642dc57199c', 'Adriana Receptionist', 'adriana.receptionist@test.com', '+351956789012', NOW(), NOW());
+  ('9a38ac6f-7fcc-4f3e-be98-83fe4885bf72', 'Miguel Coach', 'miguel.coach@test.com', '+351912345678', true, 178, 'Rx', NOW(), NOW()),
+  ('d9bbcfa3-027a-4b7c-881e-7f8c163949d7', 'Pedro Member', 'pedro.member@test.com', '+351923456789', true, 185, 'Rx', NOW(), NOW()),
+  ('82296266-8f1c-41c0-a1ef-45bef7f64bd3', 'Natan Admin', 'natan.admin@test.com', '+351934567890', true, 175, 'Scaled', NOW(), NOW()),
+  ('fb76cc05-e9c4-4a04-b929-b2e89d793e09', 'Camila Athlete', 'camila.athlete@test.com', '+351945678901', true, 165, 'Rx', NOW(), NOW()),
+  ('a41a1153-5668-4d3f-942d-2642dc57199c', 'Adriana Receptionist', 'adriana.receptionist@test.com', '+351956789012', false, 170, 'Scaled', NOW(), NOW()),
+  ('40279432-b72e-46d9-8eda-9bd45866c872', 'Test User 1', 'testuser1@gmail.com', '+351956789012', true, 180, 'Rx', NOW(), NOW()),
+  ('5ce63e9d-1bcb-471b-97ed-b38683d83bbb', 'Test User 2', 'testuser2@gmail.com', '+351956789012', false, NULL, NULL, NOW(), NOW()),
+  ('2823b608-353c-4256-90d5-1e6a656532e9', 'Test User 3', 'testuser3@gmail.com', '+351956789012', true, 172, 'Scaled', NOW(), NOW()),
+  ('150f85a6-74b8-45c4-b347-b14e05d09b1c', 'Test User 4', 'testuser4@gmail.com', '+351956789012', false, 190, 'Rx', NOW(), NOW()),
+  ('7ce8bbf9-d2d0-4371-a1ff-c18f3ca13f5a', 'Test User 5', 'testuser5@gmail.com', '+351956789012', true, 168, 'Scaled', NOW(), NOW());
 
 -- ============================================================================
 -- STEP 2: Insert box data
@@ -37,6 +42,16 @@ VALUES
 INSERT INTO "Box" (id, name, location, latitude, longitude, timezone, currency, active)
 VALUES 
   ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'CrossFit Test Box', 'Lisboa, Portugal', 38.7223, -9.1393, 'Europe/Lisbon', 'EUR', true);
+
+-- ============================================================================
+-- STEP 2.5: Insert rooms for the box
+-- ============================================================================
+
+INSERT INTO "Room" (id, box_id, name, description, capacity, active)
+VALUES 
+  ('aaaa1001-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Main Training Area', 'Primary workout space with full equipment', 20, true),
+  ('aaaa1002-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Small Group Studio', 'Intimate space for small group training', 8, true),
+  ('aaaa1003-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Recovery Room', 'Space for stretching and mobility work', 12, true);
 
 -- ============================================================================
 -- STEP 3: Insert box staff
@@ -56,6 +71,9 @@ INSERT INTO "Box_Member" (id, box_id, user_id, seguro_validade, joined_at)
 VALUES 
   ('dddddddd-dddd-dddd-dddd-dddddddddddd', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'd9bbcfa3-027a-4b7c-881e-7f8c163949d7', '2025-12-31', '2024-01-01'),
   ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'fb76cc05-e9c4-4a04-b929-b2e89d793e09', '2025-06-30', '2024-02-01');
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeee11', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '40279432-b72e-46d9-8eda-9bd45866c872', '2025-06-30', '2024-02-01');
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeee12', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '5ce63e9d-1bcb-471b-97ed-b38683d83bbb', '2025-06-30', '2024-02-01');
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeee13', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '2823b608-353c-4256-90d5-1e6a656532e9', '2025-06-30', '2024-02-01');
 
 -- ============================================================================
 -- STEP 5: Insert membership request
@@ -110,9 +128,9 @@ VALUES
 -- STEP 11: Insert class
 -- ============================================================================
 
-INSERT INTO "Class" (id, box_id, coach_id, datetime, duration, max_capacity, type, waitlist_max)
+INSERT INTO "Class" (id, box_id, room_id, coach_id, datetime, duration, max_capacity, type, waitlist_max)
 VALUES 
-  ('aaaaa006-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '9a38ac6f-7fcc-4f3e-be98-83fe4885bf72', '2024-11-25 09:00:00', 60, 12, 'CrossFit', 5);
+  ('aaaaa006-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'aaaa1001-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '9a38ac6f-7fcc-4f3e-be98-83fe4885bf72', '2024-11-25 09:00:00', 60, 12, 'CrossFit', 5);
 
 -- ============================================================================
 -- STEP 12: Insert class attendance
@@ -191,6 +209,20 @@ VALUES
   ('aaaaa013-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'd9bbcfa3-027a-4b7c-881e-7f8c163949d7', 'aaaaa009-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 100, 'kg', '2024-11-25', true);
 
 -- ============================================================================
+-- STEP 20.5: Insert PR history (simulating previous PRs)
+-- ============================================================================
+
+INSERT INTO "PR_History" (user_id, movement_id, value, unit, achieved_at, created_at)
+VALUES 
+  -- Pedro's Back Squat progression: 80kg -> 90kg -> 100kg (current)
+  ('d9bbcfa3-027a-4b7c-881e-7f8c163949d7', 'aaaaa009-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 80, 'kg', '2024-10-01', '2024-10-15'),
+  ('d9bbcfa3-027a-4b7c-881e-7f8c163949d7', 'aaaaa009-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 90, 'kg', '2024-10-15', '2024-11-25'),
+  
+  -- Camila's Pull-up progression: 8 reps -> 12 reps -> 15 reps (simulating current)
+  ('fb76cc05-e9c4-4a04-b929-b2e89d793e09', 'aaaaa00a-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 8, 'reps', '2024-09-01', '2024-09-20'),
+  ('fb76cc05-e9c4-4a04-b929-b2e89d793e09', 'aaaaa00a-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 12, 'reps', '2024-09-20', '2024-10-10');
+
+-- ============================================================================
 -- STEP 21: Insert achievements (templates)
 -- ============================================================================
 
@@ -259,6 +291,7 @@ DELETE FROM "Discount" WHERE id IN ('eeee5555-eeee-5555-eeee-555555555555');
 DELETE FROM "Payment" WHERE id IN ('dddd4444-dddd-4444-dddd-444444444444');
 DELETE FROM "Achievement_Unlocked" WHERE id IN ('cccc3333-cccc-3333-cccc-333333333333');
 DELETE FROM "Achievement" WHERE id IN ('aaaa1111-aaaa-1111-aaaa-111111111111', 'bbbb2222-bbbb-2222-bbbb-222222222222');
+DELETE FROM "PR_History" WHERE user_id IN ('d9bbcfa3-027a-4b7c-881e-7f8c163949d7', 'fb76cc05-e9c4-4a04-b929-b2e89d793e09');
 DELETE FROM "PR" WHERE id IN ('aaaaa013-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
 DELETE FROM "Workout_Result_Like" WHERE id IN ('aaaaa012-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
 DELETE FROM "Workout_Result" WHERE id IN ('aaaaa011-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
@@ -277,6 +310,7 @@ DELETE FROM "Announcement" WHERE id IN ('aaaaa000-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
 DELETE FROM "Box_Membership_Request" WHERE id IN ('fffff000-ffff-ffff-ffff-ffffffffffff');
 DELETE FROM "Box_Member" WHERE id IN ('dddddddd-dddd-dddd-dddd-dddddddddddd', 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee');
 DELETE FROM "Box_Staff" WHERE id IN ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'cccccccc-cccc-cccc-cccc-cccccccccccc', 'dddddddd-0000-0000-0000-000000000000');
+DELETE FROM "Room" WHERE id IN ('aaaa1001-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'aaaa1002-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'aaaa1003-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
 DELETE FROM "Box" WHERE id IN ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
 DELETE FROM "User_detail" WHERE id IN ('9a38ac6f-7fcc-4f3e-be98-83fe4885bf72', 'd9bbcfa3-027a-4b7c-881e-7f8c163949d7', '82296266-8f1c-41c0-a1ef-45bef7f64bd3', 'fb76cc05-e9c4-4a04-b929-b2e89d793e09', 'a41a1153-5668-4d3f-942d-2642dc57199c');
 

@@ -89,6 +89,11 @@ CREATE TYPE "membership_request_status" AS ENUM (
   'cancelled'
 );
 
+CREATE TYPE "athlete_type" AS ENUM (
+  'Rx',
+  'Scaled'
+);
+
 -------------------------------- START OF TABLES ---------------------------------
 
 CREATE TABLE "User_detail" (
@@ -99,9 +104,13 @@ CREATE TABLE "User_detail" (
   "notification_token" VARCHAR(255),
   "email_confirmed_at" TIMESTAMP,
   "last_sign_in_at" TIMESTAMP,
+  "public_results" BOOLEAN NOT NULL DEFAULT true,
+  "height" INT,
+  "athlete_type" athlete_type,
   "deleted_at" TIMESTAMP,
   "created_at" TIMESTAMP NOT NULL DEFAULT (now()),
-  "updated_at" TIMESTAMP NOT NULL DEFAULT (now())
+  "updated_at" TIMESTAMP NOT NULL DEFAULT (now()),
+  CHECK (height IS NULL OR (height >= 0 AND height <= 250))
 );
 
 CREATE TABLE "PR" (
@@ -116,6 +125,26 @@ CREATE TABLE "PR" (
   "created_at" TIMESTAMP NOT NULL DEFAULT (now()),
   "updated_at" TIMESTAMP NOT NULL DEFAULT (now()),
   CHECK (value > 0)
+);
+
+CREATE TABLE "PR_History" (
+  "user_id" UUID NOT NULL,
+  "movement_id" UUID NOT NULL,
+  "value" INT NOT NULL,
+  "unit" movement_unit NOT NULL,
+  "achieved_at" TIMESTAMP NOT NULL,
+  "created_at" TIMESTAMP NOT NULL DEFAULT (now()),
+  PRIMARY KEY ("user_id", "movement_id", "value"),
+  CHECK (value > 0)
+);
+
+CREATE TABLE "Weight_History" (
+  "user_id" UUID NOT NULL,
+  "weight" DECIMAL(5,2) NOT NULL,
+  "notes" TEXT,
+  "created_at" TIMESTAMP NOT NULL DEFAULT (now()),
+  PRIMARY KEY ("user_id", "weight", "created_at"),
+  CHECK (weight >= 30.0 AND weight <= 300.0)
 );
 
 CREATE TABLE "Achievement" (
@@ -153,6 +182,18 @@ CREATE TABLE "Box" (
   "active" BOOLEAN NOT NULL DEFAULT true,
   "created_at" TIMESTAMP NOT NULL DEFAULT (now()),
   "updated_at" TIMESTAMP NOT NULL DEFAULT (now())
+);
+
+CREATE TABLE "Room" (
+  "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  "box_id" UUID NOT NULL,
+  "name" VARCHAR(100) NOT NULL,
+  "description" TEXT,
+  "capacity" INT,
+  "active" BOOLEAN NOT NULL DEFAULT true,
+  "created_at" TIMESTAMP NOT NULL DEFAULT (now()),
+  "updated_at" TIMESTAMP NOT NULL DEFAULT (now()),
+  CHECK (capacity IS NULL OR capacity > 0)
 );
 
 CREATE TABLE "Box_Staff" (
@@ -258,6 +299,7 @@ CREATE TABLE "User_Session_Pack" (
 CREATE TABLE "Class" (
   "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   "box_id" UUID NOT NULL,
+  "room_id" UUID NOT NULL,
   "coach_id" UUID,
   "datetime" TIMESTAMP NOT NULL,
   "duration" INT NOT NULL,
@@ -443,6 +485,12 @@ CREATE INDEX ON "PR" ("public");
 
 CREATE INDEX ON "PR" ("user_id", "public");
 
+CREATE INDEX ON "PR_History" ("user_id", "movement_id", "created_at");
+
+CREATE INDEX ON "PR_History" ("user_id", "created_at");
+
+CREATE INDEX ON "PR_History" ("movement_id", "value", "unit");
+
 CREATE INDEX ON "Achievement" ("movement_id");
 
 CREATE INDEX ON "Achievement" ("achieved_at");
@@ -452,6 +500,10 @@ CREATE INDEX ON "Achievement" ("target_unit", "target_value");
 CREATE INDEX ON "Box" ("latitude", "longitude");
 
 CREATE INDEX ON "Box" ("active");
+
+CREATE INDEX ON "Room" ("box_id");
+
+CREATE INDEX ON "Room" ("box_id", "active");
 
 CREATE UNIQUE INDEX ON "Box_Staff" ("box_id", "user_id") WHERE end_date IS NULL;
 
@@ -508,6 +560,8 @@ CREATE INDEX ON "User_Session_Pack" ("user_id", "is_active");
 CREATE INDEX ON "User_Session_Pack" ("expiration_date");
 
 CREATE INDEX ON "Class" ("box_id", "datetime");
+
+CREATE INDEX ON "Class" ("room_id");
 
 CREATE INDEX ON "Class" ("coach_id");
 
@@ -646,7 +700,13 @@ ALTER TABLE "PR" ADD FOREIGN KEY ("user_id") REFERENCES "User_detail" ("id") ON 
 
 ALTER TABLE "PR" ADD FOREIGN KEY ("movement_id") REFERENCES "Movement" ("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
 
+ALTER TABLE "PR_History" ADD FOREIGN KEY ("user_id") REFERENCES "User_detail" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+
+ALTER TABLE "PR_History" ADD FOREIGN KEY ("movement_id") REFERENCES "Movement" ("id") ON DELETE RESTRICT ON UPDATE NO ACTION;
+
 ALTER TABLE "Achievement" ADD FOREIGN KEY ("movement_id") REFERENCES "Movement" ("id") ON DELETE SET NULL ON UPDATE NO ACTION;
+
+ALTER TABLE "Room" ADD FOREIGN KEY ("box_id") REFERENCES "Box" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 ALTER TABLE "Box_Staff" ADD FOREIGN KEY ("box_id") REFERENCES "Box" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
@@ -673,6 +733,8 @@ ALTER TABLE "User_Session_Pack" ADD FOREIGN KEY ("user_id") REFERENCES "User_det
 ALTER TABLE "User_Session_Pack" ADD FOREIGN KEY ("session_pack_id") REFERENCES "Session_Pack" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 ALTER TABLE "Class" ADD FOREIGN KEY ("box_id") REFERENCES "Box" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+
+ALTER TABLE "Class" ADD FOREIGN KEY ("room_id") REFERENCES "Room" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 ALTER TABLE "Class" ADD FOREIGN KEY ("coach_id") REFERENCES "User_detail" ("id") ON DELETE SET NULL ON UPDATE NO ACTION;
 
@@ -809,6 +871,12 @@ BEGIN
             CASE 
                 -- For strength movements (higher weight = better)
                 WHEN movement_rec.category = 'weightlifting' AND NEW.result_type = 'weight' AND new_pr_value > current_pr.value THEN
+                    -- Save old PR to history
+                    INSERT INTO "PR_History" (user_id, movement_id, value, unit, achieved_at, created_at)
+                    VALUES (NEW.user_id, movement_rec.movement_id, current_pr.value, current_pr.unit, current_pr.achieved_at, NOW())
+                    ON CONFLICT (user_id, movement_id, value) DO NOTHING;
+                    
+                    -- Update current PR
                     UPDATE "PR" SET 
                         value = new_pr_value,
                         achieved_at = NEW.date::timestamp,
@@ -817,6 +885,12 @@ BEGIN
                 
                 -- For rep-based movements (higher reps = better)
                 WHEN NEW.result_type = 'reps' AND new_pr_value > current_pr.value THEN
+                    -- Save old PR to history
+                    INSERT INTO "PR_History" (user_id, movement_id, value, unit, achieved_at, created_at)
+                    VALUES (NEW.user_id, movement_rec.movement_id, current_pr.value, current_pr.unit, current_pr.achieved_at, NOW())
+                    ON CONFLICT (user_id, movement_id, value) DO NOTHING;
+                    
+                    -- Update current PR
                     UPDATE "PR" SET 
                         value = new_pr_value,
                         achieved_at = NEW.date::timestamp,
@@ -825,6 +899,12 @@ BEGIN
                 
                 -- For time-based movements (lower time = better)
                 WHEN NEW.result_type = 'time' AND new_pr_value < current_pr.value THEN
+                    -- Save old PR to history
+                    INSERT INTO "PR_History" (user_id, movement_id, value, unit, achieved_at, created_at)
+                    VALUES (NEW.user_id, movement_rec.movement_id, current_pr.value, current_pr.unit, current_pr.achieved_at, NOW())
+                    ON CONFLICT (user_id, movement_id, value) DO NOTHING;
+                    
+                    -- Update current PR
                     UPDATE "PR" SET 
                         value = new_pr_value,
                         achieved_at = NEW.date::timestamp,
@@ -833,6 +913,12 @@ BEGIN
                 
                 -- For distance-based movements (higher distance = better)
                 WHEN NEW.result_type = 'distance' AND new_pr_value > current_pr.value THEN
+                    -- Save old PR to history
+                    INSERT INTO "PR_History" (user_id, movement_id, value, unit, achieved_at, created_at)
+                    VALUES (NEW.user_id, movement_rec.movement_id, current_pr.value, current_pr.unit, current_pr.achieved_at, NOW())
+                    ON CONFLICT (user_id, movement_id, value) DO NOTHING;
+                    
+                    -- Update current PR
                     UPDATE "PR" SET 
                         value = new_pr_value,
                         achieved_at = NEW.date::timestamp,
@@ -983,6 +1069,11 @@ CREATE TRIGGER trigger_achievement_updated_at
 
 CREATE TRIGGER trigger_box_updated_at
     BEFORE UPDATE ON "Box"
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER trigger_room_updated_at
+    BEFORE UPDATE ON "Room"
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
@@ -1416,3 +1507,40 @@ EXCEPTION
     );
 END;
 $$ LANGUAGE plpgsql;
+
+-- ============================================================================
+-- COACH ROLE VALIDATION FUNCTION AND TRIGGER
+-- ============================================================================
+
+-- Function to validate that only users with coach role can be assigned to classes
+CREATE OR REPLACE FUNCTION validate_class_coach()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- If coach_id is NULL, allow (no coach assigned)
+    IF NEW.coach_id IS NULL THEN
+        RETURN NEW;
+    END IF;
+    
+    -- Check if the user has coach role in the same box as the class
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM "Box_Staff" bs
+        WHERE bs.user_id = NEW.coach_id 
+        AND bs.box_id = NEW.box_id 
+        AND bs.role IN ('coach', 'admin', 'super_admin')
+        AND (bs.end_date IS NULL OR bs.end_date >= CURRENT_DATE)
+    ) THEN
+        RAISE EXCEPTION 'User % must have coach, admin, or super_admin role in box % to be assigned to classes', 
+            NEW.coach_id, NEW.box_id;
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger to validate coach role on Class table
+DROP TRIGGER IF EXISTS validate_class_coach_trigger ON "Class";
+CREATE TRIGGER validate_class_coach_trigger
+    BEFORE INSERT OR UPDATE OF coach_id, box_id ON "Class"
+    FOR EACH ROW
+    EXECUTE FUNCTION validate_class_coach();
