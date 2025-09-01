@@ -179,9 +179,11 @@ CREATE TABLE "Box" (
   "longitude" FLOAT8,
   "timezone" VARCHAR NOT NULL DEFAULT 'Europe/Lisbon',
   "currency" VARCHAR(3) NOT NULL DEFAULT 'EUR',
+  "payment_grace_days" INT NOT NULL DEFAULT 8,
   "active" BOOLEAN NOT NULL DEFAULT true,
   "created_at" TIMESTAMP NOT NULL DEFAULT (now()),
-  "updated_at" TIMESTAMP NOT NULL DEFAULT (now())
+  "updated_at" TIMESTAMP NOT NULL DEFAULT (now()),
+  CHECK (payment_grace_days > 0 AND payment_grace_days <= 30)
 );
 
 CREATE TABLE "Room" (
@@ -265,6 +267,8 @@ CREATE TABLE "Plan" (
   "description" TEXT,
   "price" DECIMAL(10,2) NOT NULL,
   "max_sessions" INT NOT NULL,
+  "plans_public" BOOLEAN NOT NULL DEFAULT true,
+  "is_active" BOOLEAN NOT NULL DEFAULT true,
   "created_at" TIMESTAMP NOT NULL DEFAULT (now()),
   "updated_at" TIMESTAMP NOT NULL DEFAULT (now()),
   CHECK (price >= 0 AND max_sessions > 0)
@@ -278,6 +282,8 @@ CREATE TABLE "Session_Pack" (
   "session_count" INT NOT NULL,
   "validity_days" INT NOT NULL,
   "box_id" UUID NOT NULL,
+  "pack_public" BOOLEAN NOT NULL DEFAULT true,
+  "is_active" BOOLEAN NOT NULL DEFAULT true,
   "created_at" TIMESTAMP NOT NULL DEFAULT (now()),
   "updated_at" TIMESTAMP NOT NULL DEFAULT (now()),
   CHECK (price >= 0 AND session_count > 0 AND validity_days > 0)

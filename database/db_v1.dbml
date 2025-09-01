@@ -299,13 +299,17 @@ Table Box {
   longitude FLOAT8 
   timezone VARCHAR [not null, default: 'Europe/Lisbon']
   currency VARCHAR(3) [not null, default: 'EUR']
+  payment_grace_days INT [not null, default: 8, note: 'Days before unpaid membership auto-deactivation (1-30)']
   active BOOLEAN [not null, default: true]
   created_at TIMESTAMP [not null, default: `now()`]
   updated_at TIMESTAMP [not null, default: `now()`]
 
+  Note: 'CHECK (payment_grace_days > 0 AND payment_grace_days <= 30)'
+
   indexes {
     (latitude, longitude)
     active
+    payment_grace_days
   }
 }
 
@@ -458,10 +462,18 @@ Table Plan {
   description TEXT
   price DECIMAL(10,2) [not null]
   max_sessions INT [not null]
+  plans_public BOOLEAN [not null, default: true, note: 'Whether plans are visible to non-members on platform']
+  is_active BOOLEAN [not null, default: true, note: 'Whether plan is available for new signups']
   created_at TIMESTAMP [not null, default: `now()`]
   updated_at TIMESTAMP [not null, default: `now()`]
 
   Note: 'CHECK (price >= 0 AND max_sessions > 0)'
+
+  indexes {
+    box_id
+    is_active
+    plans_public
+  }
 }
 
 // When a box is deleted, all its plans are removed; box IDs cannot change if plans exist
@@ -476,6 +488,8 @@ Table Session_Pack {
   session_count INT [not null]
   validity_days INT [not null]
   box_id UUID [not null]
+  pack_public BOOLEAN [not null, default: true, note: 'Whether pack is visible to non-members on platform']
+  is_active BOOLEAN [not null, default: true, note: 'Whether pack is available for new purchases']
   created_at TIMESTAMP [not null, default: `now()`]
   updated_at TIMESTAMP [not null, default: `now()`]
 
@@ -483,6 +497,8 @@ Table Session_Pack {
 
   indexes {
     box_id
+    is_active
+    pack_public
   }
 }
 
