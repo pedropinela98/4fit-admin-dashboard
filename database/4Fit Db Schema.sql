@@ -94,6 +94,13 @@ CREATE TYPE "athlete_type" AS ENUM (
   'Scaled'
 );
 
+CREATE TYPE "session_change_type" AS ENUM (
+  'class_attendance',   -- Automatic increment from class attendance
+  'manual_increment',   -- Manual increase by admin
+  'manual_decrement',   -- Manual decrease by admin  
+  'admin_correction'    -- Administrative correction
+);
+
 -------------------------------- START OF TABLES ---------------------------------
 
 CREATE TABLE "User_detail" (
@@ -120,7 +127,6 @@ CREATE TABLE "PR" (
   "value" INT NOT NULL,
   "unit" movement_unit NOT NULL,
   "achieved_at" TIMESTAMP NOT NULL,
-  "public" BOOLEAN NOT NULL DEFAULT false,
   "deleted_at" TIMESTAMP,
   "created_at" TIMESTAMP NOT NULL DEFAULT (now()),
   "updated_at" TIMESTAMP NOT NULL DEFAULT (now()),
@@ -302,6 +308,20 @@ CREATE TABLE "User_Session_Pack" (
   CHECK (expiration_date > start_date AND sessions_used >= 0)
 );
 
+CREATE TABLE "Session_Usage_Audit" (
+  "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  "user_session_pack_id" UUID NOT NULL,
+  "user_id" UUID NOT NULL,
+  "class_id" UUID,  -- NULL for manual adjustments
+  "old_sessions_used" INT NOT NULL,
+  "new_sessions_used" INT NOT NULL,
+  "change_type" session_change_type NOT NULL,
+  "changed_by" UUID,  -- NULL for system, user_id for manual changes
+  "reason" TEXT,  -- Required for manual changes
+  "is_suspicious" BOOLEAN NOT NULL DEFAULT false,
+  "created_at" TIMESTAMP NOT NULL DEFAULT (now())
+);
+
 CREATE TABLE "Class_Type" (
   "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   "box_id" UUID NOT NULL,
@@ -409,7 +429,6 @@ CREATE TABLE "Workout_Result" (
   "result_type" result_type NOT NULL,
   "value" VARCHAR NOT NULL,
   "date" DATE NOT NULL,
-  "public" BOOLEAN NOT NULL DEFAULT false,
   "deleted_at" TIMESTAMP,
   "created_at" TIMESTAMP NOT NULL DEFAULT (now()),
   "updated_at" TIMESTAMP NOT NULL DEFAULT (now())
@@ -748,6 +767,14 @@ ALTER TABLE "Session_Pack" ADD FOREIGN KEY ("box_id") REFERENCES "Box" ("id") ON
 ALTER TABLE "User_Session_Pack" ADD FOREIGN KEY ("user_id") REFERENCES "User_detail" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 
 ALTER TABLE "User_Session_Pack" ADD FOREIGN KEY ("session_pack_id") REFERENCES "Session_Pack" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+
+ALTER TABLE "Session_Usage_Audit" ADD FOREIGN KEY ("user_session_pack_id") REFERENCES "User_Session_Pack" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+
+ALTER TABLE "Session_Usage_Audit" ADD FOREIGN KEY ("user_id") REFERENCES "User_detail" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+
+ALTER TABLE "Session_Usage_Audit" ADD FOREIGN KEY ("class_id") REFERENCES "Class" ("id") ON DELETE SET NULL ON UPDATE NO ACTION;
+
+ALTER TABLE "Session_Usage_Audit" ADD FOREIGN KEY ("changed_by") REFERENCES "User_detail" ("id") ON DELETE SET NULL ON UPDATE NO ACTION;
 
 ALTER TABLE "Class" ADD FOREIGN KEY ("box_id") REFERENCES "Box" ("id") ON DELETE CASCADE ON UPDATE NO ACTION;
 

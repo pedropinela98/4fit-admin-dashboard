@@ -94,6 +94,13 @@ enum athlete_type {
   Scaled
 }
 
+enum session_change_type {
+  class_attendance   // Automatic increment from class attendance
+  manual_increment   // Manual increase by admin
+  manual_decrement   // Manual decrease by admin
+  admin_correction   // Administrative correction
+}
+
 // ------------------ USERS ------------------
 Table User_detail {
   id UUID [pk, ref: > auth.users.id] // References Supabase Auth user ID
@@ -132,7 +139,6 @@ Table PR {
   value INT [not null] // PR value achieved
   unit movement_unit [not null]
   achieved_at TIMESTAMP [not null]
-  public BOOLEAN [not null, default: false]
   deleted_at TIMESTAMP [null]
   created_at TIMESTAMP [not null, default: `now()`]
   updated_at TIMESTAMP [not null, default: `now()`]
@@ -534,6 +540,43 @@ Ref: User_Session_Pack.user_id > User_detail.id [delete: cascade, update: no act
 // When a session pack is deleted, all related user assignments are removed; session pack IDs cannot change if user session packs exist
 Ref: User_Session_Pack.session_pack_id > Session_Pack.id [delete: cascade, update: no action]
 
+// ------------------ SESSION USAGE AUDIT ------------------
+Table Session_Usage_Audit {
+  id UUID [pk]
+  user_session_pack_id UUID [not null]
+  user_id UUID [not null]
+  class_id UUID [null] // NULL for manual adjustments
+  old_sessions_used INT [not null]
+  new_sessions_used INT [not null]
+  change_type session_change_type [not null]
+  changed_by UUID [null] // NULL for system, user_id for manual changes
+  reason TEXT [null] // Required for manual changes
+  is_suspicious BOOLEAN [not null, default: false]
+  created_at TIMESTAMP [not null, default: `now()`]
+
+  Note: 'Complete audit framework for session pack usage tracking with suspicious pattern detection'
+
+  indexes {
+    user_session_pack_id
+    user_id
+    change_type
+    created_at
+    (is_suspicious) [where: "is_suspicious = true"]
+  }
+}
+
+// When a user session pack is deleted, all its audit records are removed
+Ref: Session_Usage_Audit.user_session_pack_id > User_Session_Pack.id [delete: cascade, update: no action]
+
+// When a user is deleted, all their audit records are removed
+Ref: Session_Usage_Audit.user_id > User_detail.id [delete: cascade, update: no action]
+
+// When a class is deleted, audit records keep the class reference as NULL
+Ref: Session_Usage_Audit.class_id > Class.id [delete: set null, update: no action]
+
+// When the user who made the change is deleted, keep the audit record but set changed_by to NULL
+Ref: Session_Usage_Audit.changed_by > User_detail.id [delete: set null, update: no action]
+
 // ------------------ CLASSES ------------------
 Table Class_Type {
   id UUID [pk]
@@ -760,7 +803,6 @@ Table Workout_Result {
   result_type result_type [not null]
   value VARCHAR [not null]
   date DATE [not null]
-  public BOOLEAN [not null, default: false]
   deleted_at TIMESTAMP [null]
   created_at TIMESTAMP [not null, default: `now()`]
   updated_at TIMESTAMP [not null, default: `now()`]

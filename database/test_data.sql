@@ -188,9 +188,9 @@ VALUES
 -- STEP 18: Insert workout result
 -- ============================================================================
 
-INSERT INTO "Workout_Result" (id, user_id, workout_id, result_type, value, date, public)
+INSERT INTO "Workout_Result" (id, user_id, workout_id, result_type, value, date)
 VALUES 
-  ('aaaaa011-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'd9bbcfa3-027a-4b7c-881e-7f8c163949d7', 'aaaaa00c-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'time', '12:34', '2024-11-25', true);
+  ('aaaaa011-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'd9bbcfa3-027a-4b7c-881e-7f8c163949d7', 'aaaaa00c-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'time', '12:34', '2024-11-25');
 
 -- ============================================================================
 -- STEP 19: Insert workout result like
@@ -204,9 +204,9 @@ VALUES
 -- STEP 20: Insert PR
 -- ============================================================================
 
-INSERT INTO "PR" (id, user_id, movement_id, value, unit, achieved_at, public)
+INSERT INTO "PR" (id, user_id, movement_id, value, unit, achieved_at)
 VALUES 
-  ('aaaaa013-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'd9bbcfa3-027a-4b7c-881e-7f8c163949d7', 'aaaaa009-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 100, 'kg', '2024-11-25', true);
+  ('aaaaa013-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'd9bbcfa3-027a-4b7c-881e-7f8c163949d7', 'aaaaa009-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 100, 'kg', '2024-11-25');
 
 -- ============================================================================
 -- STEP 20.5: Insert PR history (simulating previous PRs)

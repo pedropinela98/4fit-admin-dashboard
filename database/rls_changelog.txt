@@ -44,21 +44,21 @@ TABLE IMPLEMENTATION STATUS:
 [✓] Membership - COMPLETED - Own access + Staff basic info + Management control + Coach payment restriction + Grace period
 [✓] Plan - COMPLETED - Complex visibility: Box members see active + Non-members see public + Users see inactive if owned + Admin management
 [✓] Session_Pack - COMPLETED - Complex visibility: Box members see active + Non-members see public + Users see inactive if owned + Admin management
-[ ] User_Session_Pack - PENDING
-[ ] Class_Type - PENDING
-[ ] Class - PENDING
-[ ] Class_Attendance - PENDING
-[ ] Class_Waitlist - PENDING
-[ ] Workout - PENDING
-[ ] Workout_Section - PENDING
-[ ] Movement - PENDING
-[ ] Workout_Section_Exercise - PENDING
-[ ] Workout_Result - PENDING
-[ ] Workout_Result_Like - PENDING
-[ ] Payment - PENDING
-[ ] Discount - PENDING
-[ ] Applied_Discount - PENDING
-[ ] Expense - PENDING
+[✓] User_Session_Pack - COMPLETED - Own access + Staff see box user packs + Coach payment restriction + Admin full control + Receptionist limited updates + Sessions_used audit system
+[✓] Class_Type - COMPLETED - Box users see active + Management see all + Admin-only management + Box isolation + Coach full access
+[✓] Class - COMPLETED - Box users see all classes + Full visibility (past/future) + Staff except receptionist manage + Coach full access + Capacity visible
+[✓] Class_Attendance - COMPLETED - Box members see all attendance + Own access always + Staff manage + Coach full access + No privacy restrictions
+[✓] Class_Waitlist - COMPLETED - Box members see all waitlists + Own access always + Coach full access + No privacy + System/super admin only manage
+[✓] Workout - COMPLETED - Box members only see details + Box isolation + Coach management + Staff except receptionist manage + No active/inactive filter
+[✓] Workout_Section - COMPLETED - Inherits parent Workout access + Box isolation + Direct access + Staff except receptionist manage + Same as Workout rules
+[✓] Movement - COMPLETED - Global resource visible to all + Super admin only management + No active filter + No box isolation + Platform-wide access
+[✓] Workout_Section_Exercise - COMPLETED - Inherits parent chain access + Box isolation + Direct access + Staff except receptionist manage + Same as parent rules
+[✓] Workout_Result - COMPLETED - Box isolation + Own access always + Public to box members + Staff see all + User/coach/admin manage + No special coach rules
+[✓] Workout_Result_Like - COMPLETED - Box public likes + Own access always + Box isolation + User-only management + No staff control + Public within box
+[✓] Payment - COMPLETED - Box isolation + Own access always + Coach restriction + Management staff only + Admin/receptionist manage + Audit trail preserved
+[✓] Discount - COMPLETED - Box isolation + Staff only except coaches + Active filter + Management staff create/edit + Financial security + Coach restriction
+[✓] Applied_Discount - COMPLETED - Own access + Staff except coaches + Box isolation + Staff management + Financial security + Coach restriction + Audit preserved
+[✓] Expense - COMPLETED - Box isolation + Staff only except coaches + Stricter than payments + Management create/edit + Highly restricted business data + Audit preserved
 
 POLICY IMPLEMENTATION NOTES:
 ============================

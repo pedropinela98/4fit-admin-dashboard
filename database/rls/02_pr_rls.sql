@@ -59,8 +59,7 @@ ON "PR"
 FOR SELECT
 TO authenticated
 USING (
-    "public" = true
-    AND user_id != auth.uid()  -- Not their own PRs (covered by policy 1)
+    user_id != auth.uid()  -- Not their own PRs (covered by policy 1)
     AND NOT EXISTS (
         -- Exclude if current user is staff in any box where PR owner is member
         -- (staff access covered by policy 2)
@@ -72,6 +71,14 @@ USING (
         AND bm.deleted_at IS NULL
         AND (bs.end_date IS NULL OR bs.end_date >= CURRENT_DATE)
     )
+    AND (
+        -- Check if user has public_results = true
+        EXISTS (
+            SELECT 1
+            FROM "User_detail" ud
+            WHERE ud.id = "PR".user_id
+            AND ud.public_results = true
+        )
     AND (
         -- Regular members can see public PRs if they share at least one box
         EXISTS (
