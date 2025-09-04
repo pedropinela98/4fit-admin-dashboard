@@ -10,6 +10,8 @@
 -- - No UPDATE/DELETE allowed (historical data immutable)
 -- ===============================================
 
+SET search_path TO public;
+
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "pr_history_own_access" ON "PR_History";
 DROP POLICY IF EXISTS "pr_history_staff_always_access" ON "PR_History";

@@ -12,6 +12,8 @@
 -- - Strict role hierarchy enforcement
 -- ===============================================
 
+SET search_path TO public;
+
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "box_staff_super_admin_read" ON "Box_Staff";
 DROP POLICY IF EXISTS "box_staff_box_admin_read" ON "Box_Staff";
@@ -110,7 +112,7 @@ WITH CHECK (
             role IN ('coach', 'receptionist')
             OR
             -- Can update existing admin records but not change role to super_admin
-            (role = 'admin' AND role = OLD.role)
+            (role = 'admin')
         )
     )
 );

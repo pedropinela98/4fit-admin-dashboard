@@ -9,6 +9,8 @@
 -- - Room management restricted to box context
 -- ===============================================
 
+SET search_path TO public;
+
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "room_box_members_staff_read" ON "Room";
 DROP POLICY IF EXISTS "room_super_admin_read_all" ON "Room";

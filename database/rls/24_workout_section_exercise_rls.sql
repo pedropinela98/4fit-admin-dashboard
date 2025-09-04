@@ -9,6 +9,8 @@
 -- - Box isolation through parent Workout relationship
 -- ===============================================
 
+SET search_path TO public;
+
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "workout_section_exercise_box_members_only" ON "Workout_Section_Exercise";
 DROP POLICY IF EXISTS "workout_section_exercise_staff_insert" ON "Workout_Section_Exercise";
@@ -32,17 +34,18 @@ USING (
         SELECT 1
         FROM "Workout_Section" ws
         INNER JOIN "Workout" w ON w.id = ws.workout_id
-        WHERE ws.id = "Workout_Section_Exercise".workout_section_id
+        INNER JOIN "Class" c ON c.id = w.class_id
+        WHERE ws.id = "Workout_Section_Exercise".section_id
         AND (
             -- Only active box members can see workout section exercises
-            is_box_member(w.box_id)
+            is_box_member(c.box_id)
             OR
             -- Box staff can see workout section exercises
             EXISTS (
                 SELECT 1
                 FROM "Box_Staff" bs
                 WHERE bs.user_id = auth.uid()
-                AND bs.box_id = w.box_id
+                AND bs.box_id = c.box_id
                 AND (bs.end_date IS NULL OR bs.end_date >= CURRENT_DATE)
             )
         )
@@ -63,8 +66,9 @@ WITH CHECK (
         SELECT 1
         FROM "Workout_Section" ws
         INNER JOIN "Workout" w ON w.id = ws.workout_id
-        INNER JOIN "Box_Staff" bs ON bs.box_id = w.box_id
-        WHERE ws.id = "Workout_Section_Exercise".workout_section_id
+        INNER JOIN "Class" c ON c.id = w.class_id
+        INNER JOIN "Box_Staff" bs ON bs.box_id = c.box_id
+        WHERE ws.id = "Workout_Section_Exercise".section_id
         AND bs.user_id = auth.uid()
         AND bs.role IN ('admin', 'coach', 'super_admin')
         AND (bs.end_date IS NULL OR bs.end_date >= CURRENT_DATE)
@@ -85,8 +89,9 @@ USING (
         SELECT 1
         FROM "Workout_Section" ws
         INNER JOIN "Workout" w ON w.id = ws.workout_id
-        INNER JOIN "Box_Staff" bs ON bs.box_id = w.box_id
-        WHERE ws.id = "Workout_Section_Exercise".workout_section_id
+        INNER JOIN "Class" c ON c.id = w.class_id
+        INNER JOIN "Box_Staff" bs ON bs.box_id = c.box_id
+        WHERE ws.id = "Workout_Section_Exercise".section_id
         AND bs.user_id = auth.uid()
         AND bs.role IN ('admin', 'coach', 'super_admin')
         AND (bs.end_date IS NULL OR bs.end_date >= CURRENT_DATE)
@@ -101,8 +106,9 @@ WITH CHECK (
         SELECT 1
         FROM "Workout_Section" ws
         INNER JOIN "Workout" w ON w.id = ws.workout_id
-        INNER JOIN "Box_Staff" bs ON bs.box_id = w.box_id
-        WHERE ws.id = "Workout_Section_Exercise".workout_section_id
+        INNER JOIN "Class" c ON c.id = w.class_id
+        INNER JOIN "Box_Staff" bs ON bs.box_id = c.box_id
+        WHERE ws.id = "Workout_Section_Exercise".section_id
         AND bs.user_id = auth.uid()
         AND bs.role IN ('admin', 'coach', 'super_admin')
         AND (bs.end_date IS NULL OR bs.end_date >= CURRENT_DATE)
@@ -123,8 +129,9 @@ USING (
         SELECT 1
         FROM "Workout_Section" ws
         INNER JOIN "Workout" w ON w.id = ws.workout_id
-        INNER JOIN "Box_Staff" bs ON bs.box_id = w.box_id
-        WHERE ws.id = "Workout_Section_Exercise".workout_section_id
+        INNER JOIN "Class" c ON c.id = w.class_id
+        INNER JOIN "Box_Staff" bs ON bs.box_id = c.box_id
+        WHERE ws.id = "Workout_Section_Exercise".section_id
         AND bs.user_id = auth.uid()
         AND bs.role IN ('admin', 'coach', 'super_admin')
         AND (bs.end_date IS NULL OR bs.end_date >= CURRENT_DATE)

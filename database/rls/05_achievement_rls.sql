@@ -9,6 +9,8 @@
 -- - Movements are also global resources
 -- ===============================================
 
+SET search_path TO public;
+
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "achievement_read_active" ON "Achievement";
 DROP POLICY IF EXISTS "achievement_super_admin_read" ON "Achievement";

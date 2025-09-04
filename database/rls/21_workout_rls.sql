@@ -10,6 +10,8 @@
 -- - No privacy considerations for workout history
 -- ===============================================
 
+SET search_path TO public;
+
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "workout_box_members_only" ON "Workout";
 DROP POLICY IF EXISTS "workout_staff_insert" ON "Workout";
@@ -28,15 +30,21 @@ USING (
     -- Super admin can see all workouts
     is_super_admin()
     OR
-    -- Only active box members can see workout details
-    is_box_member(box_id)
-    OR
-    -- Box staff can see workout details
+    -- Only active box members can see workout details (through class)
     EXISTS (
         SELECT 1
-        FROM "Box_Staff" bs
-        WHERE bs.user_id = auth.uid()
-        AND bs.box_id = "Workout".box_id
+        FROM "Class" c
+        WHERE c.id = "Workout".class_id
+        AND is_box_member(c.box_id)
+    )
+    OR
+    -- Box staff can see workout details (through class)
+    EXISTS (
+        SELECT 1
+        FROM "Class" c
+        INNER JOIN "Box_Staff" bs ON bs.box_id = c.box_id
+        WHERE c.id = "Workout".class_id
+        AND bs.user_id = auth.uid()
         AND (bs.end_date IS NULL OR bs.end_date >= CURRENT_DATE)
     )
 );
@@ -50,12 +58,13 @@ WITH CHECK (
     -- Super admin can create workouts in any box
     is_super_admin()
     OR
-    -- Box staff except receptionists can create workouts in their boxes
+    -- Box staff except receptionists can create workouts in their boxes (through class)
     EXISTS (
         SELECT 1
-        FROM "Box_Staff" bs
-        WHERE bs.user_id = auth.uid()
-        AND bs.box_id = "Workout".box_id
+        FROM "Class" c
+        INNER JOIN "Box_Staff" bs ON bs.box_id = c.box_id
+        WHERE c.id = "Workout".class_id
+        AND bs.user_id = auth.uid()
         AND bs.role IN ('admin', 'coach', 'super_admin')
         AND (bs.end_date IS NULL OR bs.end_date >= CURRENT_DATE)
     )
@@ -70,12 +79,13 @@ USING (
     -- Super admin has full update access
     is_super_admin()
     OR
-    -- Box staff except receptionists can update workouts in their boxes
+    -- Box staff except receptionists can update workouts in their boxes (through class)
     EXISTS (
         SELECT 1
-        FROM "Box_Staff" bs
-        WHERE bs.user_id = auth.uid()
-        AND bs.box_id = "Workout".box_id
+        FROM "Class" c
+        INNER JOIN "Box_Staff" bs ON bs.box_id = c.box_id
+        WHERE c.id = "Workout".class_id
+        AND bs.user_id = auth.uid()
         AND bs.role IN ('admin', 'coach', 'super_admin')
         AND (bs.end_date IS NULL OR bs.end_date >= CURRENT_DATE)
     )
@@ -84,12 +94,13 @@ WITH CHECK (
     -- Super admin can update anything
     is_super_admin()
     OR
-    -- Box staff except receptionists can update workouts in their boxes
+    -- Box staff except receptionists can update workouts in their boxes (through class)
     EXISTS (
         SELECT 1
-        FROM "Box_Staff" bs
-        WHERE bs.user_id = auth.uid()
-        AND bs.box_id = "Workout".box_id
+        FROM "Class" c
+        INNER JOIN "Box_Staff" bs ON bs.box_id = c.box_id
+        WHERE c.id = "Workout".class_id
+        AND bs.user_id = auth.uid()
         AND bs.role IN ('admin', 'coach', 'super_admin')
         AND (bs.end_date IS NULL OR bs.end_date >= CURRENT_DATE)
     )
@@ -104,12 +115,13 @@ USING (
     -- Super admin can delete any workout
     is_super_admin()
     OR
-    -- Box staff except receptionists can delete workouts in their boxes
+    -- Box staff except receptionists can delete workouts in their boxes (through class)
     EXISTS (
         SELECT 1
-        FROM "Box_Staff" bs
-        WHERE bs.user_id = auth.uid()
-        AND bs.box_id = "Workout".box_id
+        FROM "Class" c
+        INNER JOIN "Box_Staff" bs ON bs.box_id = c.box_id
+        WHERE c.id = "Workout".class_id
+        AND bs.user_id = auth.uid()
         AND bs.role IN ('admin', 'coach', 'super_admin')
         AND (bs.end_date IS NULL OR bs.end_date >= CURRENT_DATE)
     )

@@ -10,6 +10,8 @@
 -- - Likes inherit same box isolation as workout results they're attached to
 -- ===============================================
 
+SET search_path TO public;
+
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "workout_result_like_own_access" ON "Workout_Result_Like";
 DROP POLICY IF EXISTS "workout_result_like_box_public" ON "Workout_Result_Like";
@@ -43,7 +45,7 @@ USING (
             FROM "Workout_Result" wr
             INNER JOIN "Box_Member" bm_result_owner ON bm_result_owner.user_id = wr.user_id
             INNER JOIN "Box_Member" bm_viewer ON bm_viewer.box_id = bm_result_owner.box_id
-            WHERE wr.id = "Workout_Result_Like".workout_result_id
+            WHERE wr.id = "Workout_Result_Like".result_id
             AND bm_viewer.user_id = auth.uid()
             AND bm_result_owner.deleted_at IS NULL
             AND bm_viewer.deleted_at IS NULL
@@ -55,7 +57,7 @@ USING (
             FROM "Workout_Result" wr
             INNER JOIN "Box_Member" bm ON bm.user_id = wr.user_id
             INNER JOIN "Box_Staff" bs ON bs.box_id = bm.box_id
-            WHERE wr.id = "Workout_Result_Like".workout_result_id
+            WHERE wr.id = "Workout_Result_Like".result_id
             AND bs.user_id = auth.uid()
             AND bm.deleted_at IS NULL
             AND (bs.end_date IS NULL OR bs.end_date >= CURRENT_DATE)

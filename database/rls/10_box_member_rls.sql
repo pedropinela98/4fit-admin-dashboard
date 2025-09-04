@@ -9,6 +9,8 @@
 -- - Box admins cannot see soft-deleted members
 -- ===============================================
 
+SET search_path TO public;
+
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "box_member_basic_info_read" ON "Box_Member";
 DROP POLICY IF EXISTS "box_member_staff_sensitive_read" ON "Box_Member";

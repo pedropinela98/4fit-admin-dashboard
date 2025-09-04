@@ -10,6 +10,8 @@
 -- - No special considerations for coaches (same as other staff)
 -- ===============================================
 
+SET search_path TO public;
+
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "workout_result_own_access" ON "Workout_Result";
 DROP POLICY IF EXISTS "workout_result_public_box_members" ON "Workout_Result";

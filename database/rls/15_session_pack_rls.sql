@@ -10,6 +10,8 @@
 -- - Complex visibility rules based on is_active and pack_public flags
 -- ===============================================
 
+SET search_path TO public;
+
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "session_pack_box_members_active" ON "Session_Pack";
 DROP POLICY IF EXISTS "session_pack_non_members_public" ON "Session_Pack";

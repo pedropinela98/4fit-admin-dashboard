@@ -9,6 +9,8 @@
 -- - Time-based visibility: members only see after send_date
 -- ===============================================
 
+SET search_path TO public;
+
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "announcement_members_after_send_date" ON "Announcement";
 DROP POLICY IF EXISTS "announcement_staff_all_active" ON "Announcement";

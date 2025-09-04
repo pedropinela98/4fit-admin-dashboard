@@ -10,6 +10,8 @@
 -- - No additional financial restrictions for now
 -- ===============================================
 
+SET search_path TO public;
+
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "payment_own_access" ON "Payment";
 DROP POLICY IF EXISTS "payment_management_access" ON "Payment";

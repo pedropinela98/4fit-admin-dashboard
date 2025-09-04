@@ -8,6 +8,8 @@
 -- - No public access to user details
 -- ===============================================
 
+SET search_path TO public;
+
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "user_detail_own_profile" ON "User_detail";
 DROP POLICY IF EXISTS "user_detail_staff_access" ON "User_detail";

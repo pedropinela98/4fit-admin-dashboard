@@ -10,6 +10,8 @@
 -- - Complex visibility rules based on is_active and plans_public flags
 -- ===============================================
 
+SET search_path TO public;
+
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "plan_box_members_active" ON "Plan";
 DROP POLICY IF EXISTS "plan_non_members_public" ON "Plan";
@@ -146,6 +148,6 @@ BEGIN
     RAISE NOTICE 'Plan RLS policies created successfully!';
     RAISE NOTICE 'Policies: box_members_active, non_members_public, users_with_inactive_memberships, management_all, admin_insert, admin_update';
     RAISE NOTICE 'COMPLEX VISIBILITY: Active plans visible to box members, public plans to non-members';
-    RAISES NOTICE 'INACTIVE PLANS: Only visible to current users and management staff';
+    RAISE NOTICE 'INACTIVE PLANS: Only visible to current users and management staff';
     RAISE NOTICE 'MANAGEMENT: Only super admins and box admins can create/modify plans';
 END $$;

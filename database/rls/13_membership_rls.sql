@@ -9,6 +9,8 @@
 -- - Auto-deactivation based on Box.payment_grace_days setting
 -- ===============================================
 
+SET search_path TO public;
+
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "membership_own_read" ON "Membership";
 DROP POLICY IF EXISTS "membership_staff_basic_read" ON "Membership";

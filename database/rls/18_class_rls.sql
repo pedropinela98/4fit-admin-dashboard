@@ -9,6 +9,8 @@
 -- - Strict box isolation - users only see classes from boxes they belong to
 -- ===============================================
 
+SET search_path TO public;
+
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "class_box_users_all" ON "Class";
 DROP POLICY IF EXISTS "class_staff_insert" ON "Class";

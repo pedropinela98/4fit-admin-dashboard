@@ -10,6 +10,8 @@
 -- - No UPDATE/DELETE allowed (achievement records immutable)
 -- ===============================================
 
+SET search_path TO public;
+
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "achievement_unlocked_own_access" ON "Achievement_Unlocked";
 DROP POLICY IF EXISTS "achievement_unlocked_staff_always_access" ON "Achievement_Unlocked";

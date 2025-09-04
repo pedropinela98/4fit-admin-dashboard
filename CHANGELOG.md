@@ -149,11 +149,29 @@ All notable changes to this CrossFit Box Management Dashboard will be documented
   - **Schema Synchronization**: Updated SQL schema, DBML documentation, and test data files
   - **Migration Ready**: Created `remove_public_columns_migration.sql` for Supabase deployment
 
+### Session_Usage_Audit RLS Implementation (2025-09-04)
+- **🔐 Admin-only Audit Access** - Implemented `31_session_usage_audit_rls.sql` with sophisticated access control
+  - **Coach Restriction**: Coaches explicitly excluded from session usage audit data
+  - **Suspicious Entry Security**: Only admins/super_admins can see entries marked `is_suspicious = true`
+  - **Performance Optimization**: 12-month visibility window prevents full table scans on large audit data
+  - **User Access Restriction**: Users cannot see their own audit entries (staff oversight only)
+  - **Box Isolation**: Via User_Session_Pack → Session_Pack → box_id relationship chain
+  - **Immutable Design**: INSERT-only audit table with no UPDATE/DELETE policies
+
+### RLS Policy Fixes
+- **Column Name Corrections**: Fixed multiple RLS files with incorrect column references
+  - `workout_section_id → section_id` in Workout_Section_Exercise table
+  - `workout_result_id → result_id` in Workout_Result_Like table  
+  - `is_active → active` in Discount table
+- **Relationship Chain Updates**: Updated Workout-related policies to use correct Class table relationships
+- **Discount Model Redesign**: Changed from box-isolated to global read-only access pattern
+
 ### Deployment Ready
-- ✅ All 30 RLS policy files ready for Supabase execution
+- ✅ All 31 RLS policy files ready for Supabase execution (including Session_Usage_Audit)
 - ✅ Database schema updated with new audit tables and columns  
 - ✅ DBML documentation synchronized with SQL schema
 - ✅ Schema cleanup migration ready for deployment
+- ✅ Column name validation and relationship fixes completed
 - ✅ Comprehensive security testing and validation completed
 
 ---

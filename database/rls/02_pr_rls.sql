@@ -9,6 +9,8 @@
 -- - Super admins have full access
 -- ===============================================
 
+SET search_path TO public;
+
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "pr_own_access" ON "PR";
 DROP POLICY IF EXISTS "pr_public_to_members" ON "PR";
@@ -79,6 +81,7 @@ USING (
             WHERE ud.id = "PR".user_id
             AND ud.public_results = true
         )
+    )
     AND (
         -- Regular members can see public PRs if they share at least one box
         EXISTS (

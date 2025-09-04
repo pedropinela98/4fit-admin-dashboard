@@ -10,6 +10,8 @@
 -- - Only system and super admin can manage waitlist (add/remove entries)
 -- ===============================================
 
+SET search_path TO public;
+
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "class_waitlist_box_visibility" ON "Class_Waitlist";
 DROP POLICY IF EXISTS "class_waitlist_own_access" ON "Class_Waitlist";

@@ -9,6 +9,8 @@
 -- - No UPDATE/DELETE allowed (historical data immutable)
 -- ===============================================
 
+SET search_path TO public;
+
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "weight_history_own_access" ON "Weight_History";
 DROP POLICY IF EXISTS "weight_history_own_insert" ON "Weight_History";

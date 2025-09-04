@@ -59,6 +59,7 @@ TABLE IMPLEMENTATION STATUS:
 [✓] Discount - COMPLETED - Box isolation + Staff only except coaches + Active filter + Management staff create/edit + Financial security + Coach restriction
 [✓] Applied_Discount - COMPLETED - Own access + Staff except coaches + Box isolation + Staff management + Financial security + Coach restriction + Audit preserved
 [✓] Expense - COMPLETED - Box isolation + Staff only except coaches + Stricter than payments + Management create/edit + Highly restricted business data + Audit preserved
+[✓] Session_Usage_Audit - COMPLETED - Admin-only audit access + Coach restriction + Suspicious entry security + 12-month performance window + User restriction + Box isolation + Immutable audit
 
 POLICY IMPLEMENTATION NOTES:
 ============================

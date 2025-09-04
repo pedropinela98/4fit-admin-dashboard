@@ -10,6 +10,8 @@
 -- - Any box staff can mark/update attendance (present/no_show/cancelled)
 -- ===============================================
 
+SET search_path TO public;
+
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "class_attendance_box_visibility" ON "Class_Attendance";
 DROP POLICY IF EXISTS "class_attendance_own_access" ON "Class_Attendance";

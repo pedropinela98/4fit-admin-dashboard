@@ -10,6 +10,8 @@
 -- - Processed requests hidden from regular users, visible to admin+ for audit
 -- ===============================================
 
+SET search_path TO public;
+
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "membership_request_own_read" ON "Box_Membership_Request";
 DROP POLICY IF EXISTS "membership_request_non_coach_staff_read" ON "Box_Membership_Request";

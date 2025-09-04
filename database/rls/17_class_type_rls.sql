@@ -9,6 +9,8 @@
 -- - Coaches can see all class types in their boxes
 -- ===============================================
 
+SET search_path TO public;
+
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "class_type_box_users_active" ON "Class_Type";
 DROP POLICY IF EXISTS "class_type_management_all" ON "Class_Type";

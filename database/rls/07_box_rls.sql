@@ -9,6 +9,8 @@
 -- - Box admins cannot modify box information (only manage staff/members)
 -- ===============================================
 
+SET search_path TO public;
+
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "box_read_active_authenticated" ON "Box";
 DROP POLICY IF EXISTS "box_super_admin_read_all" ON "Box";

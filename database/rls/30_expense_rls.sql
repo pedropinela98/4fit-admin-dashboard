@@ -10,6 +10,8 @@
 -- - Internal business data that should be highly restricted
 -- ===============================================
 
+SET search_path TO public;
+
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "expense_management_staff_only" ON "Expense";
 DROP POLICY IF EXISTS "expense_management_staff_insert" ON "Expense";

@@ -10,6 +10,8 @@
 -- - System-managed sessions_used with audit trail (see 00_session_usage_audit_system.sql)
 -- ===============================================
 
+SET search_path TO public;
+
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "user_session_pack_own_access" ON "User_Session_Pack";
 DROP POLICY IF EXISTS "user_session_pack_staff_access" ON "User_Session_Pack";
@@ -122,7 +124,9 @@ USING (
     )
 )
 WITH CHECK (
-    -- Receptionists can only update is_active (other fields must remain unchanged)
+    -- Receptionists can update session packs in their boxes
+    -- Note: Field-level restrictions (only is_active updates) must be enforced at application level
+    -- since RLS cannot compare OLD vs NEW values
     EXISTS (
         SELECT 1
         FROM "Box_Staff" bs
@@ -132,16 +136,6 @@ WITH CHECK (
         AND bs.role = 'receptionist'
         AND (bs.end_date IS NULL OR bs.end_date >= CURRENT_DATE)
     )
-    AND OLD.user_id = NEW.user_id
-    AND OLD.session_pack_id = NEW.session_pack_id
-    AND OLD.sessions_used = NEW.sessions_used
-    AND OLD.purchase_date = NEW.purchase_date
-    AND OLD.expiry_date = NEW.expiry_date
-    AND OLD.payment_status = NEW.payment_status
-    AND OLD.payment_date = NEW.payment_date
-    AND OLD.amount_paid = NEW.amount_paid
-    AND OLD.created_at = NEW.created_at
-    AND OLD.updated_at = NEW.updated_at
 );
 
 -- Policy 6: No DELETE policy (session packs should be deactivated, not deleted)

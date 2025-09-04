@@ -3,6 +3,8 @@
 -- Run this FIRST before any table-specific RLS policies
 -- ===============================================
 
+SET search_path TO public;
+
 -- Function to get current user's role in a specific box
 CREATE OR REPLACE FUNCTION get_user_box_role(box_uuid UUID DEFAULT NULL)
 RETURNS staff_role AS $$

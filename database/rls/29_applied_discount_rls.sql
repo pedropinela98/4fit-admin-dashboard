@@ -10,6 +10,8 @@
 -- - No special audit requirements for tracking discount usage
 -- ===============================================
 
+SET search_path TO public;
+
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "applied_discount_own_access" ON "Applied_Discount";
 DROP POLICY IF EXISTS "applied_discount_staff_access" ON "Applied_Discount";

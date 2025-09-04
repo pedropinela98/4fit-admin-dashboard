@@ -9,6 +9,8 @@
 -- - Similar pattern to Achievement table
 -- ===============================================
 
+SET search_path TO public;
+
 -- Drop existing policies if they exist
 DROP POLICY IF EXISTS "movement_global_read" ON "Movement";
 DROP POLICY IF EXISTS "movement_super_admin_insert" ON "Movement";
