@@ -49,19 +49,16 @@ const navItems: NavItem[] = [
   },
   {
     icon: <CalenderIcon />,
-    name: "Classes",
+    name: "Aulas",
     subItems: [
-      { name: "Schedule", path: "/classes", pro: false },
-      { name: "Add Class", path: "/classes/new", pro: false },
+      { name: "Tipos de aulas", path: "/classes/types", pro: false },
+      { name: "Horário", path: "/classes", pro: false },
     ],
   },
   {
     icon: <ListIcon />,
-    name: "Workouts",
-    subItems: [
-      { name: "All Workouts", path: "/workouts", pro: false },
-      { name: "Create Workout", path: "/workouts/new", pro: false },
-    ],
+    name: "Treinos",
+    subItems: [{ name: "Planeamento Geral", path: "/workouts", pro: false }],
   },
   {
     icon: <UserCircleIcon />,
