@@ -47,19 +47,19 @@ const DEFAULT_RESULT_TYPES: {
   label: string;
   placeholder?: string;
 }[] = [
-  { id: "time", label: "time", placeholder: "mm:ss (ex.: 12:34)" },
-  { id: "reps", label: "reps", placeholder: "nº reps (ex.: 75)" },
-  { id: "weight", label: "weight", placeholder: "peso (ex.: 100 kg)" },
-  { id: "distance", label: "distance", placeholder: "distância (ex.: 5 km)" },
+  { id: "time", label: "Tempo", placeholder: "mm:ss (ex.: 12:34)" },
+  { id: "reps", label: "Reps", placeholder: "nº reps (ex.: 75)" },
+  { id: "weight", label: "Peso", placeholder: "peso (ex.: 100 kg)" },
+  { id: "distance", label: "Distância", placeholder: "distância (ex.: 5 km)" },
   {
     id: "rounds_plus_reps",
-    label: "rounds_plus_reps",
+    label: "Rounds_plus_reps",
     placeholder: "rondas+reps (ex.: 5+12)",
   },
-  { id: "calories", label: "calories", placeholder: "calorias (ex.: 210)" },
+  { id: "calories", label: "calorias", placeholder: "calorias (ex.: 210)" },
   {
     id: "time(max. time)",
-    label: "time(max. time)",
+    label: "Tempo(max. tempo)",
     placeholder: "mm:ss / cap (ex.: 20:00 cap)",
   },
 ];
@@ -137,28 +137,10 @@ export function AssociateResults({
         — {section.label || "Sem título"}
       </h3>
 
-      {/* Notas para o coach */}
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Notas para o coach</label>
-        <textarea
-          className="w-full rounded-lg border px-3 py-2 text-sm"
-          rows={3}
-          placeholder="Escreve aqui notas para o coach…"
-          value={coachNotes}
-          onChange={(e) => setCoachNotes(e.target.value)}
-        />
-      </div>
-
       {/* Adicionar nova associação */}
       <div className="space-y-3 rounded-2xl border p-3">
         <div className="text-sm font-medium">Adicionar resultado</div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-          <input
-            className="rounded-lg border px-3 py-2 text-sm"
-            placeholder="Atleta / Utilizador"
-            value={athlete}
-            onChange={(e) => setAthlete(e.target.value)}
-          />
           <select
             className="rounded-lg border px-3 py-2 text-sm"
             value={workoutType}
@@ -272,6 +254,18 @@ export function AssociateResults({
             ))}
           </div>
         )}
+      </div>
+
+      {/* Notas para o coach */}
+      <div className="flex flex-col gap-2">
+        <label className="text-sm font-medium">Notas para o coach</label>
+        <textarea
+          className="w-full rounded-lg border px-3 py-2 text-sm"
+          rows={3}
+          placeholder="Escreve aqui notas para o coach…"
+          value={coachNotes}
+          onChange={(e) => setCoachNotes(e.target.value)}
+        />
       </div>
 
       <div className="flex justify-end gap-2 pt-2">
