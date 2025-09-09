@@ -776,3 +776,18 @@ span.flatpickr-weekday,
 .simplebar-scrollbar.simplebar-visible:before {
   @apply opacity-100;
 }
+
+/* Dá altura às células para que todo o dia seja alvo de drop */
+.fc .fc-daygrid-day-frame {
+  min-height: 1000px;
+}
+
+.fc .fc-daygrid-day-events {
+  min-height: 1000px; /* altura clicável/droppable lá em baixo */
+  pointer-events: auto; /* garante que recebe o drop */
+}
+
+/* Opcional: se quiseres que o número do dia não “roube” o drop */
+.fc .fc-daygrid-day-top {
+  pointer-events: none;
+}

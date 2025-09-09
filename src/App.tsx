@@ -23,6 +23,8 @@ import MemberForm from "./pages/Members/MemberForm";
 import MemberDetail from "./pages/Members/MemberDetail";
 import BoxList from "./pages/Boxes/BoxList";
 import BoxForm from "./pages/Boxes/BoxForm";
+import WeeklySchedule from "./pages/Classes/WeeklySchedule";
+import Planning from "./pages/Workouts/Planning";
 
 export default function App() {
   return (
@@ -44,6 +46,12 @@ export default function App() {
             <Route path="/boxes" element={<BoxList />} />
             <Route path="/boxes/new" element={<BoxForm />} />
             <Route path="/boxes/:id/edit" element={<BoxForm />} />
+
+            {/* Classes */}
+            <Route path="/classes" element={<WeeklySchedule />} />
+
+            {/* Workouts */}
+            <Route path="/workouts" element={<Planning />} />
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />
