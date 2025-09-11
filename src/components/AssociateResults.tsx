@@ -136,6 +136,9 @@ export function AssociateResults({
 
     let finalValue: string | undefined = undefined;
 
+    console.log(workoutType);
+    console.log(resultType);
+
     if (resultType === "time" || resultType === "time(max. time)") {
       finalValue = `${(minutes || "0").padStart(2, "0")}:${(
         seconds || "0"
@@ -147,7 +150,7 @@ export function AssociateResults({
       resultType === "rounds_plus_reps"
     ) {
       finalValue = "0";
-    } else if (resultType === "weight" && (!exercise || !sets)) {
+    } else if (resultType === "weight" && (!exercise || sets === "")) {
       return;
     }
 
@@ -249,7 +252,7 @@ export function AssociateResults({
                 <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
               </button>
             </PopoverTrigger>
-            <PopoverContent className="w-[300px] p-0">
+            <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 bg-white z-9999999 border shadow-lg">
               <Command>
                 <CommandInput placeholder="Procurar exercício..." />
                 <CommandList>
@@ -259,8 +262,9 @@ export function AssociateResults({
                       <CommandItem
                         key={ex}
                         value={ex}
-                        onSelect={() => {
-                          setExercise(ex);
+                        onSelect={(value) => {
+                          console.log("Selecionado:", value);
+                          setExercise(value);
                           setExerciseOpen(false);
                         }}
                       >
@@ -276,13 +280,14 @@ export function AssociateResults({
           {/* Número de séries */}
           <input
             type="number"
+            min={1}
             className="w-28 rounded-lg border px-3 py-2 text-sm"
             placeholder="Nº séries"
             value={sets}
-            onChange={(e) =>
-              setSets(e.target.value ? Number(e.target.value) : "")
-            }
-            min={1}
+            onChange={(e) => {
+              const value = e.target.value;
+              setSets(value === "" ? "" : Math.max(1, Number(value)));
+            }}
           />
         </div>
       ) : null}
@@ -304,28 +309,42 @@ export function AssociateResults({
         <p className="text-sm text-slate-500">Sem resultados associados.</p>
       ) : (
         <div className="space-y-2">
-          {editList.map((a, idx) => (
-            <div
-              key={idx}
-              className="grid grid-cols-1 md:grid-cols-4 gap-2 items-center rounded-xl border p-2"
-            >
-              <div className="text-sm font-medium">{a.workoutType}</div>
-              <div className="text-sm">
-                {a.resultType === "weight" && a.exercise
-                  ? `${a.exercise} — ${a.sets} séries`
-                  : a.value}
+          {editList.map((a, idx) => {
+            const resultTypeLabel =
+              resultTypes.find((r) => r.id === a.resultType)?.label ??
+              a.resultType;
+
+            let displayValue;
+            if (a.resultType === "weight" && a.exercise) {
+              displayValue = `${a.exercise} — ${a.sets} séries`;
+            } else if (
+              a.resultType === "time" ||
+              a.resultType === "time(max. time)"
+            ) {
+              displayValue = `${resultTypeLabel} - ${a.value ?? "00:00"}`;
+            } else {
+              displayValue = resultTypeLabel;
+            }
+
+            return (
+              <div
+                key={idx}
+                className="grid grid-cols-1 md:grid-cols-4 gap-2 items-center rounded-xl border p-2"
+              >
+                <div className="text-sm font-medium">{a.workoutType}</div>
+                <div className="text-sm">{displayValue}</div>
+                <div className="flex justify-end col-span-2">
+                  <button
+                    onClick={() => handleDeleteAssociation(idx)}
+                    className="px-3 py-2 rounded-full border text-sm hover:bg-slate-50"
+                    title="Remover resultado"
+                  >
+                    🗑️
+                  </button>
+                </div>
               </div>
-              <div className="flex justify-end col-span-2">
-                <button
-                  onClick={() => handleDeleteAssociation(idx)}
-                  className="px-3 py-2 rounded-full border text-sm hover:bg-slate-50"
-                  title="Remover resultado"
-                >
-                  🗑️
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

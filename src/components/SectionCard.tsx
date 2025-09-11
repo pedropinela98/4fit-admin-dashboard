@@ -2,9 +2,9 @@ import React from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { COLOR_PRESETS } from "../consts";
-import { Association, DaySection, ResultType, WorkoutType } from "../types";
-import { Modal } from "../components/ui/modal"; // ajusta o path se preciso
-import { AssociateResults } from "../components/AssociateResults"; // ajusta o path
+import { Association, DaySection } from "../types";
+import { Modal } from "../components/ui/modal";
+import { AssociateResults } from "../components/AssociateResults";
 
 function AutoResizingTextarea({
   value,
@@ -25,7 +25,7 @@ function AutoResizingTextarea({
   return (
     <textarea
       ref={ref}
-      className="w-full rounded-xl border px-3 py-3 sm:py-2 bg-white text-sm sm:text-base min-h-[160px] max-h-[400px] overflow-y-auto resize-none"
+      className="w-full rounded-xl border border-slate-200 dark:border-slate-700 px-3 py-3 sm:py-2 bg-white dark:bg-gray-800 text-sm sm:text-base text-slate-900 dark:text-slate-100 min-h-[160px] max-h-[400px] overflow-y-auto resize-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
       placeholder={placeholder}
       value={value}
       onChange={(e) => onChange(e.target.value)}
@@ -43,7 +43,7 @@ function ColorSelect({
   return (
     <div className="flex items-center gap-2">
       <select
-        className="text-xs sm:text-sm px-2 py-1 rounded-full border bg-white"
+        className="text-xs sm:text-sm px-2 py-1 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-gray-800 text-slate-900 dark:text-slate-100"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         title="Mudar cor da secção"
@@ -58,9 +58,9 @@ function ColorSelect({
         ))}
       </select>
       <div
-        className={`w-4 h-4 rounded-full border ${
+        className={`w-4 h-4 rounded-full border border-slate-300 dark:border-slate-600 ${
           COLOR_PRESETS.find((p) => p.id === value)?.classes ||
-          "bg-white border-slate-300"
+          "bg-white dark:bg-gray-700"
         }`}
         title="Pré-visualização da cor"
       />
@@ -97,6 +97,7 @@ export default function SectionCard({
   const [collapsed, setCollapsed] = React.useState(false);
   const contentRef = React.useRef<HTMLDivElement | null>(null);
   const [maxH, setMaxH] = React.useState<number>(0);
+
   React.useEffect(() => {
     if (contentRef.current) setMaxH(contentRef.current.scrollHeight);
   }, [
@@ -117,27 +118,34 @@ export default function SectionCard({
 
   // Modal (associações)
   const [assocOpen, setAssocOpen] = React.useState(false);
-  const [workoutType, setWorkoutType] =
-    React.useState<WorkoutType>("Individual");
-  const [resultType, setResultType] = React.useState<ResultType>("time");
-  const [value, setValue] = React.useState("");
-  const [coachNotes, setCoachNotes] = React.useState(section.coachNotes || "");
-  const [editList, setEditList] = React.useState<Association[]>(
-    section.associations ?? []
+
+  const [isDark, setIsDark] = React.useState(
+    document.documentElement.classList.contains("dark")
   );
 
   React.useEffect(() => {
-    if (assocOpen) {
-      setCoachNotes(section.coachNotes || "");
-      setEditList(section.associations ?? []);
-    }
-  }, [assocOpen, section.associations, section.coachNotes]);
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => observer.disconnect();
+  }, []);
+  // Determinar classes de cor (light + dark)
+  const preset = COLOR_PRESETS.find((p) => p.classes === section.color);
+  console.log(preset);
+  const colorClasses = isDark
+    ? preset?.darkClasses ?? ""
+    : preset?.classes ?? "";
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`rounded-2xl border shadow-sm p-4 ${section.color} ${
+      className={`rounded-2xl border shadow-sm p-4 ${colorClasses} ${
         isDragging ? "opacity-70" : ""
       }`}
     >
@@ -153,7 +161,7 @@ export default function SectionCard({
             {...listeners}
             {...attributes}
             onClick={(e) => e.stopPropagation()}
-            className="cursor-grab select-none text-slate-500 px-6 py-2 rounded-lg hover:bg-white active:cursor-grabbing touch-none"
+            className="cursor-grab select-none text-slate-500 dark:text-slate-400 px-6 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 active:cursor-grabbing touch-none"
             title="Arrastar secção"
             aria-label="Arrastar secção"
           >
@@ -161,7 +169,7 @@ export default function SectionCard({
           </button>
           <input
             onClick={(e) => e.stopPropagation()}
-            className="bg-transparent outline-none font-semibold text-sm sm:text-base"
+            className="bg-transparent outline-none font-semibold text-sm sm:text-base text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
             value={section.label}
             placeholder={section.isCustom ? "Nome da secção..." : ""}
             autoFocus={section.isCustom && !section.label}
@@ -176,7 +184,7 @@ export default function SectionCard({
           <span
             className={`inline-block transition-transform duration-300 ${
               collapsed ? "" : "rotate-90"
-            }`}
+            } text-slate-600 dark:text-slate-400`}
             aria-hidden
           >
             ▸
@@ -189,13 +197,13 @@ export default function SectionCard({
           />
           <button
             onClick={onSave}
-            className="text-xs sm:text-sm px-2 py-1 rounded-full border hover:bg-white"
+            className="text-xs sm:text-sm px-2 py-1 rounded-full border border-slate-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-slate-800 dark:text-slate-200"
           >
             {buttonLabel}
           </button>
           <button
             onClick={onDelete}
-            className="text-xs sm:text-sm px-2 py-1 rounded-full border hover:bg-white"
+            className="text-xs sm:text-sm px-2 py-1 rounded-full border border-slate-200 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-slate-800 dark:text-slate-200"
           >
             Remover
           </button>
@@ -218,7 +226,7 @@ export default function SectionCard({
           <button
             type="button"
             onClick={() => setAssocOpen(true)}
-            className="inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm hover:bg-white"
+            className="inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-700 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-800 text-slate-700 dark:text-slate-200"
             title={
               section.associations?.length
                 ? "Editar resultados associados"
@@ -230,7 +238,7 @@ export default function SectionCard({
               : "Associar resultados"}
           </button>
           {section.associations?.length ? (
-            <span className="text-xs text-slate-600">
+            <span className="text-xs text-slate-600 dark:text-slate-400">
               {section.associations.length} associado(s)
             </span>
           ) : null}
@@ -241,7 +249,7 @@ export default function SectionCard({
       <Modal
         isOpen={assocOpen}
         onClose={() => setAssocOpen(false)}
-        className="max-w-3xl p-4 sm:p-6"
+        className="max-w-3xl p-4 sm:p-6 bg-white dark:bg-gray-900 text-slate-900 dark:text-slate-100"
       >
         <AssociateResults
           section={section}
