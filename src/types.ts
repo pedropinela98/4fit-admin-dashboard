@@ -21,10 +21,9 @@ export const RESULT_TYPES = [
 export type ResultType = (typeof RESULT_TYPES)[number]["id"];
 
 export type Association = {
-  athlete: string;
   workoutType: WorkoutType;
   resultType: ResultType;
-  value: string;
+  value?: string;
   notes?: string;
 };
 

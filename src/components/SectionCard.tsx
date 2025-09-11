@@ -117,7 +117,6 @@ export default function SectionCard({
 
   // Modal (associações)
   const [assocOpen, setAssocOpen] = React.useState(false);
-  const [athlete, setAthlete] = React.useState("");
   const [workoutType, setWorkoutType] =
     React.useState<WorkoutType>("Individual");
   const [resultType, setResultType] = React.useState<ResultType>("time");
