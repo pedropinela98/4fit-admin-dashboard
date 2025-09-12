@@ -165,7 +165,7 @@ export default function Planning() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-slate-50 dark:bg-gray-900">
+    <div className="min-h-screen w-full dark:bg-gray-900">
       <div className="mb-4">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
           Planeador de treinos
