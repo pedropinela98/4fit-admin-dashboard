@@ -25,6 +25,7 @@ import BoxList from "./pages/Boxes/BoxList";
 import BoxForm from "./pages/Boxes/BoxForm";
 import WeeklySchedule from "./pages/Classes/WeeklySchedule";
 import Planning from "./pages/Workouts/Planning";
+import WeeklyView from "./pages/Workouts/WeeklyView";
 
 export default function App() {
   return (
@@ -52,6 +53,7 @@ export default function App() {
 
             {/* Workouts */}
             <Route path="/workouts" element={<Planning />} />
+            <Route path="/workouts/weeklyview" element={<WeeklyView />} />
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />

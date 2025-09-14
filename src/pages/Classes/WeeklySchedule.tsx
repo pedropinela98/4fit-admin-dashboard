@@ -10,10 +10,6 @@ import type {
 } from "@fullcalendar/core";
 import { Draggable, EventResizeDoneArg } from "@fullcalendar/interaction";
 
-// ==========================
-// Horário Semanal por Sala (Mock) — Dark mode friendly
-// ==========================
-
 const MOCK_ROOMS = [
   { id: "r1", name: "Sala 1" },
   { id: "r2", name: "Sala 2" },

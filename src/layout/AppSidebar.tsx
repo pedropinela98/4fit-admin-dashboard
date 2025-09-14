@@ -58,7 +58,10 @@ const navItems: NavItem[] = [
   {
     icon: <ListIcon />,
     name: "Treinos",
-    subItems: [{ name: "Planeamento Diário", path: "/workouts", pro: false }],
+    subItems: [
+      { name: "Planeamento Diário", path: "/workouts", pro: false },
+      { name: "Planeamento Semanal", path: "/workouts/weeklyview", pro: false },
+    ],
   },
   {
     icon: <UserCircleIcon />,
