@@ -1,54 +1,71 @@
-import { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router';
+import { useState, useEffect } from "react";
+import { Link, useSearchParams } from "react-router";
 import PageMeta from "../../components/common/PageMeta";
 import Button from "../../components/ui/button/Button";
-import { PlusIcon, GridIcon, MoreDotIcon, ListIcon, BoxIcon } from "../../icons";
+import {
+  PlusIcon,
+  GridIcon,
+  MoreDotIcon,
+  ListIcon,
+  BoxIcon,
+} from "../../icons";
 import { useMembers, type Member } from "../../hooks/useMembers";
 import { useBoxes } from "../../hooks/useBoxes";
 
 // Default box ID for initial load
-const DEMO_BOX_ID = '550e8400-e29b-41d4-a716-446655440000';
+const DEMO_BOX_ID = "550e8400-e29b-41d4-a716-446655440000";
 
-type MembershipStatus = 'active' | 'inactive' | 'expired';
+type MembershipStatus = "active" | "inactive" | "expired";
 
 const statusColors = {
-  active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
-  inactive: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
-  expired: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+  active: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+  inactive:
+    "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
+  expired: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
 };
 
 // Helper function to determine membership status
 const getMembershipStatus = (member: Member): MembershipStatus => {
   if (!member.Membership || member.Membership.length === 0) {
-    return 'inactive';
+    return "inactive";
   }
-  
-  const activeMembership = member.Membership.find(m => m.is_active);
+
+  const activeMembership = member.Membership.find((m) => m.is_active);
   if (activeMembership) {
-    return new Date(activeMembership.end_date) > new Date() ? 'active' : 'expired';
+    return new Date(activeMembership.end_date) > new Date()
+      ? "active"
+      : "expired";
   }
-  
-  return 'inactive';
+
+  return "inactive";
 };
 
 // Helper function to get membership type
 const getMembershipType = (member: Member): string => {
-  const activeMembership = member.Membership?.find(m => m.is_active);
-  return activeMembership ? 'Active Plan' : 'No Active Plan';
+  const activeMembership = member.Membership?.find((m) => m.is_active);
+  return activeMembership ? "Active Plan" : "No Active Plan";
 };
 
 export default function MemberList() {
   const [searchParams] = useSearchParams();
-  const [selectedBoxId, setSelectedBoxId] = useState<string>('');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  
+  const [selectedBoxId, setSelectedBoxId] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+
   const { boxes, loading: boxesLoading } = useBoxes();
-  const { members, loading, error, stats, searchMembers, refetch, resetSearch } = useMembers(selectedBoxId);
+  const {
+    members,
+    loading,
+    error,
+    stats,
+    searchMembers,
+    refetch,
+    resetSearch,
+  } = useMembers(selectedBoxId);
 
   // Handle boxId from URL parameter
   useEffect(() => {
-    const boxIdFromUrl = searchParams.get('boxId');
+    const boxIdFromUrl = searchParams.get("boxId");
     if (boxIdFromUrl) {
       setSelectedBoxId(boxIdFromUrl);
     }
@@ -56,10 +73,11 @@ export default function MemberList() {
 
   // Set default box when boxes load (if no URL parameter)
   useEffect(() => {
-    const boxIdFromUrl = searchParams.get('boxId');
+    const boxIdFromUrl = searchParams.get("boxId");
     if (!boxesLoading && boxes.length > 0 && !selectedBoxId && !boxIdFromUrl) {
       // Try to find the demo box first, otherwise use the first box
-      const defaultBox = boxes.find(box => box.id === DEMO_BOX_ID) || boxes[0];
+      const defaultBox =
+        boxes.find((box) => box.id === DEMO_BOX_ID) || boxes[0];
       setSelectedBoxId(defaultBox.id);
     }
   }, [boxes, boxesLoading, selectedBoxId, searchParams]);
@@ -78,8 +96,8 @@ export default function MemberList() {
   }, [searchQuery, searchMembers, resetSearch]);
 
   // Filter members by status
-  const filteredMembers = members.filter(member => {
-    if (statusFilter === 'all') return true;
+  const filteredMembers = members.filter((member) => {
+    if (statusFilter === "all") return true;
     return getMembershipStatus(member) === statusFilter;
   });
 
@@ -87,8 +105,12 @@ export default function MemberList() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="text-red-600 dark:text-red-400 mb-2">Error loading members</div>
-          <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">{error}</div>
+          <div className="text-red-600 dark:text-red-400 mb-2">
+            Error loading members
+          </div>
+          <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            {error}
+          </div>
           <Button onClick={() => refetch()}>Try Again</Button>
         </div>
       </div>
@@ -97,11 +119,8 @@ export default function MemberList() {
 
   return (
     <>
-      <PageMeta
-        title="Members | CrossFit Box Management"
-        description="Manage your CrossFit box members, memberships, and attendance"
-      />
-      
+      <PageMeta title="Membros" description="" />
+
       <div className="space-y-6">
         {/* Header Section - Mobile First */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -113,8 +132,14 @@ export default function MemberList() {
               Manage your gym members and their memberships
             </p>
           </div>
-          
-          <Link to={selectedBoxId ? `/members/new?boxId=${selectedBoxId}` : "/members/new"}>
+
+          <Link
+            to={
+              selectedBoxId
+                ? `/members/new?boxId=${selectedBoxId}`
+                : "/members/new"
+            }
+          >
             <Button className="w-full sm:w-auto" disabled={!selectedBoxId}>
               <PlusIcon className="h-4 w-4 mr-2" />
               Add Member
@@ -136,7 +161,7 @@ export default function MemberList() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            
+
             {/* Box Selection */}
             <div className="flex items-center gap-2 sm:min-w-0 sm:w-auto">
               <BoxIcon className="h-4 w-4 text-gray-400" />
@@ -159,7 +184,7 @@ export default function MemberList() {
                 )}
               </select>
             </div>
-            
+
             {/* Status Filter */}
             <div className="flex items-center gap-2 sm:min-w-0 sm:w-auto">
               <ListIcon className="h-4 w-4 text-gray-400" />
@@ -182,13 +207,19 @@ export default function MemberList() {
           {!selectedBoxId ? (
             <div className="p-8 text-center">
               <BoxIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500 dark:text-gray-400 mb-2">Select a box to view members</p>
-              <p className="text-sm text-gray-400 dark:text-gray-500">Choose a box from the dropdown above to see its members</p>
+              <p className="text-gray-500 dark:text-gray-400 mb-2">
+                Select a box to view members
+              </p>
+              <p className="text-sm text-gray-400 dark:text-gray-500">
+                Choose a box from the dropdown above to see its members
+              </p>
             </div>
           ) : loading ? (
             <div className="p-8 text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-              <p className="text-gray-500 dark:text-gray-400">Loading members...</p>
+              <p className="text-gray-500 dark:text-gray-400">
+                Loading members...
+              </p>
             </div>
           ) : (
             <div>
@@ -197,7 +228,9 @@ export default function MemberList() {
                 {filteredMembers.length === 0 ? (
                   <div className="p-8 text-center">
                     <p className="text-gray-500 dark:text-gray-400">
-                      {searchQuery ? 'No members found matching your search' : 'No members found'}
+                      {searchQuery
+                        ? "No members found matching your search"
+                        : "No members found"}
                     </p>
                     {!searchQuery && selectedBoxId && (
                       <Link to={`/members/new?boxId=${selectedBoxId}`}>
@@ -210,12 +243,12 @@ export default function MemberList() {
                     {filteredMembers.map((member) => {
                       const membershipStatus = getMembershipStatus(member);
                       const membershipType = getMembershipType(member);
-                      
+
                       return (
                         <div key={member.id} className="p-4">
                           <div className="flex items-start justify-between">
                             <div className="flex-1 min-w-0">
-                              <Link 
+                              <Link
                                 to={`/members/${member.id}`}
                                 className="block hover:bg-gray-50 dark:hover:bg-gray-700 -m-2 p-2 rounded"
                               >
@@ -236,18 +269,22 @@ export default function MemberList() {
                               <MoreDotIcon className="h-4 w-4 text-gray-400" />
                             </button>
                           </div>
-                          
+
                           <div className="mt-3 flex flex-wrap items-center gap-2">
-                            <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${statusColors[membershipStatus]}`}>
-                              {membershipStatus.charAt(0).toUpperCase() + membershipStatus.slice(1)}
+                            <span
+                              className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${statusColors[membershipStatus]}`}
+                            >
+                              {membershipStatus.charAt(0).toUpperCase() +
+                                membershipStatus.slice(1)}
                             </span>
                             <span className="text-xs text-gray-600 dark:text-gray-400">
                               {membershipType}
                             </span>
                           </div>
-                          
+
                           <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                            Joined {new Date(member.joined_at).toLocaleDateString()}
+                            Joined{" "}
+                            {new Date(member.joined_at).toLocaleDateString()}
                           </div>
                         </div>
                       );
@@ -285,19 +322,27 @@ export default function MemberList() {
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                       {filteredMembers.length === 0 ? (
                         <tr>
-                          <td colSpan={6} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-                            {searchQuery ? 'No members found matching your search' : 'No members found'}
+                          <td
+                            colSpan={6}
+                            className="px-6 py-8 text-center text-gray-500 dark:text-gray-400"
+                          >
+                            {searchQuery
+                              ? "No members found matching your search"
+                              : "No members found"}
                           </td>
                         </tr>
                       ) : (
                         filteredMembers.map((member) => {
                           const membershipStatus = getMembershipStatus(member);
                           const membershipType = getMembershipType(member);
-                          
+
                           return (
-                            <tr key={member.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <tr
+                              key={member.id}
+                              className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                            >
                               <td className="px-6 py-4">
-                                <Link 
+                                <Link
                                   to={`/members/${member.id}`}
                                   className="block hover:text-blue-600 dark:hover:text-blue-400"
                                 >
@@ -305,26 +350,38 @@ export default function MemberList() {
                                     {member.User_detail.name}
                                   </div>
                                   <div className="text-sm text-gray-500 dark:text-gray-400">
-                                    Joined {new Date(member.joined_at).toLocaleDateString()}
+                                    Joined{" "}
+                                    {new Date(
+                                      member.joined_at
+                                    ).toLocaleDateString()}
                                   </div>
                                 </Link>
                               </td>
                               <td className="px-6 py-4">
-                                <div className="text-sm text-gray-900 dark:text-white">{member.User_detail.email}</div>
+                                <div className="text-sm text-gray-900 dark:text-white">
+                                  {member.User_detail.email}
+                                </div>
                                 {member.User_detail.phone && (
-                                  <div className="text-sm text-gray-500 dark:text-gray-400">{member.User_detail.phone}</div>
+                                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                                    {member.User_detail.phone}
+                                  </div>
                                 )}
                               </td>
                               <td className="px-6 py-4">
-                                <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${statusColors[membershipStatus]}`}>
-                                  {membershipStatus.charAt(0).toUpperCase() + membershipStatus.slice(1)}
+                                <span
+                                  className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${statusColors[membershipStatus]}`}
+                                >
+                                  {membershipStatus.charAt(0).toUpperCase() +
+                                    membershipStatus.slice(1)}
                                 </span>
                               </td>
                               <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
                                 {membershipType}
                               </td>
                               <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                {new Date(member.joined_at).toLocaleDateString()}
+                                {new Date(
+                                  member.joined_at
+                                ).toLocaleDateString()}
                               </td>
                               <td className="px-6 py-4 text-right">
                                 <button className="p-1 hover:bg-gray-100 dark:hover:bg-gray-600 rounded">
@@ -349,25 +406,33 @@ export default function MemberList() {
             <div className="text-lg font-semibold text-gray-900 dark:text-white">
               {stats.total}
             </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">Total Members</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">
+              Total Members
+            </div>
           </div>
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
             <div className="text-lg font-semibold text-green-600 dark:text-green-400">
               {stats.active}
             </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">Active</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">
+              Active
+            </div>
           </div>
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
             <div className="text-lg font-semibold text-yellow-600 dark:text-yellow-400">
               {stats.inactive}
             </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">Inactive</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">
+              Inactive
+            </div>
           </div>
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
             <div className="text-lg font-semibold text-red-600 dark:text-red-400">
               {stats.expired}
             </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">Expired</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">
+              Expired
+            </div>
           </div>
         </div>
       </div>

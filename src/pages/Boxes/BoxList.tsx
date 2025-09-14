@@ -1,9 +1,16 @@
-import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router';
-import { createPortal } from 'react-dom';
+import { useState, useEffect, useRef } from "react";
+import { Link } from "react-router";
+import { createPortal } from "react-dom";
 import PageMeta from "../../components/common/PageMeta";
 import Button from "../../components/ui/button/Button";
-import { PlusIcon, GridIcon, MoreDotIcon, GroupIcon, PencilIcon, TrashBinIcon } from "../../icons";
+import {
+  PlusIcon,
+  GridIcon,
+  MoreDotIcon,
+  GroupIcon,
+  PencilIcon,
+  TrashBinIcon,
+} from "../../icons";
 import { useBoxes, type Box } from "../../hooks/useBoxes";
 
 // Box Actions Dropdown Component
@@ -26,13 +33,16 @@ function BoxActionsDropdown({ box }: { box: Box }) {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (isOpen && !(event.target as Element).closest('[data-dropdown-container]')) {
+      if (
+        isOpen &&
+        !(event.target as Element).closest("[data-dropdown-container]")
+      ) {
         setIsOpen(false);
       }
     };
 
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
   }, [isOpen]);
 
   return (
@@ -49,65 +59,69 @@ function BoxActionsDropdown({ box }: { box: Box }) {
         <MoreDotIcon className="h-4 w-4 text-gray-400" />
       </button>
 
-      {isOpen && createPortal(
-        <>
-          {/* Backdrop */}
-          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-          <div 
-            className="fixed w-48 bg-white dark:bg-gray-800 rounded-md shadow-xl border border-gray-200 dark:border-gray-700 z-50"
-            style={{
-              top: `${dropdownPosition.top}px`,
-              left: `${dropdownPosition.left}px`,
-            }}
-          >
-            <div className="py-1">
-              <Link
-                to={`/members?boxId=${box.id}`}
-                className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                onClick={() => setIsOpen(false)}
-              >
-                <GroupIcon className="h-4 w-4 mr-3" />
-                View Members
-              </Link>
-              <Link
-                to={`/boxes/${box.id}/edit`}
-                className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                onClick={() => setIsOpen(false)}
-              >
-                <PencilIcon className="h-4 w-4 mr-3" />
-                Edit Box
-              </Link>
-              <button
-                className="flex items-center w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-                onClick={() => {
-                  setIsOpen(false);
-                  if (confirm('Are you sure you want to delete this box?')) {
-                    // Handle delete - would call deleteBox function
-                    console.log('Delete box:', box.id);
-                  }
-                }}
-              >
-                <TrashBinIcon className="h-4 w-4 mr-3" />
-                Delete Box
-              </button>
+      {isOpen &&
+        createPortal(
+          <>
+            {/* Backdrop */}
+            <div
+              className="fixed inset-0 z-40"
+              onClick={() => setIsOpen(false)}
+            />
+            <div
+              className="fixed w-48 bg-white dark:bg-gray-800 rounded-md shadow-xl border border-gray-200 dark:border-gray-700 z-50"
+              style={{
+                top: `${dropdownPosition.top}px`,
+                left: `${dropdownPosition.left}px`,
+              }}
+            >
+              <div className="py-1">
+                <Link
+                  to={`/members?boxId=${box.id}`}
+                  className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <GroupIcon className="h-4 w-4 mr-3" />
+                  View Members
+                </Link>
+                <Link
+                  to={`/boxes/${box.id}/edit`}
+                  className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <PencilIcon className="h-4 w-4 mr-3" />
+                  Edit Box
+                </Link>
+                <button
+                  className="flex items-center w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  onClick={() => {
+                    setIsOpen(false);
+                    if (confirm("Are you sure you want to delete this box?")) {
+                      // Handle delete - would call deleteBox function
+                      console.log("Delete box:", box.id);
+                    }
+                  }}
+                >
+                  <TrashBinIcon className="h-4 w-4 mr-3" />
+                  Delete Box
+                </button>
+              </div>
             </div>
-          </div>
-        </>,
-        document.body
-      )}
+          </>,
+          document.body
+        )}
     </>
   );
 }
 
 export default function BoxList() {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const { boxes, loading, error, searchBoxes, refetch } = useBoxes();
 
   // Handle search with debouncing
   useEffect(() => {
     // Only trigger search when there's an actual search query
     if (!searchQuery.trim()) return;
-    
+
     const timeoutId = setTimeout(() => {
       searchBoxes(searchQuery);
     }, 300);
@@ -119,8 +133,12 @@ export default function BoxList() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="text-red-600 dark:text-red-400 mb-2">Error loading boxes</div>
-          <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">{error}</div>
+          <div className="text-red-600 dark:text-red-400 mb-2">
+            Error loading boxes
+          </div>
+          <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            {error}
+          </div>
           <Button onClick={() => refetch()}>Try Again</Button>
         </div>
       </div>
@@ -129,11 +147,8 @@ export default function BoxList() {
 
   return (
     <>
-      <PageMeta
-        title="Boxes | CrossFit Box Management"
-        description="Manage your CrossFit boxes and locations"
-      />
-      
+      <PageMeta title="Boxes | Box Management" description="" />
+
       <div className="space-y-6">
         {/* Header Section - Mobile First */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -145,7 +160,7 @@ export default function BoxList() {
               Manage your CrossFit boxes and locations
             </p>
           </div>
-          
+
           <Link to="/boxes/new">
             <Button className="w-full sm:w-auto">
               <PlusIcon className="h-4 w-4 mr-2" />
@@ -173,7 +188,9 @@ export default function BoxList() {
           {loading ? (
             <div className="p-8 text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-              <p className="text-gray-500 dark:text-gray-400">Loading boxes...</p>
+              <p className="text-gray-500 dark:text-gray-400">
+                Loading boxes...
+              </p>
             </div>
           ) : (
             <div>
@@ -182,7 +199,9 @@ export default function BoxList() {
                 {boxes.length === 0 ? (
                   <div className="p-8 text-center">
                     <p className="text-gray-500 dark:text-gray-400">
-                      {searchQuery ? 'No boxes found matching your search' : 'No boxes found'}
+                      {searchQuery
+                        ? "No boxes found matching your search"
+                        : "No boxes found"}
                     </p>
                     {!searchQuery && (
                       <Link to="/boxes/new">
@@ -196,7 +215,7 @@ export default function BoxList() {
                       <div key={box.id} className="p-4">
                         <div className="flex items-start justify-between">
                           <div className="flex-1 min-w-0">
-                            <Link 
+                            <Link
                               to={`/boxes/${box.id}`}
                               className="block hover:bg-gray-50 dark:hover:bg-gray-700 -m-2 p-2 rounded"
                             >
@@ -212,19 +231,22 @@ export default function BoxList() {
                             </Link>
                           </div>
                           <div className="flex items-center gap-2 ml-2">
-                            <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                              box.active 
-                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-                                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-                            }`}>
-                              {box.active ? 'Active' : 'Inactive'}
+                            <span
+                              className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                                box.active
+                                  ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                                  : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+                              }`}
+                            >
+                              {box.active ? "Active" : "Inactive"}
                             </span>
                             <BoxActionsDropdown box={box} />
                           </div>
                         </div>
-                        
+
                         <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                          Created {new Date(box.created_at).toLocaleDateString()}
+                          Created{" "}
+                          {new Date(box.created_at).toLocaleDateString()}
                         </div>
                       </div>
                     ))}
@@ -264,15 +286,23 @@ export default function BoxList() {
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                       {boxes.length === 0 ? (
                         <tr>
-                          <td colSpan={7} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-                            {searchQuery ? 'No boxes found matching your search' : 'No boxes found'}
+                          <td
+                            colSpan={7}
+                            className="px-6 py-8 text-center text-gray-500 dark:text-gray-400"
+                          >
+                            {searchQuery
+                              ? "No boxes found matching your search"
+                              : "No boxes found"}
                           </td>
                         </tr>
                       ) : (
                         boxes.map((box) => (
-                          <tr key={box.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                          <tr
+                            key={box.id}
+                            className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                          >
                             <td className="px-6 py-4">
-                              <Link 
+                              <Link
                                 to={`/boxes/${box.id}`}
                                 className="block hover:text-blue-600 dark:hover:text-blue-400"
                               >
@@ -291,12 +321,14 @@ export default function BoxList() {
                               {box.currency}
                             </td>
                             <td className="px-6 py-4">
-                              <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                                box.active 
-                                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-                                  : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-                              }`}>
-                                {box.active ? 'Active' : 'Inactive'}
+                              <span
+                                className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                                  box.active
+                                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                                    : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+                                }`}
+                              >
+                                {box.active ? "Active" : "Inactive"}
                               </span>
                             </td>
                             <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
@@ -322,19 +354,25 @@ export default function BoxList() {
             <div className="text-lg font-semibold text-gray-900 dark:text-white">
               {boxes.length}
             </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">Total Boxes</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">
+              Total Boxes
+            </div>
           </div>
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
             <div className="text-lg font-semibold text-green-600 dark:text-green-400">
-              {boxes.filter(box => box.active).length}
+              {boxes.filter((box) => box.active).length}
             </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">Active Boxes</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">
+              Active Boxes
+            </div>
           </div>
           <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
             <div className="text-lg font-semibold text-red-600 dark:text-red-400">
-              {boxes.filter(box => !box.active).length}
+              {boxes.filter((box) => !box.active).length}
             </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400">Inactive Boxes</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">
+              Inactive Boxes
+            </div>
           </div>
         </div>
       </div>
