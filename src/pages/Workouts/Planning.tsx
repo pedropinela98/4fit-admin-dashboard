@@ -202,9 +202,10 @@ export default function Planning() {
         collisionDetection={pointerWithin}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex flex-col md:flex-row gap-6">
+        {/* MOBILE → scroll horizontal / DESKTOP → normal */}
+        <div className="flex flex-row overflow-x-auto md:overflow-visible md:flex-row gap-6">
           {/* ESQUERDA - Paletas */}
-          <aside className="space-y-4 md:w-[300px] md:flex-none">
+          <aside className="space-y-4 w-[280px] md:w-[300px] md:flex-none shrink-0">
             {/* Paleta de Secções */}
             <div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-gray-800 p-4 shadow-sm dark:shadow-none">
               <h2 className="font-medium mb-3 text-slate-800 dark:text-slate-100">
@@ -250,7 +251,7 @@ export default function Planning() {
           </aside>
 
           {/* DIREITA - Dia */}
-          <main className="flex-1">
+          <main className="flex-1 min-w-[400px] md:min-w-0">
             <DayBoard
               sections={sections}
               onSectionsChange={setSections}
