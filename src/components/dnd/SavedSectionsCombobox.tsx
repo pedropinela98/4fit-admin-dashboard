@@ -2,6 +2,7 @@ import React, { useMemo, useState, useRef, useEffect } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { SavedSection } from "../../types";
+import { COLOR_PRESETS } from "../../consts";
 
 /** Card arrastável para uma secção guardada */
 function SortableSavedCard({
@@ -49,6 +50,20 @@ export default function SavedSectionsCombobox({ items, onDeleteOne }: Props) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const [isDark, setIsDark] = useState(
+    document.documentElement.classList.contains("dark")
+  );
+  useEffect(() => {
+    const obs = new MutationObserver(() =>
+      setIsDark(document.documentElement.classList.contains("dark"))
+    );
+    obs.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => obs.disconnect();
+  }, []);
 
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
@@ -100,43 +115,50 @@ export default function SavedSectionsCombobox({ items, onDeleteOne }: Props) {
 
       {open && filtered.length > 0 && (
         <div className="absolute z-10 mt-1 max-h-72 w-full overflow-auto rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-gray-800 shadow dark:shadow-none p-2 space-y-2">
-          {filtered.map((s) => (
-            <div key={s.id} className="relative group">
-              <SortableSavedCard id={s.id}>
-                <div
-                  className={`flex items-center justify-between ${s.color} px-3 py-2 rounded-xl border dark:border-slate-700`}
-                >
-                  <div className="min-w-0">
-                    <div className="font-medium text-sm truncate text-black">
-                      {s.label || "Sem título"}
-                    </div>
-                    {s.text ? (
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                        {s.text}
+          {filtered.map((s) => {
+            const preset = COLOR_PRESETS.find((p) => p.classes === s.color);
+            const colorClasses = isDark
+              ? preset?.darkClasses ?? ""
+              : preset?.classes ?? "";
+
+            return (
+              <div key={s.id} className="relative group">
+                <SortableSavedCard id={s.id}>
+                  <div
+                    className={`flex items-center justify-between ${colorClasses} px-3 py-2 rounded-xl border dark:border-slate-700`}
+                  >
+                    <div className="min-w-0">
+                      <div className="font-medium text-sm truncate text-black dark:text-white">
+                        {s.label || "Sem título"}
                       </div>
-                    ) : null}
+                      {s.text ? (
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                          {s.text}
+                        </div>
+                      ) : null}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {(s.associations?.length ?? 0) > 0 && (
+                        <span className="text-[10px] text-blue-600 dark:text-blue-400">
+                          {s.associations!.length} res.
+                        </span>
+                      )}
+                      <button
+                        className="text-xs px-2 py-1 rounded border border-slate-300 dark:border-slate-600 hover:bg-white dark:hover:bg-gray-700 text-slate-700 dark:text-slate-200"
+                        title="Eliminar guardada"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDeleteOne(s.id);
+                        }}
+                      >
+                        🗑️
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    {(s.associations?.length ?? 0) > 0 && (
-                      <span className="text-[10px] text-blue-600 dark:text-blue-400">
-                        {s.associations!.length} res.
-                      </span>
-                    )}
-                    <button
-                      className="text-xs px-2 py-1 rounded border border-slate-300 dark:border-slate-600 hover:bg-white dark:hover:bg-gray-700 text-slate-700 dark:text-slate-200"
-                      title="Eliminar guardada"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDeleteOne(s.id);
-                      }}
-                    >
-                      🗑️
-                    </button>
-                  </div>
-                </div>
-              </SortableSavedCard>
-            </div>
-          ))}
+                </SortableSavedCard>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

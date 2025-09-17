@@ -6,9 +6,7 @@ import {
   TouchSensor,
   useSensor,
   useSensors,
-  rectIntersection,
   pointerWithin,
-  closestCenter,
 } from "@dnd-kit/core";
 import { arrayMove, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -16,18 +14,18 @@ import { v4 as uuid } from "uuid";
 
 import DayBoard from "../../components/DayBoard";
 import { DaySection, SavedSection } from "../../types";
-import { SECTION_TEMPLATES } from "../../consts";
+import { SECTION_TEMPLATES, COLOR_PRESETS } from "../../consts";
 import SavedSectionsCombobox from "../../components/dnd/SavedSectionsCombobox";
 
 /** Card arrastável da paleta (com suporte a tema) */
 function PaletteCard({
   id,
   label,
-  classes,
+  color,
 }: {
   id: string;
   label: string;
-  classes: string;
+  color: string;
 }) {
   const {
     attributes,
@@ -43,6 +41,26 @@ function PaletteCard({
     transition,
   } as React.CSSProperties;
 
+  // detectar tema dark
+  const [isDark, setIsDark] = React.useState(
+    document.documentElement.classList.contains("dark")
+  );
+  React.useEffect(() => {
+    const obs = new MutationObserver(() =>
+      setIsDark(document.documentElement.classList.contains("dark"))
+    );
+    obs.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => obs.disconnect();
+  }, []);
+
+  const preset = COLOR_PRESETS.find((p) => p.classes === color);
+  const colorClasses = isDark
+    ? preset?.darkClasses ?? ""
+    : preset?.classes ?? "";
+
   return (
     <div
       ref={setNodeRef}
@@ -54,11 +72,13 @@ function PaletteCard({
       }`}
     >
       <div
-        className={`flex items-center justify-between ${classes} px-3 py-2 rounded-xl border dark:border-slate-700`}
+        className={`flex items-center justify-between ${colorClasses} px-3 py-2 rounded-xl border dark:border-slate-700`}
       >
-        <span className="font-medium text-sm text-black">{label}</span>
-        <span className="text-xs text-slate-500 dark:text-black">
-          arraste →
+        <span className="font-medium text-sm text-black dark:text-white">
+          {label}
+        </span>
+        <span className="text-xs text-slate-500 dark:text-white">
+          arrasta →
         </span>
       </div>
     </div>
@@ -196,7 +216,7 @@ export default function Planning() {
                     key={tpl.id}
                     id={tpl.id}
                     label={tpl.label}
-                    classes={tpl.color}
+                    color={tpl.color}
                   />
                 ))}
               </div>
