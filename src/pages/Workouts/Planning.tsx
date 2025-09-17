@@ -6,6 +6,8 @@ import {
   TouchSensor,
   useSensor,
   useSensors,
+  rectIntersection,
+  pointerWithin,
   closestCenter,
 } from "@dnd-kit/core";
 import { arrayMove, useSortable } from "@dnd-kit/sortable";
@@ -177,7 +179,7 @@ export default function Planning() {
 
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCenter}
+        collisionDetection={pointerWithin}
         onDragEnd={handleDragEnd}
       >
         <div className="flex flex-col md:flex-row gap-6">

@@ -201,7 +201,7 @@ export function AssociateResults({
             Tipo de treino
           </option>
           {workoutTypes.map((t) => (
-            <option key={t} value={t}>
+            <option key={t} value={t} className="text-black bg-white">
               {t}
             </option>
           ))}
@@ -216,7 +216,7 @@ export function AssociateResults({
             Tipo de resultado
           </option>
           {resultTypes.map((r) => (
-            <option key={r.id} value={r.id}>
+            <option key={r.id} value={r.id} className="text-black bg-white">
               {r.label}
             </option>
           ))}

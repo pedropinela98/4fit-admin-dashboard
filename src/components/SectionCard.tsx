@@ -2,7 +2,7 @@ import React from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { COLOR_PRESETS } from "../consts";
-import { Association, DaySection } from "../types";
+import { DaySection } from "../types";
 import { Modal } from "../components/ui/modal";
 import { AssociateResults } from "../components/AssociateResults";
 
@@ -136,7 +136,6 @@ export default function SectionCard({
   }, []);
   // Determinar classes de cor (light + dark)
   const preset = COLOR_PRESETS.find((p) => p.classes === section.color);
-  console.log(preset);
   const colorClasses = isDark
     ? preset?.darkClasses ?? ""
     : preset?.classes ?? "";
@@ -151,36 +150,33 @@ export default function SectionCard({
     >
       {/* HEADER */}
       <div
-        className="flex items-center justify-between mb-3 cursor-pointer select-none"
+        className="flex flex-wrap items-center justify-between gap-2 mb-3 cursor-pointer select-none"
         onClick={() => setCollapsed((v) => !v)}
         title={collapsed ? "Expandir" : "Recolher"}
       >
-        <div className="flex items-center gap-2">
+        {/* ESQUERDA - Arrastar + Input + Seta */}
+        <div className="flex items-center gap-2 min-w-fit max-w-fit flex-1">
           <button
             ref={setActivatorNodeRef}
             {...listeners}
             {...attributes}
             onClick={(e) => e.stopPropagation()}
-            className="cursor-grab select-none text-slate-500 dark:text-slate-400 px-6 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 active:cursor-grabbing touch-none"
+            className="cursor-grab select-none text-slate-500 dark:text-slate-400 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 active:cursor-grabbing touch-none"
             title="Arrastar secção"
             aria-label="Arrastar secção"
           >
             ↕
           </button>
+
           <input
             onClick={(e) => e.stopPropagation()}
-            className="bg-transparent outline-none font-semibold text-sm sm:text-base text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+            className="bg-transparent outline-none font-semibold text-sm sm:text-base text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 min-w-fit max-w-fit w-fit"
             value={section.label}
             placeholder={section.isCustom ? "Nome da secção..." : ""}
             autoFocus={section.isCustom && !section.label}
             onChange={(e) => onChange({ ...section, label: e.target.value })}
           />
-        </div>
 
-        <div
-          className="flex items-center gap-2"
-          onClick={(e) => e.stopPropagation()}
-        >
           <span
             className={`inline-block transition-transform duration-300 ${
               collapsed ? "" : "rotate-90"
@@ -189,6 +185,13 @@ export default function SectionCard({
           >
             ▸
           </span>
+        </div>
+
+        {/* DIREITA - Seletor de cor + Botões (quebra para baixo se faltar espaço) */}
+        <div
+          className="flex flex-wrap gap-2 items-center justify-end w-full sm:w-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
           <ColorSelect
             value={
               COLOR_PRESETS.find((c) => c.classes === section.color)?.id || ""
