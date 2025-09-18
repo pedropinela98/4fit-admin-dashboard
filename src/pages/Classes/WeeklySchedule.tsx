@@ -1,14 +1,17 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import interactionPlugin from "@fullcalendar/interaction";
+import interactionPlugin, {
+  Draggable,
+  EventResizeDoneArg,
+} from "@fullcalendar/interaction";
 import ptLocale from "@fullcalendar/core/locales/pt";
+import { Modal } from "../../components/ui/modal/index";
 import type {
   EventInput,
   DateSelectArg,
   EventDropArg,
 } from "@fullcalendar/core";
-import { Draggable, EventResizeDoneArg } from "@fullcalendar/interaction";
 
 const MOCK_ROOMS = [
   { id: "r1", name: "Sala 1" },
@@ -82,7 +85,7 @@ function generateMockEvents(roomId: string): EventInput[] {
   ];
 }
 
-export default function HorarioSemanalPorSalaMock() {
+export default function WeeklySchedule() {
   const [rooms] = useState(MOCK_ROOMS);
   const [classTypes] = useState(MOCK_CLASS_TYPES);
   const [coaches] = useState(MOCK_COACHES);
@@ -113,6 +116,26 @@ export default function HorarioSemanalPorSalaMock() {
       },
     });
     return () => draggable.destroy();
+  }, []);
+
+  // 🔑 Calendar Ref + ResizeObserver
+  const calendarRef = useRef<FullCalendar>(null);
+  useEffect(() => {
+    const container = document.querySelector("#calendar-container");
+    if (!container) return;
+
+    const observer = new ResizeObserver(() => {
+      const api = calendarRef.current?.getApi();
+      if (api) {
+        const currentDate = api.getDate();
+        const currentView = api.view.type;
+        api.updateSize();
+        api.changeView(currentView, currentDate);
+      }
+    });
+
+    observer.observe(container);
+    return () => observer.disconnect();
   }, []);
 
   // Criar
@@ -323,7 +346,7 @@ export default function HorarioSemanalPorSalaMock() {
           </p>
         </div>
 
-        {/* DROPDOWN (dark-ready: fundo transparente + borda clara) */}
+        {/* Dropdown */}
         <div className="flex items-center gap-3">
           <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
             Sala:
@@ -378,8 +401,12 @@ export default function HorarioSemanalPorSalaMock() {
 
         {/* Calendário */}
         <div className="col-span-12 xl:col-span-9">
-          <div className="bg-white dark:bg-transparent border border-gray-200 dark:border-gray-700 rounded-2xl p-4 shadow-sm transition-colors">
+          <div
+            id="calendar-container"
+            className="bg-white dark:bg-transparent border border-gray-200 dark:border-gray-700 rounded-2xl p-4 shadow-sm transition-colors"
+          >
             <FullCalendar
+              ref={calendarRef}
               locale={ptLocale}
               plugins={[timeGridPlugin, interactionPlugin]}
               initialView="timeGridWeek"
@@ -408,165 +435,145 @@ export default function HorarioSemanalPorSalaMock() {
         </div>
       </div>
 
-      {/* MODAL CRIAR (dark-ready: fundo transparente + borda) */}
-      {isCreateOpen && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white dark:bg-transparent border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg w-full max-w-md p-6 transition-colors">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-              Seleciona o tipo de aula
-            </h3>
-            <div className="grid grid-cols-2 gap-3">
-              {classTypes.map((ct) => (
-                <button
-                  key={ct.id}
-                  onClick={() => handleCreateFromModal(ct.id)}
-                  className="rounded-md px-3 py-2 text-white"
-                  style={{ backgroundColor: ct.color }}
-                >
-                  {ct.title}
-                </button>
-              ))}
-            </div>
+      {/* Modal Criar */}
+      <Modal
+        isOpen={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+        className="max-w-md p-6"
+      >
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-8">
+          Seleciona o tipo de aula
+        </h3>
+        <div className="grid grid-cols-2 gap-3">
+          {classTypes.map((ct) => (
             <button
-              onClick={() => {
-                setIsCreateOpen(false);
-                setSelectedSlot(null);
-              }}
-              className="mt-5 w-full rounded-md border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              key={ct.id}
+              onClick={() => handleCreateFromModal(ct.id)}
+              className="rounded-md px-3 py-2 text-white"
+              style={{ backgroundColor: ct.color }}
+            >
+              {ct.title}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={() => {
+            setIsCreateOpen(false);
+            setSelectedSlot(null);
+          }}
+          className="mt-5 w-full rounded-md border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        >
+          Cancelar
+        </button>
+      </Modal>
+
+      {/* Modal Editar */}
+      <Modal isOpen={edit.open} onClose={closeEdit} className="max-w-lg p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+          Editar aula
+        </h3>
+        <div className="space-y-4">
+          {/* Título */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Título
+            </label>
+            <input
+              type="text"
+              value={edit.title}
+              onChange={(e) =>
+                setEdit((s) => ({ ...s, title: e.target.value }))
+              }
+              className="w-full rounded-md border border-gray-200 dark:border-gray-700 p-2"
+            />
+          </div>
+
+          {/* Datas */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Início</label>
+              <input
+                type="datetime-local"
+                value={edit.startLocal}
+                onChange={(e) =>
+                  setEdit((s) => ({ ...s, startLocal: e.target.value }))
+                }
+                className="w-full rounded-md border border-gray-200 dark:border-gray-700 p-2"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Fim</label>
+              <input
+                type="datetime-local"
+                value={edit.endLocal}
+                onChange={(e) =>
+                  setEdit((s) => ({ ...s, endLocal: e.target.value }))
+                }
+                className="w-full rounded-md border border-gray-200 dark:border-gray-700 p-2"
+              />
+            </div>
+          </div>
+
+          {/* Coach e Sala */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Coach</label>
+              <select
+                value={edit.coachId}
+                onChange={(e) =>
+                  setEdit((s) => ({ ...s, coachId: e.target.value }))
+                }
+                className="w-full rounded-md border border-gray-200 dark:border-gray-700 p-2"
+              >
+                {coaches.map((c) => (
+                  <option className="text-black" key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Sala</label>
+              <select
+                value={edit.roomId}
+                onChange={(e) =>
+                  setEdit((s) => ({ ...s, roomId: e.target.value }))
+                }
+                className="w-full rounded-md border border-gray-200 dark:border-gray-700 p-2"
+              >
+                {rooms.map((r) => (
+                  <option className="text-black" key={r.id} value={r.id}>
+                    {r.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 flex flex-col-reverse md:flex-row items-stretch md:items-center justify-between gap-3">
+          <button
+            onClick={deleteEdit}
+            className="rounded-md px-4 py-2 border border-red-500 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+          >
+            Eliminar
+          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={closeEdit}
+              className="rounded-md px-4 py-2 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 transition-colors"
             >
               Cancelar
             </button>
+            <button
+              onClick={saveEdit}
+              className="rounded-md px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+            >
+              Guardar alterações
+            </button>
           </div>
         </div>
-      )}
-
-      {/* MODAL EDITAR (dark-ready) */}
-      {edit.open && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white dark:bg-transparent border border-gray-200 dark:border-gray-700 rounded-2xl shadow-lg w-full max-w-lg p-6 transition-colors">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
-              Editar aula
-            </h3>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Título
-                </label>
-                <input
-                  type="text"
-                  value={edit.title}
-                  onChange={(e) =>
-                    setEdit((s) => ({ ...s, title: e.target.value }))
-                  }
-                  className="w-full rounded-md bg-white dark:bg-transparent text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Início
-                  </label>
-                  <input
-                    type="datetime-local"
-                    value={edit.startLocal}
-                    onChange={(e) =>
-                      setEdit((s) => ({ ...s, startLocal: e.target.value }))
-                    }
-                    className="w-full rounded-md bg-white dark:bg-transparent text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Fim
-                  </label>
-                  <input
-                    type="datetime-local"
-                    value={edit.endLocal}
-                    onChange={(e) =>
-                      setEdit((s) => ({ ...s, endLocal: e.target.value }))
-                    }
-                    className="w-full rounded-md bg-white dark:bg-transparent text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Coach
-                  </label>
-                  <select
-                    value={edit.coachId}
-                    onChange={(e) =>
-                      setEdit((s) => ({ ...s, coachId: e.target.value }))
-                    }
-                    className="w-full rounded-md bg-white dark:bg-transparent text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
-                  >
-                    {coaches.map((c) => (
-                      <option
-                        key={c.id}
-                        value={c.id}
-                        className="bg-white dark:bg-gray-900"
-                      >
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Sala
-                  </label>
-                  <select
-                    value={edit.roomId}
-                    onChange={(e) =>
-                      setEdit((s) => ({ ...s, roomId: e.target.value }))
-                    }
-                    className="w-full rounded-md bg-white dark:bg-transparent text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
-                  >
-                    {rooms.map((r) => (
-                      <option
-                        key={r.id}
-                        value={r.id}
-                        className="bg-white dark:bg-gray-900"
-                      >
-                        {r.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-6 flex flex-col-reverse md:flex-row items-stretch md:items-center justify-between gap-3">
-              <button
-                onClick={deleteEdit}
-                className="rounded-md px-4 py-2 border border-red-500 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-              >
-                Eliminar
-              </button>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={closeEdit}
-                  className="rounded-md px-4 py-2 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={saveEdit}
-                  className="rounded-md px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-                >
-                  Guardar alterações
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      </Modal>
     </div>
   );
 }
