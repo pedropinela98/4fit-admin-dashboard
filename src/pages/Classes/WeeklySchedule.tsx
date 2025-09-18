@@ -88,6 +88,7 @@ function generateMockEvents(roomId: string): EventInput[] {
 export default function WeeklySchedule() {
   const [rooms] = useState(MOCK_ROOMS);
   const [classTypes] = useState(MOCK_CLASS_TYPES);
+  const [isDirty, setIsDirty] = useState(false);
   const [coaches] = useState(MOCK_COACHES);
   const [selectedRoom, setSelectedRoom] = useState<string>(MOCK_ROOMS[0].id);
 
@@ -103,6 +104,18 @@ export default function WeeklySchedule() {
     () => eventsByRoom[selectedRoom] ?? [],
     [eventsByRoom, selectedRoom]
   );
+
+  // detectar mobile
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  function markDirty() {
+    setIsDirty(true);
+  }
 
   // Draggable externo
   const paletteRef = useRef<HTMLDivElement | null>(null);
@@ -157,6 +170,7 @@ export default function WeeklySchedule() {
           : [...list, newEvent];
       return { ...prev, [roomId]: nextList };
     });
+    markDirty();
   }
   function updateEventTimes(
     roomId: string,
@@ -171,6 +185,7 @@ export default function WeeklySchedule() {
       );
       return { ...prev, [roomId]: next };
     });
+    markDirty();
   }
 
   async function handleCreateFromModal(classTypeId: string) {
@@ -294,6 +309,7 @@ export default function WeeklySchedule() {
       ...prev,
       [roomId]: (prev[roomId] ?? []).filter((e) => e.id !== eventId),
     }));
+    markDirty();
   }
   function saveEdit() {
     if (!edit.eventId || !edit.originalRoomId) return;
@@ -332,6 +348,13 @@ export default function WeeklySchedule() {
     closeEdit();
   }
 
+  // 🔘 Guardar BD
+  async function handleSaveToDB() {
+    console.log("Salvar no backend:", eventsByRoom[selectedRoom]);
+    // aqui chamas Supabase / API para guardar
+    setIsDirty(false);
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -368,6 +391,17 @@ export default function WeeklySchedule() {
           </select>
         </div>
       </div>
+      {/* Botão Guardar se houver alterações */}
+      {isDirty && (
+        <div className="flex justify-end">
+          <button
+            onClick={handleSaveToDB}
+            className="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 transition-colors"
+          >
+            Guardar alterações
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-12 gap-6">
         {/* Painel Tipos de Aula */}
@@ -409,7 +443,7 @@ export default function WeeklySchedule() {
               ref={calendarRef}
               locale={ptLocale}
               plugins={[timeGridPlugin, interactionPlugin]}
-              initialView="timeGridWeek"
+              initialView={isMobile ? "timeGridDay" : "timeGridWeek"}
               allDaySlot={false}
               slotMinTime="05:00:00"
               slotMaxTime="24:00:00"
@@ -426,7 +460,7 @@ export default function WeeklySchedule() {
               headerToolbar={{
                 left: "prev,next today",
                 center: "title",
-                right: "timeGridWeek,timeGridDay",
+                right: isMobile ? "timeGridDay" : "timeGridWeek,timeGridDay",
               }}
               nowIndicator
               slotEventOverlap={false}
