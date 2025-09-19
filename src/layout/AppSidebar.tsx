@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
+
+// Assume these icons are imported from an icon library
 import {
   BoxCubeIcon,
   CalenderIcon,
@@ -8,8 +10,10 @@ import {
   GroupIcon,
   HorizontaLDots,
   ListIcon,
+  PageIcon,
   PieChartIcon,
   PlugInIcon,
+  TableIcon,
   UserCircleIcon,
 } from "../icons";
 import logo from "../icons/logo.svg";
@@ -26,48 +30,56 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
-  { icon: <GridIcon />, name: "Dashboard", path: "/" },
+  {
+    icon: <GridIcon />,
+    name: "Dashboard",
+    path: "/",
+  },
   {
     icon: <GroupIcon />,
     name: "Membros",
     subItems: [
-      { name: "Membros", path: "/members" },
-      { name: "Adicionar membro", path: "/members/new" },
+      { name: "Membros", path: "/members", pro: false },
+      { name: "Adicionar membro", path: "/members/new", pro: false },
     ],
   },
   {
     icon: <BoxCubeIcon />,
     name: "Boxes",
     subItems: [
-      { name: "All Boxes", path: "/boxes" },
-      { name: "Add Box", path: "/boxes/new" },
+      { name: "All Boxes", path: "/boxes", pro: false },
+      { name: "Add Box", path: "/boxes/new", pro: false },
     ],
   },
   {
     icon: <CalenderIcon />,
     name: "Aulas",
     subItems: [
-      { name: "Tipos de aulas", path: "/classes/types" },
-      { name: "Horário", path: "/classes" },
+      { name: "Tipos de aulas", path: "/classes/types", pro: false },
+      { name: "Horário", path: "/classes", pro: false },
     ],
   },
   {
     icon: <ListIcon />,
     name: "Treinos",
     subItems: [
-      { name: "Planeamento Diário", path: "/workouts" },
-      { name: "Planeamento Semanal", path: "/workouts/weeklyview" },
+      { name: "Planeamento Diário", path: "/workouts", pro: false },
+      { name: "Planeamento Semanal", path: "/workouts/weeklyview", pro: false },
     ],
   },
   {
     icon: <TagIcon />,
     name: "Planos",
     subItems: [
-      { name: "Planos Mensais", path: "/plans" },
-      { name: "Planos de Senhas", path: "/plans/sessionpacks" },
+      { name: "Planos Mensais", path: "/plans", pro: false },
+      { name: "Planos de Senhas", path: "/plans/sessionpacks", pro: false },
     ],
   },
-  { icon: <UserCircleIcon />, name: "Staff", path: "/staff" },
+  {
+    icon: <UserCircleIcon />,
+    name: "Staff",
+    path: "/staff",
+  },
 ];
 
 const othersItems: NavItem[] = [
@@ -75,25 +87,25 @@ const othersItems: NavItem[] = [
     icon: <PieChartIcon />,
     name: "Reports",
     subItems: [
-      { name: "Attendance", path: "/reports/attendance" },
-      { name: "Revenue", path: "/reports/revenue" },
-      { name: "Member Analytics", path: "/reports/members" },
+      { name: "Attendance", path: "/reports/attendance", pro: false },
+      { name: "Revenue", path: "/reports/revenue", pro: false },
+      { name: "Member Analytics", path: "/reports/members", pro: false },
     ],
   },
   {
     icon: <BoxCubeIcon />,
     name: "Settings",
     subItems: [
-      { name: "Box Settings", path: "/settings/box" },
-      { name: "Payments", path: "/settings/payments" },
+      { name: "Box Settings", path: "/settings/box", pro: false },
+      { name: "Payments", path: "/settings/payments", pro: false },
     ],
   },
   {
     icon: <PlugInIcon />,
     name: "Authentication",
     subItems: [
-      { name: "Sign In", path: "/signin" },
-      { name: "Sign Up", path: "/signup" },
+      { name: "Sign In", path: "/signin", pro: false },
+      { name: "Sign Up", path: "/signup", pro: false },
     ],
   },
 ];
@@ -117,6 +129,7 @@ const AppSidebar: React.FC = () => {
   );
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
+  // const isActive = (path: string) => location.pathname === path;
   const isActive = useCallback(
     (path: string) => location.pathname === path,
     [location.pathname]
@@ -127,23 +140,31 @@ const AppSidebar: React.FC = () => {
     ["main", "others"].forEach((menuType) => {
       const items = menuType === "main" ? navItems : othersItems;
       items.forEach((nav, index) => {
-        nav.subItems?.forEach((subItem) => {
-          if (isActive(subItem.path)) {
-            setOpenSubmenu({ type: menuType as "main" | "others", index });
-            submenuMatched = true;
-          }
-        });
+        if (nav.subItems) {
+          nav.subItems.forEach((subItem) => {
+            if (isActive(subItem.path)) {
+              setOpenSubmenu({
+                type: menuType as "main" | "others",
+                index,
+              });
+              submenuMatched = true;
+            }
+          });
+        }
       });
     });
-    if (!submenuMatched) setOpenSubmenu(null);
+
+    if (!submenuMatched) {
+      setOpenSubmenu(null);
+    }
   }, [location, isActive]);
 
   useEffect(() => {
     if (openSubmenu !== null) {
       const key = `${openSubmenu.type}-${openSubmenu.index}`;
       if (subMenuRefs.current[key]) {
-        setSubMenuHeight((prev) => ({
-          ...prev,
+        setSubMenuHeight((prevHeights) => ({
+          ...prevHeights,
           [key]: subMenuRefs.current[key]?.scrollHeight || 0,
         }));
       }
@@ -151,11 +172,16 @@ const AppSidebar: React.FC = () => {
   }, [openSubmenu]);
 
   const handleSubmenuToggle = (index: number, menuType: "main" | "others") => {
-    setOpenSubmenu((prev) =>
-      prev && prev.type === menuType && prev.index === index
-        ? null
-        : { type: menuType, index }
-    );
+    setOpenSubmenu((prevOpenSubmenu) => {
+      if (
+        prevOpenSubmenu &&
+        prevOpenSubmenu.type === menuType &&
+        prevOpenSubmenu.index === index
+      ) {
+        return null;
+      }
+      return { type: menuType, index };
+    });
   };
 
   const renderMenuItems = (items: NavItem[], menuType: "main" | "others") => (
@@ -169,14 +195,14 @@ const AppSidebar: React.FC = () => {
                 openSubmenu?.type === menuType && openSubmenu?.index === index
                   ? "menu-item-active"
                   : "menu-item-inactive"
-              } ${
+              } cursor-pointer ${
                 !isExpanded && !isHovered
                   ? "lg:justify-center"
                   : "lg:justify-start"
               }`}
             >
               <span
-                className={`menu-item-icon-size ${
+                className={`menu-item-icon-size  ${
                   openSubmenu?.type === menuType && openSubmenu?.index === index
                     ? "menu-item-icon-active"
                     : "menu-item-icon-inactive"
@@ -189,7 +215,7 @@ const AppSidebar: React.FC = () => {
               )}
               {(isExpanded || isHovered || isMobileOpen) && (
                 <ChevronDownIcon
-                  className={`ml-auto w-5 h-5 transition-transform ${
+                  className={`ml-auto w-5 h-5 transition-transform duration-200 ${
                     openSubmenu?.type === menuType &&
                     openSubmenu?.index === index
                       ? "rotate-180 text-brand-500"
@@ -248,6 +274,30 @@ const AppSidebar: React.FC = () => {
                       }`}
                     >
                       {subItem.name}
+                      <span className="flex items-center gap-1 ml-auto">
+                        {subItem.new && (
+                          <span
+                            className={`ml-auto ${
+                              isActive(subItem.path)
+                                ? "menu-dropdown-badge-active"
+                                : "menu-dropdown-badge-inactive"
+                            } menu-dropdown-badge`}
+                          >
+                            new
+                          </span>
+                        )}
+                        {subItem.pro && (
+                          <span
+                            className={`ml-auto ${
+                              isActive(subItem.path)
+                                ? "menu-dropdown-badge-active"
+                                : "menu-dropdown-badge-inactive"
+                            } menu-dropdown-badge`}
+                          >
+                            pro
+                          </span>
+                        )}
+                      </span>
                     </Link>
                   </li>
                 ))}
@@ -261,7 +311,7 @@ const AppSidebar: React.FC = () => {
 
   return (
     <aside
-      className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 h-screen transition-all z-50 border-r border-gray-200 
+      className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
         ${
           isExpanded || isMobileOpen
             ? "w-[290px]"
@@ -274,9 +324,8 @@ const AppSidebar: React.FC = () => {
       onMouseEnter={() => !isExpanded && setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Logo */}
       <div
-        className={`py-8 hidden md:flex ${
+        className={`py-8 flex ${
           !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
         }`}
       >
@@ -303,13 +352,17 @@ const AppSidebar: React.FC = () => {
           )}
         </Link>
       </div>
-
-      {/* Scrollable menu */}
-      <div className="flex-1 flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
+      <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
         <nav className="mb-6">
           <div className="flex flex-col gap-4">
             <div>
-              <h2 className="mb-4 text-xs uppercase text-gray-400">
+              <h2
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
+                  !isExpanded && !isHovered
+                    ? "lg:justify-center"
+                    : "justify-start"
+                }`}
+              >
                 {isExpanded || isHovered || isMobileOpen ? (
                   "Menu"
                 ) : (
@@ -318,8 +371,14 @@ const AppSidebar: React.FC = () => {
               </h2>
               {renderMenuItems(navItems, "main")}
             </div>
-            <div>
-              <h2 className="mb-4 text-xs uppercase text-gray-400">
+            <div className="">
+              <h2
+                className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
+                  !isExpanded && !isHovered
+                    ? "lg:justify-center"
+                    : "justify-start"
+                }`}
+              >
                 {isExpanded || isHovered || isMobileOpen ? (
                   "Others"
                 ) : (
