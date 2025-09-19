@@ -10,10 +10,8 @@ import {
   GroupIcon,
   HorizontaLDots,
   ListIcon,
-  PageIcon,
   PieChartIcon,
   PlugInIcon,
-  TableIcon,
   UserCircleIcon,
 } from "../icons";
 import { TagIcon } from "@heroicons/react/24/outline";
@@ -36,40 +34,40 @@ const navItems: NavItem[] = [
     icon: <GroupIcon />,
     name: "Membros",
     subItems: [
-      { name: "Membros", path: "/members", pro: false },
-      { name: "Adicionar membro", path: "/members/new", pro: false },
+      { name: "Membros", path: "/members" },
+      { name: "Adicionar membro", path: "/members/new" },
     ],
   },
   {
     icon: <BoxCubeIcon />,
     name: "Boxes",
     subItems: [
-      { name: "All Boxes", path: "/boxes", pro: false },
-      { name: "Add Box", path: "/boxes/new", pro: false },
+      { name: "All Boxes", path: "/boxes" },
+      { name: "Add Box", path: "/boxes/new" },
     ],
   },
   {
     icon: <CalenderIcon />,
     name: "Aulas",
     subItems: [
-      { name: "Tipos de aulas", path: "/classes/types", pro: false },
-      { name: "Horário", path: "/classes", pro: false },
+      { name: "Tipos de aulas", path: "/classes/types" },
+      { name: "Horário", path: "/classes" },
     ],
   },
   {
     icon: <ListIcon />,
     name: "Treinos",
     subItems: [
-      { name: "Planeamento Diário", path: "/workouts", pro: false },
-      { name: "Planeamento Semanal", path: "/workouts/weeklyview", pro: false },
+      { name: "Planeamento Diário", path: "/workouts" },
+      { name: "Planeamento Semanal", path: "/workouts/weeklyview" },
     ],
   },
   {
     icon: <TagIcon />,
     name: "Planos",
     subItems: [
-      { name: "Planos Mensais", path: "/plans", pro: false },
-      { name: "Planos de Senhas", path: "/plans/sessionpacks", pro: false },
+      { name: "Planos Mensais", path: "/plans" },
+      { name: "Planos de Senhas", path: "/plans/sessionpacks" },
     ],
   },
   {
@@ -84,25 +82,25 @@ const othersItems: NavItem[] = [
     icon: <PieChartIcon />,
     name: "Reports",
     subItems: [
-      { name: "Attendance", path: "/reports/attendance", pro: false },
-      { name: "Revenue", path: "/reports/revenue", pro: false },
-      { name: "Member Analytics", path: "/reports/members", pro: false },
+      { name: "Attendance", path: "/reports/attendance" },
+      { name: "Revenue", path: "/reports/revenue" },
+      { name: "Member Analytics", path: "/reports/members" },
     ],
   },
   {
     icon: <BoxCubeIcon />,
     name: "Settings",
     subItems: [
-      { name: "Box Settings", path: "/settings/box", pro: false },
-      { name: "Payments", path: "/settings/payments", pro: false },
+      { name: "Box Settings", path: "/settings/box" },
+      { name: "Payments", path: "/settings/payments" },
     ],
   },
   {
     icon: <PlugInIcon />,
     name: "Authentication",
     subItems: [
-      { name: "Sign In", path: "/signin", pro: false },
-      { name: "Sign Up", path: "/signup", pro: false },
+      { name: "Sign In", path: "/signin" },
+      { name: "Sign Up", path: "/signup" },
     ],
   },
 ];
@@ -126,7 +124,6 @@ const AppSidebar: React.FC = () => {
   );
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  // const isActive = (path: string) => location.pathname === path;
   const isActive = useCallback(
     (path: string) => location.pathname === path,
     [location.pathname]
@@ -271,30 +268,6 @@ const AppSidebar: React.FC = () => {
                       }`}
                     >
                       {subItem.name}
-                      <span className="flex items-center gap-1 ml-auto">
-                        {subItem.new && (
-                          <span
-                            className={`ml-auto ${
-                              isActive(subItem.path)
-                                ? "menu-dropdown-badge-active"
-                                : "menu-dropdown-badge-inactive"
-                            } menu-dropdown-badge`}
-                          >
-                            new
-                          </span>
-                        )}
-                        {subItem.pro && (
-                          <span
-                            className={`ml-auto ${
-                              isActive(subItem.path)
-                                ? "menu-dropdown-badge-active"
-                                : "menu-dropdown-badge-inactive"
-                            } menu-dropdown-badge`}
-                          >
-                            pro
-                          </span>
-                        )}
-                      </span>
                     </Link>
                   </li>
                 ))}
@@ -331,14 +304,14 @@ const AppSidebar: React.FC = () => {
             <>
               <img
                 className="dark:hidden"
-                src="/images/logo/logo.svg"
+                src={`${import.meta.env.BASE_URL}images/logo/logo.svg`}
                 alt="Logo"
                 width={150}
                 height={40}
               />
               <img
                 className="hidden dark:block"
-                src="/images/logo/logo-dark.svg"
+                src={`${import.meta.env.BASE_URL}images/logo/logo-dark.svg`}
                 alt="Logo"
                 width={150}
                 height={40}
@@ -346,7 +319,7 @@ const AppSidebar: React.FC = () => {
             </>
           ) : (
             <img
-              src="/images/logo/logo-icon.svg"
+              src={`${import.meta.env.BASE_URL}images/logo/logo-icon.svg`}
               alt="Logo"
               width={150}
               height={32}
@@ -373,7 +346,7 @@ const AppSidebar: React.FC = () => {
               </h2>
               {renderMenuItems(navItems, "main")}
             </div>
-            <div className="">
+            <div>
               <h2
                 className={`mb-4 text-xs uppercase flex leading-[20px] text-gray-400 ${
                   !isExpanded && !isHovered
