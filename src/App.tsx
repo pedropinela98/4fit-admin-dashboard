@@ -29,6 +29,9 @@ import WeeklyView from "./pages/Workouts/WeeklyView";
 import StaffList from "./pages/Staff/StaffList";
 import StaffCreate from "./pages/Staff/StaffCreate";
 import StaffEdit from "./pages/Staff/StaffEdit";
+import PlanList from "./pages/Plans/PlanList";
+import PlanCreate from "./pages/Plans/PlanCreate";
+import PlanEdit from "./pages/Plans/PlanEdit";
 
 export default function App() {
   return (
@@ -65,6 +68,11 @@ export default function App() {
 
             {/* Editar staff */}
             <Route path="/staff/:id/edit" element={<StaffEdit />} />
+
+            {/* Plano */}
+            <Route path="/plans" element={<PlanList />} />
+            <Route path="/plans/new" element={<PlanCreate />} />
+            <Route path="/plans/:id/edit" element={<PlanEdit />} />
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />

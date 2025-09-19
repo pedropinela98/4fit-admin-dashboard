@@ -16,6 +16,7 @@ import {
   TableIcon,
   UserCircleIcon,
 } from "../icons";
+import { TagIcon } from "@heroicons/react/24/outline";
 import { useSidebar } from "../context/SidebarContext";
 
 type NavItem = {
@@ -64,6 +65,14 @@ const navItems: NavItem[] = [
     ],
   },
   {
+    icon: <TagIcon />,
+    name: "Planos",
+    subItems: [
+      { name: "Planos Mensais", path: "/plans", pro: false },
+      { name: "Planos de Senhas", path: "/sessionpacks", pro: false },
+    ],
+  },
+  {
     icon: <UserCircleIcon />,
     name: "Staff",
     path: "/staff",
@@ -85,7 +94,6 @@ const othersItems: NavItem[] = [
     name: "Settings",
     subItems: [
       { name: "Box Settings", path: "/settings/box", pro: false },
-      { name: "Membership Plans", path: "/settings/plans", pro: false },
       { name: "Payments", path: "/settings/payments", pro: false },
     ],
   },
