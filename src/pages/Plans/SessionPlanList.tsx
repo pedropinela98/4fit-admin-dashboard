@@ -142,7 +142,7 @@ export default function SessionPackList() {
                       </div>
                       <ActionsDropdown
                         entityId={p.id}
-                        editPath={`/sessionpacks/${p.id}/edit`}
+                        editPath={`/plans/sessionpacks/${p.id}/edit`}
                         entityName={p.name}
                         onDelete={(id) => deleteSessionPack(id)}
                       />
