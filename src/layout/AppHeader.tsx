@@ -5,6 +5,8 @@ import { useSidebar } from "../context/SidebarContext";
 import { ThemeToggleButton } from "../components/common/ThemeToggleButton";
 import NotificationDropdown from "../components/header/NotificationDropdown";
 import UserDropdown from "../components/header/UserDropdown";
+import logomobile from "../icons/logomobile.svg";
+import logomobiledark from "../icons/logomobiledark.svg";
 
 const AppHeader: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
@@ -85,14 +87,10 @@ const AppHeader: React.FC = () => {
 
           <div className="flex justify-center items-center w-full lg:hidden">
             <Link to="/">
-              <img
-                className="dark:hidden"
-                src="./images/logo/logomobile.svg"
-                alt="Logo"
-              />
+              <img className="dark:hidden" src={logomobile} alt="Logo" />
               <img
                 className="hidden dark:block"
-                src="./images/logo/logomobiledark.svg"
+                src={logomobiledark}
                 alt="Logo"
               />
             </Link>
