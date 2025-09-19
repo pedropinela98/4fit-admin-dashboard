@@ -276,7 +276,7 @@ const AppSidebar: React.FC = () => {
     >
       {/* Logo */}
       <div
-        className={`py-8 flex ${
+        className={`py-8 hidden md:flex ${
           !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
         }`}
       >
