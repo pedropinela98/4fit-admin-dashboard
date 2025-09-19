@@ -32,6 +32,9 @@ import StaffEdit from "./pages/Staff/StaffEdit";
 import PlanList from "./pages/Plans/PlanList";
 import PlanCreate from "./pages/Plans/PlanCreate";
 import PlanEdit from "./pages/Plans/PlanEdit";
+import SessionPackList from "./pages/Plans/SessionPlanList";
+import SessionPackCreate from "./pages/Plans/SessionPlanCreate";
+import SessionPackEdit from "./pages/Plans/SessionPlanEdit";
 
 export default function App() {
   return (
@@ -73,6 +76,16 @@ export default function App() {
             <Route path="/plans" element={<PlanList />} />
             <Route path="/plans/new" element={<PlanCreate />} />
             <Route path="/plans/:id/edit" element={<PlanEdit />} />
+            {/* Senhas */}
+            <Route path="/plans/sessionpacks" element={<SessionPackList />} />
+            <Route
+              path="/plans/sessionpacks/new"
+              element={<SessionPackCreate />}
+            />
+            <Route
+              path="/plans/sessionpacks/:id/edit"
+              element={<SessionPackEdit />}
+            />
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />

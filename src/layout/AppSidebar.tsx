@@ -69,7 +69,7 @@ const navItems: NavItem[] = [
     name: "Planos",
     subItems: [
       { name: "Planos Mensais", path: "/plans", pro: false },
-      { name: "Planos de Senhas", path: "/sessionpacks", pro: false },
+      { name: "Planos de Senhas", path: "/plans/sessionpacks", pro: false },
     ],
   },
   {
