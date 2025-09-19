@@ -26,6 +26,9 @@ import BoxForm from "./pages/Boxes/BoxForm";
 import WeeklySchedule from "./pages/Classes/WeeklySchedule";
 import Planning from "./pages/Workouts/Planning";
 import WeeklyView from "./pages/Workouts/WeeklyView";
+import StaffList from "./pages/Staff/StaffList";
+import StaffCreate from "./pages/Staff/StaffCreate";
+import StaffEdit from "./pages/Staff/StaffEdit";
 
 export default function App() {
   return (
@@ -54,6 +57,14 @@ export default function App() {
             {/* Workouts */}
             <Route path="/workouts" element={<Planning />} />
             <Route path="/workouts/weeklyview" element={<WeeklyView />} />
+
+            {/* Staff */}
+            <Route path="/staff" element={<StaffList />} />
+            {/* Criar staff */}
+            <Route path="/staff/new" element={<StaffCreate />} />
+
+            {/* Editar staff */}
+            <Route path="/staff/:id/edit" element={<StaffEdit />} />
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />

@@ -33,10 +33,10 @@ const navItems: NavItem[] = [
   },
   {
     icon: <GroupIcon />,
-    name: "Members",
+    name: "Membros",
     subItems: [
-      { name: "All Members", path: "/members", pro: false },
-      { name: "Add Member", path: "/members/new", pro: false },
+      { name: "Membros", path: "/members", pro: false },
+      { name: "Adicionar membro", path: "/members/new", pro: false },
     ],
   },
   {
@@ -66,10 +66,7 @@ const navItems: NavItem[] = [
   {
     icon: <UserCircleIcon />,
     name: "Staff",
-    subItems: [
-      { name: "All Staff", path: "/staff", pro: false },
-      { name: "Add Staff", path: "/staff/new", pro: false },
-    ],
+    path: "/staff",
   },
 ];
 
