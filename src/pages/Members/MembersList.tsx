@@ -43,7 +43,7 @@ export default function MemberList() {
         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border">
           <input
             type="text"
-            placeholder="Procurar membro por nome ou email..."
+            placeholder="Procurar membro por nome..."
             className="w-full border rounded-lg px-4 py-2"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -80,10 +80,10 @@ export default function MemberList() {
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         Email
                       </th>
-                      <th className="px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         Subscrição
                       </th>
-                      <th className="px-6 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         Seguro
                       </th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
