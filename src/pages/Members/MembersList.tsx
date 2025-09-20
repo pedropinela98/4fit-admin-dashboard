@@ -125,7 +125,7 @@ export default function MemberList() {
                           )}
                           {m.insurance_state === "expiring_soon" && (
                             <span className="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800">
-                              Expira
+                              A Expirar
                             </span>
                           )}
                           {m.insurance_state === "expired" && (
