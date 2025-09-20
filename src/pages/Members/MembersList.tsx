@@ -109,7 +109,7 @@ export default function MemberList() {
                         <td className="px-6 py-4">
                           {m.membership_active ? (
                             <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
-                              Ativo até {m.membership_end}
+                              Ativo
                             </span>
                           ) : (
                             <span className="px-2 py-1 rounded-full text-xs bg-red-100 text-red-800">
@@ -120,17 +120,17 @@ export default function MemberList() {
                         <td className="px-6 py-4">
                           {m.insurance_state === "valid" && (
                             <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
-                              Válido até {m.insurance_end}
+                              Válido
                             </span>
                           )}
                           {m.insurance_state === "expiring_soon" && (
                             <span className="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800">
-                              Expira em {m.insurance_end}
+                              Expira
                             </span>
                           )}
                           {m.insurance_state === "expired" && (
                             <span className="px-2 py-1 rounded-full text-xs bg-red-100 text-red-800">
-                              Expirado em {m.insurance_end}
+                              Expirado
                             </span>
                           )}
                         </td>
