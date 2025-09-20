@@ -38,10 +38,7 @@ const navItems: NavItem[] = [
   {
     icon: <GroupIcon />,
     name: "Membros",
-    subItems: [
-      { name: "Membros", path: "/members", pro: false },
-      { name: "Adicionar membro", path: "/members/new", pro: false },
-    ],
+    path: "/members",
   },
   {
     icon: <BoxCubeIcon />,

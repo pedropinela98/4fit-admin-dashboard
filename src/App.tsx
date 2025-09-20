@@ -18,9 +18,9 @@ import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
-import MemberList from "./pages/Members/MemberList";
-import MemberForm from "./pages/Members/MemberForm";
-import MemberDetail from "./pages/Members/MemberDetail";
+import MemberBoxList from "./pages/Boxes/MemberList";
+import MemberBoxForm from "./pages/Boxes/MemberForm";
+import MemberBoxDetail from "./pages/Boxes/MemberDetail";
 import BoxList from "./pages/Boxes/BoxList";
 import BoxForm from "./pages/Boxes/BoxForm";
 import WeeklySchedule from "./pages/Classes/WeeklySchedule";
@@ -35,6 +35,8 @@ import PlanEdit from "./pages/Plans/PlanEdit";
 import SessionPackList from "./pages/Plans/SessionPlanList";
 import SessionPackCreate from "./pages/Plans/SessionPlanCreate";
 import SessionPackEdit from "./pages/Plans/SessionPlanEdit";
+import MemberList from "./pages/Members/MembersList";
+import MemberDetail from "./pages/Members/MemberDetail";
 
 export default function App() {
   return (
@@ -48,14 +50,18 @@ export default function App() {
 
             {/* Members */}
             <Route path="/members" element={<MemberList />} />
-            <Route path="/members/new" element={<MemberForm />} />
             <Route path="/members/:id" element={<MemberDetail />} />
-            <Route path="/members/:id/edit" element={<MemberForm />} />
+            {/* <Route path="/members/new" element={<MemberForm />} />
+            <Route path="/members/:id/edit" element={<MemberForm />} /> */}
 
             {/* Boxes */}
             <Route path="/boxes" element={<BoxList />} />
             <Route path="/boxes/new" element={<BoxForm />} />
             <Route path="/boxes/:id/edit" element={<BoxForm />} />
+            <Route path="/boxes/members" element={<MemberBoxList />} />
+            <Route path="/boxes/members/new" element={<MemberBoxForm />} />
+            <Route path="/boxes/members/:id" element={<MemberBoxDetail />} />
+            <Route path="/boxes/members/:id/edit" element={<MemberBoxForm />} />
 
             {/* Classes */}
             <Route path="/classes" element={<WeeklySchedule />} />

@@ -9,7 +9,7 @@ import {
   ListIcon,
   BoxIcon,
 } from "../../icons";
-import { useMembers, type Member } from "../../hooks/useMembers";
+import { useMembers, type Member } from "../../hooks/useMembersBox";
 import { useBoxes } from "../../hooks/useBoxes";
 
 // Default box ID for initial load
