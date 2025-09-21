@@ -37,6 +37,8 @@ import SessionPackCreate from "./pages/Plans/SessionPlanCreate";
 import SessionPackEdit from "./pages/Plans/SessionPlanEdit";
 import MemberList from "./pages/Members/MembersList";
 import MemberDetail from "./pages/Members/MemberDetail";
+import MemberCreate from "./pages/Members/MemberCreate";
+import MemberEdit from "./pages/Members/MemberEdit";
 
 export default function App() {
   return (
@@ -51,8 +53,8 @@ export default function App() {
             {/* Members */}
             <Route path="/members" element={<MemberList />} />
             <Route path="/members/:id" element={<MemberDetail />} />
-            {/* <Route path="/members/new" element={<MemberForm />} />
-            <Route path="/members/:id/edit" element={<MemberForm />} /> */}
+            <Route path="/members/new" element={<MemberCreate />} />
+            <Route path="/members/:id/edit" element={<MemberEdit />} />
 
             {/* Boxes */}
             <Route path="/boxes" element={<BoxList />} />

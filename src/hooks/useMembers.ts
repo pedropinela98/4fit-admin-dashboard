@@ -9,6 +9,10 @@ export type Member = {
   phone?: string;
   photoUrl?: string;
 
+  // Identificação bancária/fiscal
+  nif?: string;
+  iban?: string;
+
   // Plano atual
   plan_id?: string; // id do plano atribuído
   plan_name?: string; // nome do plano (ex: "Mensal", "Trimestral")
@@ -40,6 +44,8 @@ const initialMembers: Member[] = [
     email: "joao@example.com",
     phone: "+351 912 345 678",
     photoUrl: "/images/user/user-01.jpg",
+    nif: "123456789",
+    iban: "PT50000201231234567890154",
     plan_id: "plan-1",
     plan_name: "Plano Mensal Ilimitado",
     membership_active: true,
@@ -62,6 +68,8 @@ const initialMembers: Member[] = [
     email: "maria@example.com",
     phone: "+351 934 567 890",
     photoUrl: "/images/user/user-02.jpg",
+    nif: "987654321",
+    iban: "PT50000201239876543210987",
     plan_id: "plan-2",
     plan_name: "Plano 10 Aulas",
     membership_active: false,
@@ -82,6 +90,8 @@ const initialMembers: Member[] = [
     email: "pedro@example.com",
     phone: "+351 967 111 222",
     photoUrl: "/images/user/user-03.jpg",
+    nif: "112233445",
+    iban: "PT50000201231122334455667",
     plan_id: "plan-3",
     plan_name: "Plano Trimestral",
     membership_active: true,
