@@ -129,8 +129,8 @@ export default function MemberList() {
             </div>
           ) : (
             <>
-              {/* Tabela Desktop */}
-              <div className="hidden sm:block overflow-x-auto">
+              {/* Tabela */}
+              <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="bg-gray-50 dark:bg-gray-700">

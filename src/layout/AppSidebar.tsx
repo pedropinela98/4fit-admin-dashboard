@@ -78,7 +78,7 @@ const navItems: NavItem[] = [
   },
   {
     icon: <CreditCardIcon />,
-    name: "Payments",
+    name: "Pagamentos",
     path: "/payments",
   },
 ];
