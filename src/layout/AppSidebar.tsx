@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
 
-// Assume these icons are imported from an icon library
 import {
   BoxCubeIcon,
   CalenderIcon,
@@ -19,7 +18,7 @@ import {
 import logo from "../icons/logo.svg";
 import logoDark from "../icons/logo-dark.svg";
 import logoIcon from "../icons/logo-icon.svg";
-import { TagIcon } from "@heroicons/react/24/outline";
+import { TagIcon, CreditCardIcon } from "@heroicons/react/24/outline";
 import { useSidebar } from "../context/SidebarContext";
 
 type NavItem = {
@@ -76,6 +75,11 @@ const navItems: NavItem[] = [
     icon: <UserCircleIcon />,
     name: "Staff",
     path: "/staff",
+  },
+  {
+    icon: <CreditCardIcon />,
+    name: "Payments",
+    path: "/payments",
   },
 ];
 

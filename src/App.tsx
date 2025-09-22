@@ -39,6 +39,7 @@ import MemberList from "./pages/Members/MembersList";
 import MemberDetail from "./pages/Members/MemberDetail";
 import MemberCreate from "./pages/Members/MemberCreate";
 import MemberEdit from "./pages/Members/MemberEdit";
+import PaymentsList from "./pages/Payments/PaymentsList";
 
 export default function App() {
   return (
@@ -94,6 +95,9 @@ export default function App() {
               path="/plans/sessionpacks/:id/edit"
               element={<SessionPackEdit />}
             />
+
+            {/* Pagamentos */}
+            <Route path="/payments" element={<PaymentsList />} />
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />
