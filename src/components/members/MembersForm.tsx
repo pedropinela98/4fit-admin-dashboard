@@ -3,6 +3,12 @@ import { Member } from "../../hooks/useMembers";
 import { PencilIcon, UserIcon } from "@heroicons/react/24/solid";
 import heic2any from "heic2any";
 
+// mock só para testes (simula tabela user_details)
+const mockUserDetails = [
+  { id: "user-1", email: "joao@example.com", name: "João Silva" },
+  { id: "user-2", email: "maria@example.com", name: "Maria Santos" },
+];
+
 type MemberFormProps = {
   mode: "create" | "edit";
   initialData?: Partial<Member>;
@@ -14,12 +20,20 @@ export default function MemberForm({
   initialData = {},
   onSubmit,
 }: MemberFormProps) {
+  const [step, setStep] = useState<"checkEmail" | "associate" | "form">(
+    mode === "create" ? "checkEmail" : "form"
+  );
+
+  // estado do email sempre presente
+  const [email, setEmail] = useState(initialData.email || "");
+  const [foundUser, setFoundUser] = useState<any>(null);
+
+  // restantes campos só usados no form completo
   const [photoUrl, setPhotoUrl] = useState(initialData.photoUrl || "");
   const [name, setName] = useState(initialData.name || "");
   const [phone, setPhone] = useState(
     initialData.phone?.startsWith("+351") ? initialData.phone : "+351 "
   );
-  const [email, setEmail] = useState(initialData.email || "");
   const [nif, setNif] = useState((initialData as any).nif || "");
   const [iban, setIban] = useState(
     initialData.iban?.startsWith("PT50") ? initialData.iban : "PT50 "
@@ -47,29 +61,23 @@ export default function MemberForm({
   // ---- Validação ----
   function validate() {
     const newErrors: Record<string, string> = {};
-
     if (!name.trim()) newErrors.name = "O nome é obrigatório.";
-
     if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
       newErrors.email = "O email não é válido.";
     }
-
     const phoneDigits = phone.replace(/\D/g, "").slice(3);
     if (phoneDigits.length !== 9) {
       newErrors.phone = "O número de telemóvel deve ter 9 dígitos após +351.";
     }
-
     if (nif && !/^\d{9}$/.test(nif)) {
       newErrors.nif = "O NIF deve ter 9 dígitos.";
     }
-
     const ibanDigits = iban.replace(/\s/g, "").toUpperCase();
     if (ibanDigits !== "PT50" && ibanDigits.length > 0) {
       if (!ibanDigits.startsWith("PT50") || ibanDigits.length !== 25) {
         newErrors.iban = "O IBAN deve começar por PT50 e ter 25 caracteres.";
       }
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }
@@ -83,10 +91,10 @@ export default function MemberForm({
 
     onSubmit({
       ...initialData,
+      email,
       photoUrl,
       name,
       phone,
-      email,
       nif,
       iban: finalIban,
     });
@@ -99,8 +107,6 @@ export default function MemberForm({
 
     try {
       let blob: Blob = file;
-
-      // Se for HEIC → converte para JPEG
       if (
         file.type === "image/heic" ||
         file.name.toLowerCase().endsWith(".heic")
@@ -112,13 +118,9 @@ export default function MemberForm({
         });
         blob = converted as Blob;
       }
-
-      // Converter Blob → Base64 para preview e submit
       const reader = new FileReader();
       reader.onload = () => {
-        if (reader.result) {
-          setPhotoUrl(reader.result.toString());
-        }
+        if (reader.result) setPhotoUrl(reader.result.toString());
       };
       reader.readAsDataURL(blob);
     } catch (err) {
@@ -127,6 +129,79 @@ export default function MemberForm({
     }
   }
 
+  // ---- Step 1: verificar email ----
+  // ---- Step 1: verificar email ----
+  if (step === "checkEmail") {
+    return (
+      <div className="p-6 border rounded-lg bg-white dark:bg-gray-800">
+        <h2 className="text-lg font-medium mb-4">Adicionar membro</h2>
+
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Escreve o email do utilizador"
+          className="w-full border px-3 py-2 rounded-lg mb-2"
+          required
+        />
+
+        {/* erro de email inválido */}
+        {errors.email && (
+          <p className="text-sm text-red-600 mb-2">{errors.email}</p>
+        )}
+
+        <button
+          type="button"
+          onClick={() => {
+            // validação simples de email
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+              setErrors({ email: "O email não é válido." });
+              return;
+            }
+
+            setErrors({}); // limpa erros se estiver ok
+
+            const existing = mockUserDetails.find((u) => u.email === email);
+            if (existing) {
+              setFoundUser(existing);
+              setStep("associate");
+            } else {
+              setStep("form");
+            }
+          }}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+        >
+          Verificar
+        </button>
+      </div>
+    );
+  }
+
+  // ---- Step 2: se já existe user → só associar ----
+  if (step === "associate" && foundUser) {
+    return (
+      <div className="p-6 border rounded-lg bg-white dark:bg-gray-800">
+        <p className="mb-4">
+          O utilizador <b>{foundUser.name}</b> já existe com este email.
+        </p>
+        <button
+          type="button"
+          onClick={() =>
+            onSubmit({
+              user_id: foundUser.id,
+              email: foundUser.email,
+              name: foundUser.name,
+            })
+          }
+          className="px-4 py-2 bg-green-600 text-white rounded-lg"
+        >
+          Associar utilizador
+        </button>
+      </div>
+    );
+  }
+
+  // ---- Step 3: form completo (se não existir) ----
   return (
     <form
       onSubmit={handleSubmit}
@@ -177,7 +252,7 @@ export default function MemberForm({
         )}
       </div>
 
-      {/* Email */}
+      {/* Email (readonly depois de verificado) */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
           Email
@@ -185,15 +260,9 @@ export default function MemberForm({
         <input
           type="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className={`mt-1 w-full border rounded-lg px-3 py-2 ${
-            errors.email ? "border-red-500" : ""
-          }`}
-          required
+          readOnly
+          className="mt-1 w-full border rounded-lg px-3 py-2 bg-gray-100 dark:bg-gray-800"
         />
-        {errors.email && (
-          <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-        )}
       </div>
 
       {/* Telemóvel */}

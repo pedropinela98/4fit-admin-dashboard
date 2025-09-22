@@ -200,6 +200,7 @@ export default function MemberList() {
                             editPath={`/members/${m.id}/edit`}
                             entityName={m.name}
                             onDelete={deleteMember}
+                            showEdit={false}
                           />
                         </td>
                       </tr>
