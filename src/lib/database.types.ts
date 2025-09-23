@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      Class_Type: {
+        Row: {
+          id: string;
+          box_id: string;
+          name: string;
+          description: string | null;
+          active: boolean;
+          created_at: string;
+          updated_at: string;
+          color: string | null;
+          duration: number | null;
+          room: string | null;
+        };
+        Insert: {
+          id?: string;
+          box_id: string;
+          name: string;
+          description?: string | null;
+          active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+          color?: string | null;
+          duration?: number | null;
+          room?: string | null;
+        };
+        Update: {
+          id?: string;
+          box_id?: string;
+          name?: string;
+          description?: string | null;
+          active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+          color?: string | null;
+          duration?: number | null;
+          room?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "Class_Type_box_id_fkey";
+            columns: ["box_id"];
+            isOneToOne: false;
+            referencedRelation: "Box";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
       Achievement: {
         Row: {
           achieved_at: string | null
