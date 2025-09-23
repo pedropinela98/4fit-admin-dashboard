@@ -931,6 +931,36 @@ export type Database = {
           },
         ]
       }
+      Room: {
+        Row: {
+          active: boolean
+          capacity: number
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          capacity?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          capacity?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       Session_Pack: {
         Row: {
           box_id: string
