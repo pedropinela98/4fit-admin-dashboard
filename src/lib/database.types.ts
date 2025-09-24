@@ -934,6 +934,7 @@ export type Database = {
       Room: {
         Row: {
           active: boolean
+          box_id: string
           capacity: number
           created_at: string
           description: string | null

@@ -1,15 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
-import { roomsService, type CreateRoomData, type UpdateRoomData } from '../services/rooms.service';
+//import { roomsService, type CreateRoomData, type UpdateRoomData } from '../services/rooms.service';
 import type { Tables } from '../lib/database.types';
 
 export type Room = Tables<'Room'>;
 
-interface UseRoomsState {
+/*interface UseRoomsState {
   rooms: Room[];
   loading: boolean;
   error: string | null;
-}
-
+}*/
+/*
 interface UseRoomsReturn extends UseRoomsState {
   refetch: () => Promise<void>;
   searchActiveRooms: (query: string) => Promise<void>;
@@ -17,14 +17,100 @@ interface UseRoomsReturn extends UseRoomsState {
   updateRoom: (roomData: UpdateRoomData) => Promise<Room>;
   deleteRoom: (roomId: string) => Promise<void>;
 }
+*/
+const initialRooms: Room[] = [
+  {
+    active: true,
+    box_id: "1",
+    capacity: 5,
+    created_at: "2025-01-01T01:00:00Z",
+    description: "Sala com as barras",
+    id: "1",
+    name: "Sala das Barras",
+    updated_at: "2025-01-01T12:00:00Z"
+  },
+  {
+    active: true,
+    box_id: "2",
+    capacity: 10,
+    created_at: "2025-02-02T02:00:00Z",
+    description: "Sala com os colchões e os elásticos",
+    id: "2",
+    name: "Sala dos Colchões",
+    updated_at: "2025-02-02T02:00:00Z"
+  },
+  {
+    active: true,
+    box_id: "3",
+    capacity: 15,
+    created_at: "2025-03-03T03:00:00Z",
+    description: "Sala com todas as máquinas",
+    id: "3",
+    name: "Sala das Máquinas",
+    updated_at: "2025-03-03T03:00:00Z"
+  },
+];
 
-export function useRooms(): UseRoomsReturn {
-  const [state, setState] = useState<UseRoomsState>({
-    rooms: [],
-    loading: true,
-    error: null,
-  });
+export function useRooms() {
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  // simula fetch inicial
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      try {
+        setRooms(initialRooms);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // refetch (simula reload)
+  function refetch() {
+    setRooms(initialRooms);
+  }
+
+  // adicionar sala
+  function addRoom(newRoom: Omit<Room, "id" | "created_at">) {
+    const room: Room = {
+      ...newRoom,
+      id: Date.now().toString(), // id único simples
+      created_at: new Date().toISOString(),
+    };
+    setRooms((prev) => [...prev, room]);
+  }
+
+  // atualizar sala
+  function updateRoom(id: string, updated: Partial<Room>) {
+    setRooms((prev) =>
+      prev.map((currentRoom) =>
+        currentRoom.id === id
+          ? { ...currentRoom, ...updated, updated_at: new Date().toISOString() }
+          : currentRoom
+      )
+    );
+  }
+
+  // remover sala
+  function deleteRoom(id: string) {
+    setRooms((prev) => prev.filter((currentRoom) => currentRoom.id !== id));
+  }
+
+  return{
+    rooms,
+    loading,
+    error,
+    refetch,
+    addRoom,
+    updateRoom,
+    deleteRoom
+  };
+/*
   const fetchActiveRooms = useCallback(async () => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
@@ -128,4 +214,5 @@ export function useRooms(): UseRoomsReturn {
     updateRoom,
     deleteRoom,
   };
+  */
 }

@@ -5,6 +5,7 @@ import {
   BoxCubeIcon,
   CalenderIcon,
   ChevronDownIcon,
+  CloseLineIcon,
   GridIcon,
   GroupIcon,
   HorizontaLDots,
@@ -13,6 +14,7 @@ import {
   PieChartIcon,
   PlugInIcon,
   TableIcon,
+  TaskIcon,
   UserCircleIcon,
 } from "../icons";
 import logo from "../icons/logo.svg";
@@ -46,6 +48,11 @@ const navItems: NavItem[] = [
       { name: "All Boxes", path: "/boxes", pro: false },
       { name: "Add Box", path: "/boxes/new", pro: false },
     ],
+  },
+  {
+    icon: <GridIcon />,
+    name: "Salas",
+    path: "/rooms",
   },
   {
     icon: <CalenderIcon />,
