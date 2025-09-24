@@ -186,15 +186,48 @@ export default function Planning() {
     }
   }
 
+  // Mock data para tipos de aula
+  const CLASS_TYPES = [
+    { id: "cf", name: "CrossFit" },
+    { id: "wl", name: "Halterofilismo" },
+  ];
+
+  // Estado para o tipo de aula selecionado
+  const [selectedClassType, setSelectedClassType] = useState(CLASS_TYPES[0].id);
+
   return (
     <div className="min-h-screen w-full dark:bg-gray-900">
-      <div className="mb-4">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-          Planeador de treinos
-        </h2>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Arrasta uma secção de forma a criares uma parte do teu treino
-        </p>
+      <div className="mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            Planeador de treinos
+          </h2>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Arrasta uma secção de forma a criares uma parte do teu treino
+          </p>
+        </div>
+
+        {/* Dropdown de Tipo de Aula */}
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Tipo de Aula:
+          </label>
+          <select
+            value={selectedClassType}
+            onChange={(e) => setSelectedClassType(e.target.value)}
+            className="rounded-md bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 border border-gray-200 dark:border-gray-700 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+          >
+            {CLASS_TYPES.map((ct) => (
+              <option
+                key={ct.id}
+                value={ct.id}
+                className="bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100"
+              >
+                {ct.name}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <DndContext

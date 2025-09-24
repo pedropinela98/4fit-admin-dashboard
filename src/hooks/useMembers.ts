@@ -1,231 +1,171 @@
-import { useState, useEffect, useCallback } from 'react';
-import { membersService, type CreateMemberData, type UpdateMemberData } from '../services/members.service';
-import type { Tables } from '../lib/database.types';
+import { useState, useEffect } from "react";
 
-export type Member = Tables<'Box_Member'> & {
-  User_detail: Tables<'User_detail'>;
-  Box: Tables<'Box'>;
-  Membership?: Tables<'Membership'>[];
+export type Member = {
+  id: string;
+  box_id: string;
+  user_id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  photoUrl?: string;
+
+  // Identificação bancária/fiscal
+  nif?: string;
+  iban?: string;
+
+  // Plano atual
+  plan_id?: string; // id do plano atribuído
+  plan_name?: string; // nome do plano (ex: "Mensal", "Trimestral")
+  membership_active: boolean; // se o plano está ativo
+  membership_start?: string; // data de início
+  membership_end?: string; // data de fim
+  membership_price?: number; // preço base do plano
+  membership_discount?: number; // desconto aplicado (%)
+  membership_final_price?: number; // valor final após desconto
+  membership_paid?: boolean; // estado do pagamento
+
+  // Seguro
+  insurance_state: "valid" | "expiring_soon" | "expired";
+  insurance_end?: string;
+  insurance_name?: string;
+
+  // Timestamps
+  created_at: string;
+  updated_at?: string;
 };
 
-interface UseMembersState {
-  members: Member[];
-  loading: boolean;
-  error: string | null;
-  stats: {
-    total: number;
-    active: number;
-    inactive: number;
-    expired: number;
-  };
-}
+// Mock inicial de membros
+const initialMembers: Member[] = [
+  {
+    id: "1",
+    box_id: "box-1",
+    user_id: "user-1",
+    name: "João Silva",
+    email: "joao@example.com",
+    phone: "+351 912 345 678",
+    photoUrl: "/images/user/user-01.jpg",
+    nif: "123456789",
+    iban: "PT50000201231234567890154",
+    plan_id: "plan-1",
+    plan_name: "Plano Mensal Ilimitado",
+    membership_active: true,
+    membership_start: "2025-10-20",
+    membership_end: "2025-11-20",
+    membership_price: 40,
+    membership_discount: 0,
+    membership_final_price: 40,
+    membership_paid: true,
+    insurance_state: "valid",
+    insurance_end: "2025-12-31",
+    insurance_name: "Seguro Anual",
+    created_at: "2025-01-10T09:00:00Z",
+  },
+  {
+    id: "2",
+    box_id: "box-1",
+    user_id: "user-2",
+    name: "Maria Santos",
+    email: "maria@example.com",
+    phone: "+351 934 567 890",
+    photoUrl: "/images/user/user-02.jpg",
+    nif: "987654321",
+    iban: "PT50000201239876543210987",
+    plan_id: "plan-2",
+    plan_name: "Plano 10 Aulas",
+    membership_active: false,
+    membership_price: 100,
+    membership_discount: 10,
+    membership_final_price: 90,
+    membership_paid: false,
+    insurance_state: "expired",
+    insurance_end: "2025-01-15",
+    insurance_name: "Seguro Mensal",
+    created_at: "2025-02-01T09:00:00Z",
+  },
+  {
+    id: "3",
+    box_id: "box-1",
+    user_id: "user-3",
+    name: "Pedro Costa",
+    email: "pedro@example.com",
+    phone: "+351 967 111 222",
+    photoUrl: "/images/user/user-03.jpg",
+    nif: "112233445",
+    iban: "PT50000201231122334455667",
+    plan_id: "plan-3",
+    plan_name: "Plano Trimestral",
+    membership_active: true,
+    membership_start: "2025-07-15",
+    membership_end: "2025-10-15",
+    membership_price: 100,
+    membership_discount: 0,
+    membership_final_price: 100,
+    membership_paid: true,
+    insurance_state: "expiring_soon",
+    insurance_end: "2025-09-30",
+    insurance_name: "Seguro Trimestral",
+    created_at: "2025-03-01T09:00:00Z",
+  },
+];
 
-interface UseMembersReturn extends UseMembersState {
-  refetch: () => Promise<void>;
-  searchMembers: (query: string) => Promise<void>;
-  resetSearch: () => void;
-  createMember: (memberData: CreateMemberData) => Promise<Member>;
-  updateMember: (memberData: UpdateMemberData) => Promise<Member>;
-  deleteMember: (memberId: string) => Promise<void>;
-}
-
-export function useMembers(boxId: string): UseMembersReturn {
-  const [state, setState] = useState<UseMembersState>({
-    members: [],
-    loading: true,
-    error: null,
-    stats: { total: 0, active: 0, inactive: 0, expired: 0 },
-  });
-
-  const calculateStats = useCallback((membersData: Member[]) => {
-    const total = membersData.length;
-    let active = 0;
-    let expired = 0;
-
-    membersData.forEach(member => {
-      const activeMembership = member.Membership?.find(m => m.is_active);
-      if (activeMembership) {
-        if (new Date(activeMembership.end_date) > new Date()) {
-          active++;
-        } else {
-          expired++;
-        }
-      }
-    });
-
-    return {
-      total,
-      active,
-      inactive: total - active - expired,
-      expired,
-    };
-  }, []);
-
-  const fetchMembers = useCallback(async () => {
-    try {
-      setState(prev => ({ ...prev, loading: true, error: null }));
-      
-      // Single query instead of parallel queries
-      const membersData = await membersService.getMembersByBox(boxId);
-      const stats = calculateStats(membersData);
-
-      setState({
-        members: membersData,
-        loading: false,
-        error: null,
-        stats,
-      });
-    } catch (error) {
-      console.error('Error fetching members:', error);
-      setState(prev => ({
-        ...prev,
-        loading: false,
-        error: error instanceof Error ? error.message : 'Failed to load members',
-      }));
-    }
-  }, [boxId, calculateStats]);
-
-  const searchMembers = useCallback(async (query: string) => {
-    try {
-      setState(prev => ({ ...prev, loading: true, error: null }));
-      const data = await membersService.searchMembers(boxId, query);
-      const stats = calculateStats(data);
-      
-      setState(prev => ({
-        ...prev,
-        members: data,
-        stats,
-        loading: false,
-      }));
-    } catch (error) {
-      console.error('Error searching members:', error);
-      setState(prev => ({
-        ...prev,
-        loading: false,
-        error: error instanceof Error ? error.message : 'Search failed',
-      }));
-    }
-  }, [boxId, calculateStats]);
-
-  const resetSearch = useCallback(() => {
-    // Reset to full members list without additional query
-    // This assumes we cache the original data or refetch efficiently
-    setState(prev => ({ ...prev, loading: true }));
-    fetchMembers();
-  }, [fetchMembers]);
-
-  const createMember = useCallback(async (memberData: CreateMemberData): Promise<Member> => {
-    try {
-      const newMember = await membersService.createMember(memberData);
-      
-      // Refresh the members list
-      await fetchMembers();
-      
-      return newMember;
-    } catch (error) {
-      console.error('Error creating member:', error);
-      throw error;
-    }
-  }, [fetchMembers]);
-
-  const updateMember = useCallback(async (memberData: UpdateMemberData): Promise<Member> => {
-    try {
-      const updatedMember = await membersService.updateMember(memberData);
-      
-      // Update the local state
-      setState(prev => ({
-        ...prev,
-        members: prev.members.map(member => 
-          member.id === updatedMember.id ? updatedMember : member
-        ),
-      }));
-
-      return updatedMember;
-    } catch (error) {
-      console.error('Error updating member:', error);
-      throw error;
-    }
-  }, []);
-
-  const deleteMember = useCallback(async (memberId: string): Promise<void> => {
-    try {
-      await membersService.deleteMember(memberId);
-      
-      // Remove from local state
-      setState(prev => ({
-        ...prev,
-        members: prev.members.filter(member => member.id !== memberId),
-        stats: {
-          ...prev.stats,
-          total: prev.stats.total - 1,
-        },
-      }));
-    } catch (error) {
-      console.error('Error deleting member:', error);
-      throw error;
-    }
-  }, []);
-
-  useEffect(() => {
-    if (boxId) {
-      fetchMembers();
-    } else {
-      // Clear members when no box is selected
-      setState({
-        members: [],
-        loading: false,
-        error: null,
-        stats: { total: 0, active: 0, inactive: 0, expired: 0 },
-      });
-    }
-  }, [boxId, fetchMembers]);
-
-  return {
-    ...state,
-    refetch: fetchMembers,
-    searchMembers,
-    resetSearch,
-    createMember,
-    updateMember,
-    deleteMember,
-  };
-}
-
-// Hook for getting a single member
-export function useMember(memberId: string | undefined) {
-  const [member, setMember] = useState<Member | null>(null);
+export function useMembers() {
+  const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchMember = useCallback(async () => {
-    if (!memberId) {
-      setMember(null);
-      setLoading(false);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await membersService.getMemberById(memberId);
-      setMember(data);
-    } catch (error) {
-      console.error('Error fetching member:', error);
-      setError(error instanceof Error ? error.message : 'Failed to load member');
-      setMember(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [memberId]);
-
+  // simula fetch inicial
   useEffect(() => {
-    fetchMember();
-  }, [fetchMember]);
+    const timer = setTimeout(() => {
+      try {
+        setMembers(initialMembers);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // refetch (simula reload)
+  function refetch() {
+    setMembers(initialMembers);
+  }
+
+  // adicionar membro
+  function addMember(newMember: Omit<Member, "id" | "created_at">) {
+    const member: Member = {
+      ...newMember,
+      id: Date.now().toString(),
+      created_at: new Date().toISOString(),
+    };
+    setMembers((prev) => [...prev, member]);
+  }
+
+  // atualizar membro
+  function updateMember(id: string, updated: Partial<Member>) {
+    setMembers((prev) =>
+      prev.map((m) =>
+        m.id === id
+          ? { ...m, ...updated, updated_at: new Date().toISOString() }
+          : m
+      )
+    );
+  }
+
+  // remover membro
+  function deleteMember(id: string) {
+    setMembers((prev) => prev.filter((m) => m.id !== id));
+  }
 
   return {
-    member,
+    members,
     loading,
     error,
-    refetch: fetchMember,
+    refetch,
+    addMember,
+    updateMember,
+    deleteMember,
   };
 }

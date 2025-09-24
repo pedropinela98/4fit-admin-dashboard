@@ -121,7 +121,7 @@ export default function WeeklyView() {
   return (
     <div className="p-4">
       <h1 className="text-xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
-        Vista Semanal de Workouts
+        Vista Semanal de Treinos
       </h1>
 
       {/* Dropdown responsiva */}

@@ -18,14 +18,27 @@ import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
-import MemberList from "./pages/Members/MemberList";
-import MemberForm from "./pages/Members/MemberForm";
-import MemberDetail from "./pages/Members/MemberDetail";
+import MemberBoxList from "./pages/Boxes/MemberList";
+import MemberBoxForm from "./pages/Boxes/MemberForm";
+import MemberBoxDetail from "./pages/Boxes/MemberDetail";
 import BoxList from "./pages/Boxes/BoxList";
 import BoxForm from "./pages/Boxes/BoxForm";
 import WeeklySchedule from "./pages/Classes/WeeklySchedule";
 import Planning from "./pages/Workouts/Planning";
 import WeeklyView from "./pages/Workouts/WeeklyView";
+import StaffList from "./pages/Staff/StaffList";
+import StaffCreate from "./pages/Staff/StaffCreate";
+import StaffEdit from "./pages/Staff/StaffEdit";
+import PlanList from "./pages/Plans/PlanList";
+import PlanCreate from "./pages/Plans/PlanCreate";
+import PlanEdit from "./pages/Plans/PlanEdit";
+import SessionPackList from "./pages/Plans/SessionPlanList";
+import SessionPackCreate from "./pages/Plans/SessionPlanCreate";
+import SessionPackEdit from "./pages/Plans/SessionPlanEdit";
+import MemberList from "./pages/Members/MembersList";
+import MemberDetail from "./pages/Members/MemberDetail";
+import MemberCreate from "./pages/Members/MemberCreate";
+import PaymentsList from "./pages/Payments/PaymentsList";
 
 export default function App() {
   return (
@@ -39,14 +52,17 @@ export default function App() {
 
             {/* Members */}
             <Route path="/members" element={<MemberList />} />
-            <Route path="/members/new" element={<MemberForm />} />
             <Route path="/members/:id" element={<MemberDetail />} />
-            <Route path="/members/:id/edit" element={<MemberForm />} />
+            <Route path="/members/new" element={<MemberCreate />} />
 
             {/* Boxes */}
             <Route path="/boxes" element={<BoxList />} />
             <Route path="/boxes/new" element={<BoxForm />} />
             <Route path="/boxes/:id/edit" element={<BoxForm />} />
+            <Route path="/boxes/members" element={<MemberBoxList />} />
+            <Route path="/boxes/members/new" element={<MemberBoxForm />} />
+            <Route path="/boxes/members/:id" element={<MemberBoxDetail />} />
+            <Route path="/boxes/members/:id/edit" element={<MemberBoxForm />} />
 
             {/* Classes */}
             <Route path="/classes" element={<WeeklySchedule />} />
@@ -54,6 +70,32 @@ export default function App() {
             {/* Workouts */}
             <Route path="/workouts" element={<Planning />} />
             <Route path="/workouts/weeklyview" element={<WeeklyView />} />
+
+            {/* Staff */}
+            <Route path="/staff" element={<StaffList />} />
+            {/* Criar staff */}
+            <Route path="/staff/new" element={<StaffCreate />} />
+
+            {/* Editar staff */}
+            <Route path="/staff/:id/edit" element={<StaffEdit />} />
+
+            {/* Plano */}
+            <Route path="/plans" element={<PlanList />} />
+            <Route path="/plans/new" element={<PlanCreate />} />
+            <Route path="/plans/:id/edit" element={<PlanEdit />} />
+            {/* Senhas */}
+            <Route path="/plans/sessionpacks" element={<SessionPackList />} />
+            <Route
+              path="/plans/sessionpacks/new"
+              element={<SessionPackCreate />}
+            />
+            <Route
+              path="/plans/sessionpacks/:id/edit"
+              element={<SessionPackEdit />}
+            />
+
+            {/* Pagamentos */}
+            <Route path="/payments" element={<PaymentsList />} />
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />

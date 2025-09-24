@@ -5,7 +5,7 @@ import Button from "../../components/ui/button/Button";
 import InputField from "../../components/form/input/InputField";
 // import Select from "../../components/form/Select"; // Not used currently
 import { AngleLeftIcon, CheckCircleIcon } from "../../icons";
-import { useMembers, useMember } from "../../hooks/useMembers";
+import { useMembers, useMember } from "../../hooks/useMembersBox";
 import type { CreateMemberData } from "../../services/members.service";
 
 // For now, we'll use a hardcoded box ID - later this will come from auth context

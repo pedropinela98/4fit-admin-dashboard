@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
 
-// Assume these icons are imported from an icon library
 import {
   BoxCubeIcon,
   CalenderIcon,
@@ -16,6 +15,10 @@ import {
   TableIcon,
   UserCircleIcon,
 } from "../icons";
+import logo from "../icons/logo.svg";
+import logoDark from "../icons/logo-dark.svg";
+import logoIcon from "../icons/logo-icon.svg";
+import { TagIcon, CreditCardIcon } from "@heroicons/react/24/outline";
 import { useSidebar } from "../context/SidebarContext";
 
 type NavItem = {
@@ -33,11 +36,8 @@ const navItems: NavItem[] = [
   },
   {
     icon: <GroupIcon />,
-    name: "Members",
-    subItems: [
-      { name: "All Members", path: "/members", pro: false },
-      { name: "Add Member", path: "/members/new", pro: false },
-    ],
+    name: "Membros",
+    path: "/members",
   },
   {
     icon: <BoxCubeIcon />,
@@ -64,12 +64,22 @@ const navItems: NavItem[] = [
     ],
   },
   {
+    icon: <TagIcon />,
+    name: "Planos",
+    subItems: [
+      { name: "Planos Mensais", path: "/plans", pro: false },
+      { name: "Planos de Senhas", path: "/plans/sessionpacks", pro: false },
+    ],
+  },
+  {
     icon: <UserCircleIcon />,
     name: "Staff",
-    subItems: [
-      { name: "All Staff", path: "/staff", pro: false },
-      { name: "Add Staff", path: "/staff/new", pro: false },
-    ],
+    path: "/staff",
+  },
+  {
+    icon: <CreditCardIcon />,
+    name: "Pagamentos",
+    path: "/payments",
   },
 ];
 
@@ -88,7 +98,6 @@ const othersItems: NavItem[] = [
     name: "Settings",
     subItems: [
       { name: "Box Settings", path: "/settings/box", pro: false },
-      { name: "Membership Plans", path: "/settings/plans", pro: false },
       { name: "Payments", path: "/settings/payments", pro: false },
     ],
   },
@@ -103,7 +112,13 @@ const othersItems: NavItem[] = [
 ];
 
 const AppSidebar: React.FC = () => {
-  const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
+  const {
+    isExpanded,
+    isMobileOpen,
+    isHovered,
+    setIsHovered,
+    closeMobileSidebar,
+  } = useSidebar();
   const location = useLocation();
 
   const [openSubmenu, setOpenSubmenu] = useState<{
@@ -214,6 +229,7 @@ const AppSidebar: React.FC = () => {
             nav.path && (
               <Link
                 to={nav.path}
+                onClick={closeMobileSidebar}
                 className={`menu-item group ${
                   isActive(nav.path) ? "menu-item-active" : "menu-item-inactive"
                 }`}
@@ -251,6 +267,7 @@ const AppSidebar: React.FC = () => {
                   <li key={subItem.name}>
                     <Link
                       to={subItem.path}
+                      onClick={closeMobileSidebar}
                       className={`menu-dropdown-item ${
                         isActive(subItem.path)
                           ? "menu-dropdown-item-active"
@@ -295,7 +312,7 @@ const AppSidebar: React.FC = () => {
 
   return (
     <aside
-      className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
+      className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 pb-[200px] md:pb-0 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
         ${
           isExpanded || isMobileOpen
             ? "w-[290px]"
@@ -318,26 +335,21 @@ const AppSidebar: React.FC = () => {
             <>
               <img
                 className="dark:hidden"
-                src="/images/logo/logo.svg"
+                src={logo}
                 alt="Logo"
                 width={150}
                 height={40}
               />
               <img
                 className="hidden dark:block"
-                src="/images/logo/logo-dark.svg"
+                src={logoDark}
                 alt="Logo"
                 width={150}
                 height={40}
               />
             </>
           ) : (
-            <img
-              src="/images/logo/logo-icon.svg"
-              alt="Logo"
-              width={150}
-              height={32}
-            />
+            <img src={logoIcon} alt="Logo" width={150} height={32} />
           )}
         </Link>
       </div>
