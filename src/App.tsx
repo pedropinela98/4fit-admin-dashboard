@@ -23,6 +23,9 @@ import MemberBoxForm from "./pages/Boxes/MemberForm";
 import MemberBoxDetail from "./pages/Boxes/MemberDetail";
 import BoxList from "./pages/Boxes/BoxList";
 import BoxForm from "./pages/Boxes/BoxForm";
+import RoomsList from "./pages/Rooms/RoomsList";
+import RoomsCreate from "./pages/Rooms/RoomsCreate";
+import RoomsEdit from "./pages/Rooms/RoomsEdit";
 import WeeklySchedule from "./pages/Classes/WeeklySchedule";
 import Planning from "./pages/Workouts/Planning";
 import WeeklyView from "./pages/Workouts/WeeklyView";
@@ -63,6 +66,15 @@ export default function App() {
             <Route path="/boxes/members/new" element={<MemberBoxForm />} />
             <Route path="/boxes/members/:id" element={<MemberBoxDetail />} />
             <Route path="/boxes/members/:id/edit" element={<MemberBoxForm />} />
+    
+    
+            {/* Rooms */}
+            <Route path="/rooms" element={<RoomsList />} />
+            {/* Criar sala */}
+            <Route path="/rooms/new" element={<RoomsCreate />} />
+            {/* Editar sala */}
+            <Route path="/rooms/:id/edit" element={<RoomsEdit />} />
+
 
             {/* Classes */}
             <Route path="/classes" element={<WeeklySchedule />} />
