@@ -67,12 +67,14 @@ export default function App() {
             <Route path="/boxes/members/:id" element={<MemberBoxDetail />} />
             <Route path="/boxes/members/:id/edit" element={<MemberBoxForm />} />
     
+    
             {/* Rooms */}
             <Route path="/rooms" element={<RoomsList />} />
             {/* Criar sala */}
             <Route path="/rooms/new" element={<RoomsCreate />} />
             {/* Editar sala */}
             <Route path="/rooms/:id/edit" element={<RoomsEdit />} />
+
 
             {/* Classes */}
             <Route path="/classes" element={<WeeklySchedule />} />
