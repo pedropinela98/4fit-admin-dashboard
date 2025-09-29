@@ -1,5 +1,4 @@
 import './classTypes.css';
-import './classTypes.mobile.css';
 import React, { useState, useEffect } from 'react';
 import { Table, TableHeader, TableBody, TableRow, TableCell } from '../../components/ui/table';
 import Button from '../../components/ui/button/Button';
