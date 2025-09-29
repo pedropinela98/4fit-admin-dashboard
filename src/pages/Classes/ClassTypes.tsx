@@ -1,4 +1,5 @@
 import './classTypes.css';
+import './classTypes.mobile.css';
 import React, { useState, useEffect } from 'react';
 import { Table, TableHeader, TableBody, TableRow, TableCell } from '../../components/ui/table';
 import Button from '../../components/ui/button/Button';
@@ -103,7 +104,8 @@ const ClassTypes: React.FC = () => {
         <span style={{ margin: 0, fontWeight: 700 }}>Tipos de aulas</span>
         <Button onClick={handleCreate}>Criar um Novo Tipo de aula</Button>
       </div>
-      <Table className="mt-4">
+      <div className="table-responsive">
+        <Table className="mt-4">
         <TableHeader>
             <TableRow>
               <TableCell isHeader className="text-left">Nome</TableCell>
@@ -128,16 +130,16 @@ const ClassTypes: React.FC = () => {
           ) : (
             classTypes.map((ct) => (
               <TableRow key={ct.id}>
-                <TableCell>{ct.name}</TableCell>
-                <TableCell>{ct.description}</TableCell>
-                <TableCell>
+                <TableCell data-label="Nome">{ct.name}</TableCell>
+                <TableCell data-label="Descrição">{ct.description}</TableCell>
+                <TableCell data-label="Cor da Aula">
                   <span className="color-cell" style={{ background: ct.color || '#888', padding: '2px 8px', borderRadius: 4, color: '#fff', fontSize: '11px' }}>{ct.color}</span>
                 </TableCell>
-                <TableCell>{ct.duration_default}</TableCell>
-                <TableCell>{ct.room}</TableCell>
-                <TableCell>{ct.capacity_default}</TableCell>
-                <TableCell>{ct.waitlist_default}</TableCell>
-                <TableCell>
+                <TableCell data-label="Duração (min)">{ct.duration_default}</TableCell>
+                <TableCell data-label="Sala Utilizada">{ct.room}</TableCell>
+                <TableCell data-label="Capacidade">{ct.capacity_default}</TableCell>
+                <TableCell data-label="Lista de espera">{ct.waitlist_default}</TableCell>
+                <TableCell data-label="Ações">
                   <div className="actions-col">
                     <Button size="sm" onClick={() => navigate('/classes/types/new', { state: { classType: ct } })} className="small-edit-btn">Edit</Button>
                   </div>
@@ -146,7 +148,8 @@ const ClassTypes: React.FC = () => {
             ))
           )}
         </TableBody>
-      </Table>
+        </Table>
+      </div>
 
       {showForm && (
         <form onSubmit={handleSubmit} style={{ marginTop: 24, padding: 16, border: '1px solid #eee', borderRadius: 8 }}>
