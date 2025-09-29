@@ -4,6 +4,7 @@
   "version": "2.0.2",
   "type": "module",
   "scripts": {
+    "start": "vite",
     "dev": "vite",
     "dev:prod-env": "vite --mode production",
     "build": "tsc -b && vite build",
