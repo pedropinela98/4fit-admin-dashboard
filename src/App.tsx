@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router";
 import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./pages/AuthPages/SignUp";
+import ClassTypes from "./pages/Classes/ClassTypes";
+import ClassTypeCreate from "./pages/Classes/ClassTypeCreate";
 import NotFound from "./pages/OtherPage/NotFound";
 import UserProfiles from "./pages/UserProfiles";
 import Videos from "./pages/UiElements/Videos";
@@ -78,6 +80,8 @@ export default function App() {
 
             {/* Classes */}
             <Route path="/classes" element={<WeeklySchedule />} />
+            <Route path="/classes/types" element={<ClassTypes />} />
+            <Route path="/classes/types/new" element={<ClassTypeCreate />} />
 
             {/* Workouts */}
             <Route path="/workouts" element={<Planning />} />
