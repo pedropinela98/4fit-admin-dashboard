@@ -2,6 +2,8 @@ import './classTypes.css';
 import React, { useState, useEffect } from 'react';
 import { Table, TableHeader, TableBody, TableRow, TableCell } from '../../components/ui/table';
 import Button from '../../components/ui/button/Button';
+import { MoreDotIcon, PencilIcon } from '../../icons';
+import { Dropdown } from '../../components/ui/dropdown/Dropdown';
 import { useNavigate } from 'react-router';
 import InputField from '../../components/form/input/InputField';
 import { supabase } from '../../lib/supabase';
@@ -11,6 +13,36 @@ type ClassType = Database['public']['Tables']['Class_Type']['Row'];
 
 const boxId = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
 
+interface ClassTypeActionsDropdownProps {
+  open: boolean;
+  onOpen: () => void;
+  onClose: () => void;
+  onEdit: () => void;
+}
+
+const ClassTypeActionsDropdown: React.FC<ClassTypeActionsDropdownProps> = ({ open, onOpen, onClose, onEdit }) => (
+  <>
+    <button
+      className="ml-2 p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded dropdown-toggle"
+      title="Ações"
+      onClick={open ? onClose : onOpen}
+      type="button"
+    >
+      <MoreDotIcon className="h-4 w-4 text-gray-400" />
+    </button>
+    <Dropdown isOpen={open} onClose={onClose}>
+      <div className="py-1">
+        <button
+          className="w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-700"
+          onClick={() => { onClose(); onEdit(); }}
+        >
+          <PencilIcon className="h-4 w-4 text-gray-400" />
+          Editar
+        </button>
+      </div>
+    </Dropdown>
+  </>
+);
 
 const ClassTypes: React.FC = () => {
   const [classTypes, setClassTypes] = useState<ClassType[]>([]);
@@ -25,6 +57,7 @@ const ClassTypes: React.FC = () => {
   });
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
 
   // Fetch class types from Supabase
   useEffect(() => {
@@ -139,8 +172,13 @@ const ClassTypes: React.FC = () => {
                 <TableCell data-label="Capacidade">{ct.capacity_default}</TableCell>
                 <TableCell data-label="Lista de espera">{ct.waitlist_default}</TableCell>
                 <TableCell data-label="Ações">
-                  <div className="actions-col">
-                    <Button size="sm" onClick={() => navigate('/classes/types/new', { state: { classType: ct } })} className="small-edit-btn">Edit</Button>
+                  <div className="actions-col" style={{ position: 'relative' }}>
+                    <ClassTypeActionsDropdown
+                      open={openDropdownId === ct.id}
+                      onOpen={() => setOpenDropdownId(ct.id)}
+                      onClose={() => setOpenDropdownId(null)}
+                      onEdit={() => navigate('/classes/types/new', { state: { classType: ct } })}
+                    />
                   </div>
                 </TableCell>
               </TableRow>
