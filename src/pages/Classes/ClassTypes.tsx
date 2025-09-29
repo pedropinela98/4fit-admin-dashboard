@@ -15,7 +15,7 @@ const boxId = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
 const ClassTypes: React.FC = () => {
   const [classTypes, setClassTypes] = useState<ClassType[]>([]);
   const navigate = useNavigate();
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingId] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: '',
     description: '',
@@ -44,18 +44,6 @@ const ClassTypes: React.FC = () => {
     };
     fetchClassTypes();
   }, []);
-
-  const handleEdit = (classType: ClassType) => {
-    setEditingId(classType.id);
-    setForm({
-      name: classType.name,
-      description: classType.description || '',
-      color: classType.color || '#000000',
-      duration: classType.duration || 60,
-      room: classType.room || '',
-    });
-    setShowForm(true);
-  };
 
   const handleCreate = () => {
     navigate('/classes/types/new');
@@ -123,7 +111,9 @@ const ClassTypes: React.FC = () => {
               <TableCell isHeader className="text-left">Cor da Aula</TableCell>
               <TableCell isHeader className="text-left">Duração (min)</TableCell>
               <TableCell isHeader className="text-left">Sala Utilizada</TableCell>
-              <TableCell isHeader className="text-left"> </TableCell>
+              <TableCell isHeader className="text-left">Capacidade</TableCell>
+              <TableCell isHeader className="text-left">Lista de espera</TableCell>
+              <TableCell isHeader className="text-left">Ações</TableCell>
             </TableRow>
         </TableHeader>
         <TableBody>
@@ -143,8 +133,10 @@ const ClassTypes: React.FC = () => {
                 <TableCell>
                   <span className="color-cell" style={{ background: ct.color || '#888', padding: '2px 8px', borderRadius: 4, color: '#fff', fontSize: '11px' }}>{ct.color}</span>
                 </TableCell>
-                <TableCell>{ct.duration}</TableCell>
+                <TableCell>{ct.duration_default}</TableCell>
                 <TableCell>{ct.room}</TableCell>
+                <TableCell>{ct.capacity_default}</TableCell>
+                <TableCell>{ct.waitlist_default}</TableCell>
                 <TableCell>
                   <div className="actions-col">
                     <Button size="sm" onClick={() => navigate('/classes/types/new', { state: { classType: ct } })} className="small-edit-btn">Edit</Button>

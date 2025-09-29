@@ -17,6 +17,8 @@ const ClassTypeCreate: React.FC = () => {
     color: '#000000',
     duration: 60,
     room: '',
+    capacity_default: 0,
+    waitlist_default: 0,
   });
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -36,8 +38,10 @@ const ClassTypeCreate: React.FC = () => {
             name: data.name,
             description: data.description || '',
             color: data.color || '#000000',
-            duration: data.duration !== undefined && data.duration !== null ? data.duration : 60,
+            duration: data.duration_default !== undefined && data.duration_default !== null ? data.duration_default : 60,
             room: data.room !== undefined && data.room !== null ? String(data.room) : '',
+            capacity_default: data.capacity_default !== undefined && data.capacity_default !== null ? data.capacity_default : 0,
+            waitlist_default: data.waitlist_default !== undefined && data.waitlist_default !== null ? data.waitlist_default : 0,
           });
         }
       };
@@ -47,7 +51,10 @@ const ClassTypeCreate: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   const { name, value } = e.target;
-  setForm((prev) => ({ ...prev, [name]: name === 'duration' ? Number(value) : value }));
+  setForm((prev) => ({
+    ...prev,
+    [name]: ['duration', 'capacity_default', 'waitlist_default'].includes(name) ? Number(value) : value
+  }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -65,6 +72,8 @@ const ClassTypeCreate: React.FC = () => {
           color: form.color,
           duration: form.duration,
           room: form.room,
+          capacity_default: form.capacity_default,
+          waitlist_default: form.waitlist_default,
         })
         .eq('id', editingId));
     } else {
@@ -81,6 +90,8 @@ const ClassTypeCreate: React.FC = () => {
           color: form.color,
           duration: form.duration,
           room: form.room,
+          capacity_default: form.capacity_default,
+          waitlist_default: form.waitlist_default,
         }));
     }
     setLoading(false);
@@ -119,6 +130,14 @@ const ClassTypeCreate: React.FC = () => {
         <div style={{ marginBottom: 12 }}>
           <label style={{ display: 'block', marginBottom: 4 }}>Sala Utilizada</label>
           <InputField name="room" value={String(form.room)} onChange={handleChange} />
+        </div>
+        <div style={{ marginBottom: 12 }}>
+          <label style={{ display: 'block', marginBottom: 4 }}>Lista de espera</label>
+          <InputField name="waitlist_default" value={String(form.waitlist_default)} onChange={handleChange} type="number" />
+        </div>
+        <div style={{ marginBottom: 12 }}>
+          <label style={{ display: 'block', marginBottom: 4 }}>Capacidade</label>
+          <InputField name="capacity_default" value={String(form.capacity_default)} onChange={handleChange} type="number" />
         </div>
         <div style={{ marginTop: 12, display: 'flex', gap: '8px' }}>
           <button type="submit" style={{ padding: '8px 16px', borderRadius: 6, background: '#3b82f6', color: '#fff', border: 'none' }} disabled={loading}>

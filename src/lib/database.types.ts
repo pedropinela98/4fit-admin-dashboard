@@ -24,8 +24,10 @@ export type Database = {
           created_at: string;
           updated_at: string;
           color: string | null;
-          duration: number | null;
+          duration_default: number | null;
           room: string | null;
+          capacity_default: number | null;
+          waitlist_default: number | null;
         };
         Insert: {
           id?: string;
@@ -36,8 +38,10 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
           color?: string | null;
-          duration?: number | null;
+          duration_default?: number | null;
           room?: string | null;
+          capacity_default?: number | null;
+          waitlist_default?: number | null;
         };
         Update: {
           id?: string;
@@ -48,8 +52,10 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
           color?: string | null;
-          duration?: number | null;
+          duration_default?: number | null;
           room?: string | null;
+          capacity_default?: number | null;
+          waitlist_default?: number | null;
         };
         Relationships: [
           {
