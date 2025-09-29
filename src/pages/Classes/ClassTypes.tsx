@@ -131,61 +131,103 @@ const ClassTypes: React.FC = () => {
   };
 
   return (
-    <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-        <span style={{ margin: 0, fontWeight: 700 }}>Tipos de aulas</span>
-        <Button onClick={handleCreate}>Criar um Novo Tipo de aula</Button>
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Tipos de aulas</h1>
+        <Button className="w-full sm:w-auto" onClick={handleCreate}>Criar um Novo Tipo de aula</Button>
       </div>
-      <div className="table-responsive">
-        <Table className="mt-4">
-        <TableHeader>
-            <TableRow>
-              <TableCell isHeader className="text-left">Nome</TableCell>
-              <TableCell isHeader className="text-left">Descrição</TableCell>
-              <TableCell isHeader className="text-left">Cor da Aula</TableCell>
-              <TableCell isHeader className="text-left">Duração (min)</TableCell>
-              <TableCell isHeader className="text-left">Sala Utilizada</TableCell>
-              <TableCell isHeader className="text-left">Capacidade</TableCell>
-              <TableCell isHeader className="text-left">Lista de espera</TableCell>
-              <TableCell isHeader className="text-left">Ações</TableCell>
-            </TableRow>
-        </TableHeader>
-        <TableBody>
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
+        {/* Mobile View - Card Layout */}
+        <div className="sm:hidden">
           {loading ? (
-            <TableRow>
-              <td colSpan={6} style={{ textAlign: 'center', padding: '16px' }}>Carregando...</td>
-            </TableRow>
+            <div className="p-8 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+              <p className="text-gray-500 dark:text-gray-400">Carregando...</p>
+            </div>
           ) : classTypes.length === 0 ? (
-            <TableRow>
-              <td colSpan={6} style={{ textAlign: 'center', padding: '16px' }}>Nenhum tipo de aula encontrado.</td>
-            </TableRow>
+            <div className="p-8 text-center">
+              <p className="text-gray-500 dark:text-gray-400">Nenhum tipo de aula encontrado.</p>
+            </div>
           ) : (
-            classTypes.map((ct) => (
-              <TableRow key={ct.id}>
-                <TableCell data-label="Nome">{ct.name}</TableCell>
-                <TableCell data-label="Descrição">{ct.description}</TableCell>
-                <TableCell data-label="Cor da Aula">
-                  <span className="color-cell" style={{ background: ct.color || '#888', padding: '2px 8px', borderRadius: 4, color: '#fff', fontSize: '11px' }}>{ct.color}</span>
-                </TableCell>
-                <TableCell data-label="Duração (min)">{ct.duration_default}</TableCell>
-                <TableCell data-label="Sala Utilizada">{ct.room}</TableCell>
-                <TableCell data-label="Capacidade">{ct.capacity_default}</TableCell>
-                <TableCell data-label="Lista de espera">{ct.waitlist_default}</TableCell>
-                <TableCell data-label="Ações">
-                  <div className="actions-col" style={{ position: 'relative' }}>
-                    <ClassTypeActionsDropdown
-                      open={openDropdownId === ct.id}
-                      onOpen={() => setOpenDropdownId(ct.id)}
-                      onClose={() => setOpenDropdownId(null)}
-                      onEdit={() => navigate('/classes/types/new', { state: { classType: ct } })}
-                    />
+            <div className="divide-y divide-gray-200 dark:divide-gray-700">
+              {classTypes.map((ct) => (
+                <div key={ct.id} className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate">{ct.name}</h3>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 truncate mt-1">{ct.description}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Cor: <span className="inline-block px-2 py-1 rounded" style={{ background: ct.color || '#888', color: '#fff' }}>{ct.color}</span></p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Duração: {ct.duration_default} min</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Sala: {ct.room}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Capacidade: {ct.capacity_default}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Lista de espera: {ct.waitlist_default}</p>
+                    </div>
+                    <div className="ml-2" style={{ position: 'relative' }}>
+                      <ClassTypeActionsDropdown
+                        open={openDropdownId === ct.id}
+                        onOpen={() => setOpenDropdownId(ct.id)}
+                        onClose={() => setOpenDropdownId(null)}
+                        onEdit={() => navigate('/classes/types/new', { state: { classType: ct } })}
+                      />
+                    </div>
                   </div>
-                </TableCell>
-              </TableRow>
-            ))
+                </div>
+              ))}
+            </div>
           )}
-        </TableBody>
-        </Table>
+        </div>
+        {/* Desktop View - Table Layout */}
+        <div className="hidden sm:block">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Nome</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Descrição</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Cor</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Duração</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Sala</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Capacidade</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Lista de espera</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                {loading ? (
+                  <tr>
+                    <td colSpan={8} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">Carregando...</td>
+                  </tr>
+                ) : classTypes.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">Nenhum tipo de aula encontrado.</td>
+                  </tr>
+                ) : (
+                  classTypes.map((ct) => (
+                    <tr key={ct.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{ct.name}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{ct.description}</td>
+                      <td className="px-6 py-4"><span className="inline-block px-2 py-1 rounded" style={{ background: ct.color || '#888', color: '#fff' }}>{ct.color}</span></td>
+                      <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{ct.duration_default} min</td>
+                      <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{ct.room}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{ct.capacity_default}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{ct.waitlist_default}</td>
+                      <td className="px-6 py-4 text-right">
+                        <div style={{ position: 'relative' }}>
+                          <ClassTypeActionsDropdown
+                            open={openDropdownId === ct.id}
+                            onOpen={() => setOpenDropdownId(ct.id)}
+                            onClose={() => setOpenDropdownId(null)}
+                            onEdit={() => navigate('/classes/types/new', { state: { classType: ct } })}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       {showForm && (
