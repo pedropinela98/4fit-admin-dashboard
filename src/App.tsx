@@ -25,6 +25,7 @@ import MemberBoxForm from "./pages/Boxes/MemberForm";
 import MemberBoxDetail from "./pages/Boxes/MemberDetail";
 import BoxList from "./pages/Boxes/BoxList";
 import BoxForm from "./pages/Boxes/BoxForm";
+import BoxDetailsPage from "./pages/Boxes/BoxDetailsPage";
 import RoomsList from "./pages/Rooms/RoomsList";
 import RoomsCreate from "./pages/Rooms/RoomsCreate";
 import RoomsEdit from "./pages/Rooms/RoomsEdit";
@@ -54,6 +55,9 @@ export default function App() {
           {/* Dashboard Layout */}
           <Route element={<AppLayout />}>
             <Route index path="/" element={<Home />} />
+
+            {/* Box Details Tab */}
+            <Route path="/box-details" element={<BoxDetailsPage />} />
 
             {/* Members */}
             <Route path="/members" element={<MemberList />} />
