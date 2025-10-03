@@ -1,4 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import Button from '../../components/ui/button/Button';
+import { PencilIcon } from '../../icons';
+import { useNavigate } from 'react-router';
 import { supabase } from '../../lib/supabase';
 import type { Database } from '../../lib/database.types';
 
@@ -15,6 +18,7 @@ const BoxDetailsTab: React.FC<BoxDetailsTabProps> = ({ boxId }) => {
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<'details'>('details');
 
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchBox = async () => {
       setLoading(true);
@@ -47,7 +51,17 @@ const BoxDetailsTab: React.FC<BoxDetailsTabProps> = ({ boxId }) => {
       </div>
       {selected === 'details' && (
         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow">
-          <h2 className="text-lg font-semibold mb-2">{box.name}</h2>
+          <div className="flex justify-between items-center mb-2">
+            <h2 className="text-lg font-semibold">{box.name}</h2>
+            <Button
+              size="sm"
+              variant="outline"
+              startIcon={<PencilIcon className="h-4 w-4 text-gray-400" />}
+              onClick={() => navigate('/settings/box')}
+            >
+              Editar
+            </Button>
+          </div>
           <div className="text-sm text-gray-600 dark:text-gray-300">
             <div><strong>Location:</strong> {box.location}</div>
             <div><strong>Currency:</strong> {box.currency}</div>
