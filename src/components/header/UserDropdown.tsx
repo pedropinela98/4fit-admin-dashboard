@@ -33,6 +33,7 @@ export default function UserDropdown() {
 
   // ✅ Logout
   const handleSignOut = async () => {
+    localStorage.removeItem("superadmin-status");
     await supabase.auth.signOut();
     navigate("/signin");
   };

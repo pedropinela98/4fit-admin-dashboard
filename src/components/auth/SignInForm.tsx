@@ -51,10 +51,8 @@ export default function SignInForm() {
 
       if (error) throw error;
 
-      console.log("✅ Login bem-sucedido:", data);
       navigate("/"); // Redireciona para o dashboard após login
     } catch (err: any) {
-      console.error("Erro no login:", err);
       setError("❌ Email ou password incorretos.");
     } finally {
       setLoading(false);
