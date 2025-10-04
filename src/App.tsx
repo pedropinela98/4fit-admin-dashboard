@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./pages/AuthPages/SignUp";
 import ClassTypes from "./pages/Classes/ClassTypes";
@@ -47,110 +47,101 @@ import MemberDetail from "./pages/Members/MemberDetail";
 import MemberCreate from "./pages/Members/MemberCreate";
 import PaymentsList from "./pages/Payments/PaymentsList";
 
+// 🔒 Importa o componente de proteção
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+
 export default function App() {
   return (
-    <>
-      <Router>
-        <ScrollToTop />
-        <Routes>
-          {/* Dashboard Layout */}
-          <Route element={<AppLayout />}>
-            <Route index path="/" element={<Home />} />
-
-            {/* Box Details Tab */}
+    <Router>
+      <ScrollToTop />
+      <Routes>
+        {/* 🔒 Rotas protegidas pelo login */}
+        <Route
+          element={
+            <ProtectedRoute>
+              <AppLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index path="/" element={<Home />} />
+          
+          {/* Box Details Tab */}
             <Route path="/box-details" element={<BoxDetailsPage />} />
             <Route path="/settings/box" element={<BoxSettingsPage />} />
 
-            {/* Members */}
-            <Route path="/members" element={<MemberList />} />
-            <Route path="/members/:id" element={<MemberDetail />} />
-            <Route path="/members/new" element={<MemberCreate />} />
+          {/* Members */}
+          <Route path="/members" element={<MemberList />} />
+          <Route path="/members/:id" element={<MemberDetail />} />
+          <Route path="/members/new" element={<MemberCreate />} />
 
-            {/* Boxes */}
-            <Route path="/boxes" element={<BoxList />} />
-            <Route path="/boxes/new" element={<BoxForm />} />
-            <Route path="/boxes/:id/edit" element={<BoxForm />} />
-            <Route path="/boxes/members" element={<MemberBoxList />} />
-            <Route path="/boxes/members/new" element={<MemberBoxForm />} />
-            <Route path="/boxes/members/:id" element={<MemberBoxDetail />} />
-            <Route path="/boxes/members/:id/edit" element={<MemberBoxForm />} />
-    
-    
-            {/* Rooms */}
-            <Route path="/rooms" element={<RoomsList />} />
-            {/* Criar sala */}
-            <Route path="/rooms/new" element={<RoomsCreate />} />
-            {/* Editar sala */}
-            <Route path="/rooms/:id/edit" element={<RoomsEdit />} />
+          {/* Boxes */}
+          <Route path="/boxes" element={<BoxList />} />
+          <Route path="/boxes/new" element={<BoxForm />} />
+          <Route path="/boxes/:id/edit" element={<BoxForm />} />
+          <Route path="/boxes/members" element={<MemberBoxList />} />
+          <Route path="/boxes/members/new" element={<MemberBoxForm />} />
+          <Route path="/boxes/members/:id" element={<MemberBoxDetail />} />
+          <Route path="/boxes/members/:id/edit" element={<MemberBoxForm />} />
 
+          {/* Rooms */}
+          <Route path="/rooms" element={<RoomsList />} />
+          <Route path="/rooms/new" element={<RoomsCreate />} />
+          <Route path="/rooms/:id/edit" element={<RoomsEdit />} />
 
-            {/* Classes */}
-            <Route path="/classes" element={<WeeklySchedule />} />
-            <Route path="/classes/types" element={<ClassTypes />} />
-            <Route path="/classes/types/new" element={<ClassTypeCreate />} />
+          {/* Classes */}
+          <Route path="/classes" element={<WeeklySchedule />} />
+          <Route path="/classes/types" element={<ClassTypes />} />
+          <Route path="/classes/types/new" element={<ClassTypeCreate />} />
 
-            {/* Workouts */}
-            <Route path="/workouts" element={<Planning />} />
-            <Route path="/workouts/weeklyview" element={<WeeklyView />} />
+          {/* Workouts */}
+          <Route path="/workouts" element={<Planning />} />
+          <Route path="/workouts/weeklyview" element={<WeeklyView />} />
 
-            {/* Staff */}
-            <Route path="/staff" element={<StaffList />} />
-            {/* Criar staff */}
-            <Route path="/staff/new" element={<StaffCreate />} />
+          {/* Staff */}
+          <Route path="/staff" element={<StaffList />} />
+          <Route path="/staff/new" element={<StaffCreate />} />
+          <Route path="/staff/:id/edit" element={<StaffEdit />} />
 
-            {/* Editar staff */}
-            <Route path="/staff/:id/edit" element={<StaffEdit />} />
+          {/* Planos */}
+          <Route path="/plans" element={<PlanList />} />
+          <Route path="/plans/new" element={<PlanCreate />} />
+          <Route path="/plans/:id/edit" element={<PlanEdit />} />
+          <Route path="/plans/sessionpacks" element={<SessionPackList />} />
+          <Route
+            path="/plans/sessionpacks/new"
+            element={<SessionPackCreate />}
+          />
+          <Route
+            path="/plans/sessionpacks/:id/edit"
+            element={<SessionPackEdit />}
+          />
 
-            {/* Plano */}
-            <Route path="/plans" element={<PlanList />} />
-            <Route path="/plans/new" element={<PlanCreate />} />
-            <Route path="/plans/:id/edit" element={<PlanEdit />} />
-            {/* Senhas */}
-            <Route path="/plans/sessionpacks" element={<SessionPackList />} />
-            <Route
-              path="/plans/sessionpacks/new"
-              element={<SessionPackCreate />}
-            />
-            <Route
-              path="/plans/sessionpacks/:id/edit"
-              element={<SessionPackEdit />}
-            />
+          {/* Pagamentos */}
+          <Route path="/payments" element={<PaymentsList />} />
 
-            {/* Pagamentos */}
-            <Route path="/payments" element={<PaymentsList />} />
+          {/* Outros */}
+          <Route path="/profile" element={<UserProfiles />} />
+          <Route path="/calendar" element={<Calendar />} />
+          <Route path="/blank" element={<Blank />} />
+          <Route path="/form-elements" element={<FormElements />} />
+          <Route path="/basic-tables" element={<BasicTables />} />
+          <Route path="/alerts" element={<Alerts />} />
+          <Route path="/avatars" element={<Avatars />} />
+          <Route path="/badge" element={<Badges />} />
+          <Route path="/buttons" element={<Buttons />} />
+          <Route path="/images" element={<Images />} />
+          <Route path="/videos" element={<Videos />} />
+          <Route path="/line-chart" element={<LineChart />} />
+          <Route path="/bar-chart" element={<BarChart />} />
+        </Route>
 
-            {/* Others Page */}
-            <Route path="/profile" element={<UserProfiles />} />
-            <Route path="/calendar" element={<Calendar />} />
-            <Route path="/blank" element={<Blank />} />
+        {/* 🔓 Rotas públicas (auth) */}
+        <Route path="/signin" element={<SignIn />} />
+        <Route path="/signup" element={<SignUp />} />
 
-            {/* Forms */}
-            <Route path="/form-elements" element={<FormElements />} />
-
-            {/* Tables */}
-            <Route path="/basic-tables" element={<BasicTables />} />
-
-            {/* Ui Elements */}
-            <Route path="/alerts" element={<Alerts />} />
-            <Route path="/avatars" element={<Avatars />} />
-            <Route path="/badge" element={<Badges />} />
-            <Route path="/buttons" element={<Buttons />} />
-            <Route path="/images" element={<Images />} />
-            <Route path="/videos" element={<Videos />} />
-
-            {/* Charts */}
-            <Route path="/line-chart" element={<LineChart />} />
-            <Route path="/bar-chart" element={<BarChart />} />
-          </Route>
-
-          {/* Auth Layout */}
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/signup" element={<SignUp />} />
-
-          {/* Fallback Route */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Router>
-    </>
+        {/* Página 404 */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Router>
   );
 }
