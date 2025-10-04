@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
+import { AngleLeftIcon } from '../../icons';
 import { supabase } from '../../lib/supabase';
 import type { Database } from '../../lib/database.types';
 
 // Box type from database
 type Box = Database['public']['Tables']['Box']['Row'];
 
-const BOX_ID = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'; // TODO: Replace with dynamic logic if needed
+const BOX_ID = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
 
 
 
@@ -14,6 +16,8 @@ const BoxSettingsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchBox = async () => {
@@ -81,9 +85,23 @@ const BoxSettingsPage: React.FC = () => {
   if (!box) return <div>No box found.</div>;
 
   return (
-    <div className="max-w-lg mx-auto mt-8 p-6 bg-white dark:bg-gray-800 rounded shadow">
-      <h1 className="text-2xl font-bold mb-4">Configuração da Box</h1>
-      <form onSubmit={handleSave} className="space-y-4">
+  <div className="px-4 pt-8 pb-12 w-full">
+      <div className="flex items-center gap-2 mb-1">
+        <button
+          type="button"
+          onClick={() => box && navigate(`/boxes/details/${box.id}`)}
+          className="p-0 bg-transparent border-0 focus:outline-none"
+          aria-label="Voltar a Detalhes da Box"
+        >
+          <AngleLeftIcon className="h-5 w-5 text-gray-700 dark:text-white" />
+        </button>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Configuração da Box</h1>
+      </div>
+      <div className="mb-6 ml-7">
+        <p className="text-sm text-gray-600 dark:text-gray-400">Altere o nome, ícone ou localização da sua box</p>
+      </div>
+  <div className="p-6 bg-white dark:bg-gray-800 rounded shadow border border-gray-200 dark:border-gray-700 w-full" style={{maxWidth: '100%'}}>
+        <form onSubmit={handleSave} className="space-y-4">
         <div>
           <label className="block font-medium mb-1">Nome da Box</label>
           <input
@@ -110,7 +128,7 @@ const BoxSettingsPage: React.FC = () => {
           </div>
         </div>
         <div>
-          <label className="block font-medium mb-1">Location</label>
+          <label className="block font-medium mb-1">Localidade</label>
           <input
             type="text"
             name="location"
@@ -128,6 +146,7 @@ const BoxSettingsPage: React.FC = () => {
           {saving ? 'Saving...' : 'Save Changes'}
         </button>
       </form>
+      </div>
     </div>
   );
 };

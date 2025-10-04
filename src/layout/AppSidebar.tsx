@@ -109,7 +109,7 @@ const othersItems: NavItem[] = [
     icon: <BoxCubeIcon />,
     name: "Settings",
     subItems: [
-      { name: "Box Settings", path: "/settings/box", pro: false },
+      { name: "Box", path: "/settings/box", pro: false },
       { name: "Payments", path: "/settings/payments", pro: false },
     ],
   },
