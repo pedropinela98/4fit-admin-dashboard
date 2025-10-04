@@ -69,8 +69,22 @@ export default function App() {
           <Route path="/members/new" element={<MemberCreate />} />
 
           {/* Boxes */}
-          <Route path="/boxes" element={<BoxList />} />
-          <Route path="/boxes/new" element={<BoxForm />} />
+          <Route
+            path="/boxes"
+            element={
+              <ProtectedRoute requireSuperAdmin>
+                <BoxList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/boxes/new"
+            element={
+              <ProtectedRoute requireSuperAdmin>
+                <BoxForm />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/boxes/:id/edit" element={<BoxForm />} />
           <Route path="/boxes/members" element={<MemberBoxList />} />
           <Route path="/boxes/members/new" element={<MemberBoxForm />} />
