@@ -288,6 +288,7 @@ export type Database = {
           name: string
           timezone: string
           updated_at: string
+          boxIcon: string | null
         }
         Insert: {
           active?: boolean
@@ -300,6 +301,7 @@ export type Database = {
           name: string
           timezone?: string
           updated_at?: string
+          boxIcon?: string | null
         }
         Update: {
           active?: boolean
@@ -312,6 +314,7 @@ export type Database = {
           name?: string
           timezone?: string
           updated_at?: string
+          boxIcon?: string | null
         }
         Relationships: []
       }
