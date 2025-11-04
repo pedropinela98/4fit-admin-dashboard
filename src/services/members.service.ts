@@ -1,11 +1,11 @@
-import { supabase } from '../lib/supabase';
-import type { Tables, TablesInsert, TablesUpdate } from '../lib/database.types';
+import { supabase } from "../lib/supabase";
+import type { Tables, TablesInsert, TablesUpdate } from "../lib/database.types";
 
 // Types for our service layer
-export type MemberWithDetails = Tables<'User_detail'> & {
-  Box_Member: (Tables<'Box_Member'> & {
-    Box: Tables<'Box'>;
-    Membership?: Tables<'Membership'>[];
+export type MemberWithDetails = Tables<"User_detail"> & {
+  Box_Member: (Tables<"Box_Member"> & {
+    Box: Tables<"Box">;
+    Membership?: Tables<"Membership">[];
   })[];
 };
 
@@ -20,6 +20,35 @@ export type CreateMemberData = {
   emergencyContact?: string;
   emergencyPhone?: string;
 };
+// src/types.ts
+export type Member = {
+  id: string;
+  box_id: string;
+  user_id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  photoUrl?: string;
+  nif?: string;
+  iban?: string;
+
+  plan_id?: string;
+  plan_name?: string;
+  membership_active: boolean;
+  membership_start?: string;
+  membership_end?: string;
+  membership_price?: number;
+  membership_discount?: number;
+  membership_final_price?: number;
+  membership_paid?: boolean;
+
+  insurance_state: "valid" | "expiring_soon" | "expired";
+  insurance_end?: string;
+  insurance_name?: string;
+
+  created_at: string;
+  updated_at?: string;
+};
 
 export type UpdateMemberData = Partial<CreateMemberData> & {
   id: string;
@@ -31,8 +60,9 @@ class MembersService {
    */
   async getMembersByBox(boxId: string) {
     const { data, error } = await supabase
-      .from('Box_Member')
-      .select(`
+      .from("Box_Member")
+      .select(
+        `
         *,
         User_detail (
           *,
@@ -42,10 +72,11 @@ class MembersService {
           )
         ),
         Box (*)
-      `)
-      .eq('box_id', boxId)
-      .is('deleted_at', null)
-      .order('joined_at', { ascending: false });
+      `
+      )
+      .eq("box_id", boxId)
+      .is("deleted_at", null)
+      .order("joined_at", { ascending: false });
 
     if (error) throw error;
     return data;
@@ -56,8 +87,9 @@ class MembersService {
    */
   async getMemberById(memberId: string) {
     const { data, error } = await supabase
-      .from('Box_Member')
-      .select(`
+      .from("Box_Member")
+      .select(
+        `
         *,
         User_detail (
           *,
@@ -67,9 +99,10 @@ class MembersService {
           )
         ),
         Box (*)
-      `)
-      .eq('id', memberId)
-      .is('deleted_at', null)
+      `
+      )
+      .eq("id", memberId)
+      .is("deleted_at", null)
       .single();
 
     if (error) throw error;
@@ -81,8 +114,9 @@ class MembersService {
    */
   async getMemberByUserId(userId: string, boxId: string) {
     const { data, error } = await supabase
-      .from('Box_Member')
-      .select(`
+      .from("Box_Member")
+      .select(
+        `
         *,
         User_detail (
           *,
@@ -92,11 +126,26 @@ class MembersService {
           )
         ),
         Box (*)
-      `)
-      .eq('user_id', userId)
-      .eq('box_id', boxId)
-      .is('deleted_at', null)
+      `
+      )
+      .eq("user_id", userId)
+      .eq("box_id", boxId)
+      .is("deleted_at", null)
       .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  /**
+   * Get member by email
+   */
+  async getMemberByEmail(email: string) {
+    const { data, error } = await supabase
+      .from("User_detail")
+      .select("id, name, email")
+      .eq("email", email)
+      .maybeSingle();
 
     if (error) throw error;
     return data;
@@ -109,16 +158,16 @@ class MembersService {
     try {
       // First, create or get the User_detail record
       const { data: existingUser, error: userCheckError } = await supabase
-        .from('User_detail')
-        .select('*')
-        .eq('email', memberData.email)
+        .from("User_detail")
+        .select("*")
+        .eq("email", memberData.email)
         .single();
 
       let userId: string;
 
-      if (userCheckError && userCheckError.code === 'PGRST116') {
+      if (userCheckError && userCheckError.code === "PGRST116") {
         // User doesn't exist, create new one
-        const userInsert: TablesInsert<'User_detail'> = {
+        const userInsert: TablesInsert<"User_detail"> = {
           id: crypto.randomUUID(),
           name: memberData.name,
           email: memberData.email,
@@ -126,7 +175,7 @@ class MembersService {
         };
 
         const { data: newUser, error: userError } = await supabase
-          .from('User_detail')
+          .from("User_detail")
           .insert(userInsert)
           .select()
           .single();
@@ -141,14 +190,16 @@ class MembersService {
       }
 
       // Create notes with emergency contact info if provided
-      let notes = memberData.notes || '';
+      let notes = memberData.notes || "";
       if (memberData.emergencyContact || memberData.emergencyPhone) {
-        const emergencyInfo = `Emergency Contact: ${memberData.emergencyContact || 'N/A'}\nEmergency Phone: ${memberData.emergencyPhone || 'N/A'}`;
+        const emergencyInfo = `Emergency Contact: ${
+          memberData.emergencyContact || "N/A"
+        }\nEmergency Phone: ${memberData.emergencyPhone || "N/A"}`;
         notes = notes ? `${notes}\n\n${emergencyInfo}` : emergencyInfo;
       }
 
       // Create Box_Member record
-      const memberInsert: TablesInsert<'Box_Member'> = {
+      const memberInsert: TablesInsert<"Box_Member"> = {
         user_id: userId,
         box_id: memberData.box_id,
         joined_at: memberData.joined_at,
@@ -156,19 +207,21 @@ class MembersService {
       };
 
       const { data: member, error: memberError } = await supabase
-        .from('Box_Member')
+        .from("Box_Member")
         .insert(memberInsert)
-        .select(`
+        .select(
+          `
           *,
           User_detail (*),
           Box (*)
-        `)
+        `
+        )
         .single();
 
       if (memberError) throw memberError;
       return member;
     } catch (error) {
-      console.error('Error creating member:', error);
+      console.error("Error creating member:", error);
       throw error;
     }
   }
@@ -178,28 +231,37 @@ class MembersService {
    */
   async updateMember(memberData: UpdateMemberData) {
     try {
-      const { id, name, email, phone, notes, emergencyContact, emergencyPhone, ...boxMemberData } = memberData;
+      const {
+        id,
+        name,
+        email,
+        phone,
+        notes,
+        emergencyContact,
+        emergencyPhone,
+        ...boxMemberData
+      } = memberData;
 
       // Get the current member to find user_id
       const { data: currentMember, error: getMemberError } = await supabase
-        .from('Box_Member')
-        .select('user_id, notes')
-        .eq('id', id)
+        .from("Box_Member")
+        .select("user_id, notes")
+        .eq("id", id)
         .single();
 
       if (getMemberError) throw getMemberError;
 
       // Update User_detail if user-related fields are provided
       if (name || email || phone) {
-        const userUpdate: TablesUpdate<'User_detail'> = {};
+        const userUpdate: TablesUpdate<"User_detail"> = {};
         if (name) userUpdate.name = name;
         if (email) userUpdate.email = email;
         if (phone !== undefined) userUpdate.phone = phone;
 
         const { error: userError } = await supabase
-          .from('User_detail')
+          .from("User_detail")
           .update(userUpdate)
-          .eq('id', currentMember.user_id);
+          .eq("id", currentMember.user_id);
 
         if (userError) throw userError;
       }
@@ -207,30 +269,36 @@ class MembersService {
       // Update Box_Member record
       let updatedNotes = notes;
       if (emergencyContact || emergencyPhone) {
-        const emergencyInfo = `Emergency Contact: ${emergencyContact || 'N/A'}\nEmergency Phone: ${emergencyPhone || 'N/A'}`;
-        updatedNotes = updatedNotes ? `${updatedNotes}\n\n${emergencyInfo}` : emergencyInfo;
+        const emergencyInfo = `Emergency Contact: ${
+          emergencyContact || "N/A"
+        }\nEmergency Phone: ${emergencyPhone || "N/A"}`;
+        updatedNotes = updatedNotes
+          ? `${updatedNotes}\n\n${emergencyInfo}`
+          : emergencyInfo;
       }
 
-      const memberUpdate: TablesUpdate<'Box_Member'> = {
+      const memberUpdate: TablesUpdate<"Box_Member"> = {
         ...boxMemberData,
         ...(updatedNotes !== undefined && { notes: updatedNotes }),
       };
 
       const { data: updatedMember, error: updateError } = await supabase
-        .from('Box_Member')
+        .from("Box_Member")
         .update(memberUpdate)
-        .eq('id', id)
-        .select(`
+        .eq("id", id)
+        .select(
+          `
           *,
           User_detail (*),
           Box (*)
-        `)
+        `
+        )
         .single();
 
       if (updateError) throw updateError;
       return updatedMember;
     } catch (error) {
-      console.error('Error updating member:', error);
+      console.error("Error updating member:", error);
       throw error;
     }
   }
@@ -240,9 +308,9 @@ class MembersService {
    */
   async deleteMember(memberId: string) {
     const { data, error } = await supabase
-      .from('Box_Member')
+      .from("Box_Member")
       .update({ deleted_at: new Date().toISOString() })
-      .eq('id', memberId)
+      .eq("id", memberId)
       .select()
       .single();
 
@@ -255,16 +323,18 @@ class MembersService {
    */
   async getMemberAttendance(userId: string, limit = 10) {
     const { data, error } = await supabase
-      .from('Class_Attendance')
-      .select(`
+      .from("Class_Attendance")
+      .select(
+        `
         *,
         Class (
           *,
           Box (name)
         )
-      `)
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
+      `
+      )
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
       .limit(limit);
 
     if (error) throw error;
@@ -276,8 +346,9 @@ class MembersService {
    */
   async searchMembers(boxId: string, query: string) {
     const { data, error } = await supabase
-      .from('Box_Member')
-      .select(`
+      .from("Box_Member")
+      .select(
+        `
         *,
         User_detail (*),
         Box (*),
@@ -285,10 +356,13 @@ class MembersService {
           *,
           Plan (*)
         )
-      `)
-      .eq('box_id', boxId)
-      .is('deleted_at', null)
-      .or(`User_detail.name.ilike.%${query}%,User_detail.email.ilike.%${query}%`);
+      `
+      )
+      .eq("box_id", boxId)
+      .is("deleted_at", null)
+      .or(
+        `User_detail.name.ilike.%${query}%,User_detail.email.ilike.%${query}%`
+      );
 
     if (error) throw error;
     return data;
@@ -300,25 +374,28 @@ class MembersService {
   async getMemberStats(boxId: string) {
     // Get total members
     const { count: totalMembers, error: totalError } = await supabase
-      .from('Box_Member')
-      .select('*', { count: 'exact', head: true })
-      .eq('box_id', boxId)
-      .is('deleted_at', null);
+      .from("Box_Member")
+      .select("*", { count: "exact", head: true })
+      .eq("box_id", boxId)
+      .is("deleted_at", null);
 
     if (totalError) throw totalError;
 
     // Get active memberships count for users in this box
     const { count: activeMembers, error: activeError } = await supabase
-      .from('Membership')
-      .select(`
+      .from("Membership")
+      .select(
+        `
         *,
         User_detail!inner (
           Box_Member!inner (box_id)
         )
-      `, { count: 'exact', head: true })
-      .eq('User_detail.Box_Member.box_id', boxId)
-      .eq('is_active', true)
-      .is('deleted_at', null);
+      `,
+        { count: "exact", head: true }
+      )
+      .eq("User_detail.Box_Member.box_id", boxId)
+      .eq("is_active", true)
+      .is("deleted_at", null);
 
     if (activeError) throw activeError;
 

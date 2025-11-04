@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router";
+import { useParams } from "react-router-dom";
 import PageMeta from "../../components/common/PageMeta";
 import Button from "../../components/ui/button/Button";
 import { PlusIcon } from "../../icons";
@@ -8,6 +9,7 @@ import EntityActionsDropdown from "../../components/ActionsDropdown";
 
 export default function MemberList() {
   const [searchQuery, setSearchQuery] = useState("");
+  const { boxId } = useParams<{ boxId: string }>();
   const [filterStatus, setFilterStatus] = useState<
     "all" | "active" | "inactive"
   >("all");
@@ -16,7 +18,7 @@ export default function MemberList() {
   >("all");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { members, loading, error, refetch, deleteMember } = useMembers();
+  const { members, loading, error } = useMembers(boxId!);
 
   // ---- Filtros ----
   const filteredMembers = members
@@ -65,7 +67,7 @@ export default function MemberList() {
             </p>
           </div>
 
-          <Link to="/members/new">
+          <Link to={`/box/${boxId}/members/new`}>
             <Button>
               <PlusIcon className="h-4 w-4 mr-2" /> Adicionar Novo Membro
             </Button>
@@ -76,7 +78,7 @@ export default function MemberList() {
         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border space-y-4">
           <input
             type="text"
-            placeholder="Procurar membro por nome..."
+            placeholder="Procurar membro por nome/email..."
             className="w-full border rounded-lg px-4 py-2"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -115,7 +117,7 @@ export default function MemberList() {
           ) : error ? (
             <div className="p-8 text-center text-red-500">
               Erro: {error}{" "}
-              <Button className="ml-2" onClick={refetch}>
+              <Button className="ml-2" /* onClick={fetch} */>
                 Tentar Novamente
               </Button>
             </div>
@@ -199,7 +201,7 @@ export default function MemberList() {
                             entityId={m.id}
                             editPath={`/members/${m.id}/edit`}
                             entityName={m.name}
-                            onDelete={deleteMember}
+                            onDelete={() => {}}
                             showEdit={false}
                           />
                         </td>
@@ -273,8 +275,9 @@ export default function MemberList() {
             <div className="text-lg font-semibold text-red-600 dark:text-red-400">
               {
                 members.filter((m) => {
-                  if (!m.membership_end) return false;
-                  return new Date(m.membership_end) < new Date();
+                  return (
+                    !m.membership_end || new Date(m.membership_end) < new Date()
+                  );
                 }).length
               }
             </div>

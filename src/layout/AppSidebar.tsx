@@ -39,7 +39,7 @@ const navItems: NavItem[] = [
   {
     icon: <GroupIcon />,
     name: "Membros",
-    path: "/members",
+    path: "/box/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/members",
   },
   {
     icon: <BoxCubeIcon />,

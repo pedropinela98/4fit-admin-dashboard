@@ -20,7 +20,6 @@ import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
-import MemberBoxList from "./pages/Boxes/MemberList";
 import MemberBoxForm from "./pages/Boxes/MemberForm";
 import MemberBoxDetail from "./pages/Boxes/MemberDetail";
 import BoxList from "./pages/Boxes/BoxList";
@@ -64,15 +63,15 @@ export default function App() {
           }
         >
           <Route index path="/" element={<Home />} />
-          
+
           {/* Box Details Tab */}
-            <Route path="/box-details" element={<BoxDetailsPage />} />
-            <Route path="/settings/box" element={<BoxSettingsPage />} />
+          <Route path="/box-details" element={<BoxDetailsPage />} />
+          <Route path="/settings/box" element={<BoxSettingsPage />} />
 
           {/* Members */}
-          <Route path="/members" element={<MemberList />} />
-          <Route path="/members/:id" element={<MemberDetail />} />
-          <Route path="/members/new" element={<MemberCreate />} />
+          <Route path="/box/:boxId/members" element={<MemberList />} />
+          <Route path="/box/:boxId/members/:id" element={<MemberDetail />} />
+          <Route path="/box/:boxId/members/new" element={<MemberCreate />} />
 
           {/* Boxes */}
           <Route
@@ -92,7 +91,6 @@ export default function App() {
             }
           />
           <Route path="/boxes/:id/edit" element={<BoxForm />} />
-          <Route path="/boxes/members" element={<MemberBoxList />} />
           <Route path="/boxes/members/new" element={<MemberBoxForm />} />
           <Route path="/boxes/members/:id" element={<MemberBoxDetail />} />
           <Route path="/boxes/members/:id/edit" element={<MemberBoxForm />} />

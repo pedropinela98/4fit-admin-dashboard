@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Member } from "../../hooks/useMembers";
+import { Member } from "../../services/members.service";
 import { PencilIcon, UserIcon } from "@heroicons/react/24/solid";
 import heic2any from "heic2any";
 
@@ -129,7 +129,6 @@ export default function MemberForm({
     }
   }
 
-  // ---- Step 1: verificar email ----
   // ---- Step 1: verificar email ----
   if (step === "checkEmail") {
     return (
