@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./pages/AuthPages/SignUp";
+import ForgotPassword from "./pages/AuthPages/ForgotPassword";
+import ResetPassword from "./pages/AuthPages/ResetPassword";
 import ClassTypes from "./pages/Classes/ClassTypes";
 import ClassTypeCreate from "./pages/Classes/ClassTypeCreate";
 import NotFound from "./pages/OtherPage/NotFound";
@@ -149,9 +151,12 @@ export default function App() {
           <Route path="/bar-chart" element={<BarChart />} />
         </Route>
 
-        {/* 🔓 Rotas públicas (auth) */}
-        <Route path="/signin" element={<SignIn />} />
-        <Route path="/signup" element={<SignUp />} />
+
+  {/* 🔓 Rotas públicas (auth) */}
+  <Route path="/signin" element={<SignIn />} />
+  <Route path="/signup" element={<SignUp />} />
+  <Route path="/forgot-password" element={<ForgotPassword />} />
+  <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* Página 404 */}
         <Route path="*" element={<NotFound />} />
