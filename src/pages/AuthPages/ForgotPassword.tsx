@@ -19,20 +19,41 @@ const ForgotPasswordForm: React.FC = () => {
     setMessage('');
     
     try {
+      console.log('Sending forgot-password request for email:', email);
+      
       const res = await fetch('https://mpkisxsfbkinvtpdwrti.supabase.co/functions/v1/forgot-password', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        },
         body: JSON.stringify({ email }),
       });
-      const data = await res.json();
+      
+      console.log('Response status:', res.status);
+      
+      let data;
+      try {
+        data = await res.json();
+      } catch (e) {
+        console.error('Failed to parse response as JSON:', e);
+        const text = await res.text();
+        console.log('Response text:', text);
+        data = { error: 'Invalid response from server' };
+      }
+      
+      console.log('Response data:', data);
       
       if (res.ok) {
         setMessage('✅ Verifica o teu email para o link de redefinição de password. O link é válido por 2 horas.');
         setEmail(''); // Clear email field
       } else {
-        setError(data.error || 'Algo correu mal. Por favor tenta novamente.');
+        const errorMsg = data?.error || data?.details || data?.message || `Erro ${res.status}: Algo correu mal`;
+        setError(errorMsg);
       }
-    } catch (err) {
+    } catch (err: any) {
+      console.error('Error:', err);
       setError('Erro de rede. Verifica a tua conexão e tenta novamente.');
     } finally {
       setLoading(false);

@@ -42,7 +42,11 @@ const ResetPasswordForm: React.FC = () => {
     try {
       const res = await fetch('https://mpkisxsfbkinvtpdwrti.supabase.co/functions/v1/reset-password', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        },
         body: JSON.stringify({ token, password }),
       });
       const data = await res.json();
