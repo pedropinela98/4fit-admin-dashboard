@@ -3,15 +3,9 @@ import { supabase } from "../../lib/supabase";
 
 type MemberAssociateProps = {
   boxId: string;
-  boxName: string;
-  adminName: string;
 };
 
-export default function MemberAssociate({
-  boxId,
-  boxName,
-  adminName,
-}: MemberAssociateProps) {
+export default function MemberAssociate({ boxId }: MemberAssociateProps) {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -27,17 +21,23 @@ export default function MemberAssociate({
     }
 
     setLoading(true);
+    console.log(email, boxId);
     try {
-      const { error } = await supabase.functions.invoke("invite-user", {
-        body: {
-          email,
-          box_id: boxId,
-          box_name: boxName,
-          roles: ["athlete"],
-          invited_by: adminName,
-          admin_name: adminName,
-        },
-      });
+      const { data: userData, error: userError } =
+        await supabase.auth.getUser();
+      if (userError || !userData?.user) {
+        throw new Error("Não foi possível identificar o utilizador.");
+      }
+
+      const userId = userData.user.id;
+
+      // 🔹 Invocar a função passando também o ID do utilizador
+      const { data, error } = await supabase.functions.invoke(
+        "invite-athlete",
+        {
+          body: { email, box_id: boxId, invited_by: userId },
+        }
+      );
 
       if (error) throw error;
 
@@ -45,7 +45,7 @@ export default function MemberAssociate({
       setEmail("");
     } catch (err: any) {
       console.error(err);
-      setError(err.message || "Erro ao enviar convite.");
+      setError("Erro ao enviar convite.");
     } finally {
       setLoading(false);
     }

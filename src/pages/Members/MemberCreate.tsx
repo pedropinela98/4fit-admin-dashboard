@@ -12,17 +12,6 @@ export default function MemberCreate() {
     return <p>Box não encontrada.</p>;
   }
   const navigate = useNavigate();
-  /*  const { addMember } = useMembers(); */
-
-  function handleCreate(data: any) {
-    console.log("Novo membro:", data);
-    addMember({
-      ...data,
-      membership_active: false, // por default
-      insurance_state: "expired", // default
-    });
-    navigate(`/box/${boxId}/members`);
-  }
 
   return (
     <div className="space-y-6">
@@ -37,11 +26,7 @@ export default function MemberCreate() {
         Voltar aos membros
       </button>
 
-      <MemberAssociate
-        boxId={boxId}
-        boxName="CrossFit Gaia"
-        adminName="Pedro Lopes"
-      />
+      <MemberAssociate boxId={boxId} />
     </div>
   );
 }
