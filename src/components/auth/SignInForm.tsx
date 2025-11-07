@@ -117,21 +117,19 @@ export default function SignInForm() {
 
               {/* Checkbox e link */}
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Checkbox checked={isChecked} onChange={setIsChecked} />
-                  <span className="block font-normal text-gray-700 text-theme-sm dark:text-gray-400">
-                    Manter sessão iniciada
-                  </span>
-                </div>
-                <Link
-                  to="/reset-password"
-                  className="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400"
-                >
-                  Esqueceste-te da password?
-                </Link>
+              <div className="flex items-center gap-3">
+                <Checkbox checked={isChecked} onChange={setIsChecked} />
+                <span className="block font-normal text-gray-700 text-theme-sm dark:text-gray-400">
+                  Manter sessão iniciada
+                </span>
               </div>
-
-              {/* Botão */}
+              <Link
+                to="/forgot-password"
+                className="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400"
+              >
+                Esqueceste-te da password?
+              </Link>
+            </div>              {/* Botão */}
               <div>
                 <Button className="w-full" size="sm" disabled={loading}>
                   {loading ? "A autenticar..." : "Iniciar Sessão"}
