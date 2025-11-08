@@ -1,60 +1,60 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import PageMeta from '../../components/common/PageMeta';
-import AuthLayout from './AuthPageLayout';
-import Label from '../../components/form/Label';
-import Input from '../../components/form/input/InputField';
-import Button from '../../components/ui/button/Button';
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import PageMeta from "../../components/common/PageMeta";
+import AuthLayout from "./AuthPageLayout";
+import Label from "../../components/form/Label";
+import Input from "../../components/form/input/InputField";
+import Button from "../../components/ui/button/Button";
 
 const ForgotPasswordForm: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
-    setMessage('');
-    
+    setError("");
+    setMessage("");
+
     try {
-      console.log('Sending forgot-password request for email:', email);
-      
-      const res = await fetch('https://mpkisxsfbkinvtpdwrti.supabase.co/functions/v1/forgot-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-        },
-        body: JSON.stringify({ email }),
-      });
-      
-      console.log('Response status:', res.status);
-      
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/forgot-password`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({ email }),
+        }
+      );
+
       let data;
       try {
         data = await res.json();
       } catch (e) {
-        console.error('Failed to parse response as JSON:', e);
         const text = await res.text();
-        console.log('Response text:', text);
-        data = { error: 'Invalid response from server' };
+        data = { error: "Invalid response from server" };
       }
-      
-      console.log('Response data:', data);
-      
+
       if (res.ok) {
-        setMessage('✅ Verifica o teu email para o link de redefinição de password. O link é válido por 2 horas.');
-        setEmail(''); // Clear email field
+        setMessage(
+          "✅ Verifica o teu email para o link de redefinição de password. O link é válido por 2 horas."
+        );
+        setEmail(""); // Clear email field
       } else {
-        const errorMsg = data?.error || data?.details || data?.message || `Erro ${res.status}: Algo correu mal`;
+        const errorMsg =
+          data?.error ||
+          data?.details ||
+          data?.message ||
+          `Erro ${res.status}: Algo correu mal`;
         setError(errorMsg);
       }
     } catch (err: any) {
-      console.error('Error:', err);
-      setError('Erro de rede. Verifica a tua conexão e tenta novamente.');
+      setError("Erro de rede. Verifica a tua conexão e tenta novamente.");
     } finally {
       setLoading(false);
     }
@@ -70,7 +70,8 @@ const ForgotPasswordForm: React.FC = () => {
               Esqueceste-te da password?
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Introduz o teu email e enviaremos um link para redefinires a tua password.
+              Introduz o teu email e enviaremos um link para redefinires a tua
+              password.
             </p>
           </div>
 
@@ -112,7 +113,7 @@ const ForgotPasswordForm: React.FC = () => {
                   disabled={loading}
                   className="w-full justify-center"
                 >
-                  {loading ? 'A enviar...' : 'Enviar Link de Redefinição'}
+                  {loading ? "A enviar..." : "Enviar Link de Redefinição"}
                 </Button>
               </div>
 

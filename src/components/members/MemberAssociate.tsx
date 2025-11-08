@@ -23,29 +23,41 @@ export default function MemberAssociate({ boxId }: MemberAssociateProps) {
     setLoading(true);
     console.log(email, boxId);
     try {
+      // 🔹 Pegar o utilizador atual
       const { data: userData, error: userError } =
         await supabase.auth.getUser();
       if (userError || !userData?.user) {
         throw new Error("Não foi possível identificar o utilizador.");
       }
-
       const userId = userData.user.id;
 
-      // 🔹 Invocar a função passando também o ID do utilizador
-      const { data, error } = await supabase.functions.invoke(
-        "invite-athlete",
+      // 🔹 Invocar a função via fetch para evitar CORS
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/invite-athlete`,
         {
-          body: { email, box_id: boxId, invited_by: userId },
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            "X-Client-Info": "crossfit-dashboard@1.0.0",
+          },
+          body: JSON.stringify({ email, box_id: boxId, invited_by: userId }),
         }
       );
 
-      if (error) throw error;
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`Erro na função: ${res.status} - ${errText}`);
+      }
+
+      const data = await res.json();
 
       setSuccess(true);
       setEmail("");
     } catch (err: any) {
       console.error(err);
-      setError("Erro ao enviar convite.");
+      setError(err);
     } finally {
       setLoading(false);
     }

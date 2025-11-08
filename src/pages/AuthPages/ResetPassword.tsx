@@ -1,65 +1,74 @@
-import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate, Link } from 'react-router-dom';
-import PageMeta from '../../components/common/PageMeta';
-import AuthLayout from './AuthPageLayout';
-import Label from '../../components/form/Label';
-import Input from '../../components/form/input/InputField';
-import Button from '../../components/ui/button/Button';
+import React, { useState, useEffect } from "react";
+import { useSearchParams, useNavigate, Link } from "react-router-dom";
+import PageMeta from "../../components/common/PageMeta";
+import AuthLayout from "./AuthPageLayout";
+import Label from "../../components/form/Label";
+import Input from "../../components/form/input/InputField";
+import Button from "../../components/ui/button/Button";
 
 const ResetPasswordForm: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const token = searchParams.get('token');
-  const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const token = searchParams.get("token");
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!token) {
-      setError('Token inválido ou em falta. Por favor solicita um novo link de redefinição.');
+      setError(
+        "Token inválido ou em falta. Por favor solicita um novo link de redefinição."
+      );
     }
   }, [token]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setMessage('');
-    
+    setError("");
+    setMessage("");
+
     // Validation
     if (password.length < 6) {
-      setError('A password deve ter pelo menos 6 caracteres.');
+      setError("A password deve ter pelo menos 6 caracteres.");
       return;
     }
-    
+
     if (password !== confirm) {
-      setError('As passwords não coincidem.');
+      setError("As passwords não coincidem.");
       return;
     }
-    
+
     setLoading(true);
     try {
-      const res = await fetch('https://mpkisxsfbkinvtpdwrti.supabase.co/functions/v1/reset-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-        },
-        body: JSON.stringify({ token, password }),
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/reset-password`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({ token, password }),
+        }
+      );
       const data = await res.json();
-      
+
       if (res.ok) {
-        setMessage('✅ Password redefinida com sucesso! A redirecionar para o login...');
+        setMessage(
+          "✅ Password redefinida com sucesso! A redirecionar para o login..."
+        );
         // Redirect to login after 2 seconds
-        setTimeout(() => navigate('/signin'), 2000);
+        setTimeout(() => navigate("/signin"), 2000);
       } else {
-        setError(data.error || 'Algo correu mal. Por favor tenta novamente.');
+        setError(data.error || "Algo correu mal. Por favor tenta novamente.");
       }
     } catch (err) {
-      setError('Erro de rede. Por favor verifica a tua conexão e tenta novamente.');
+      setError(
+        "Erro de rede. Por favor verifica a tua conexão e tenta novamente."
+      );
     } finally {
       setLoading(false);
     }
@@ -144,7 +153,7 @@ const ResetPasswordForm: React.FC = () => {
                     disabled={loading || !token}
                     className="w-full justify-center"
                   >
-                    {loading ? 'A redefinir...' : 'Redefinir Password'}
+                    {loading ? "A redefinir..." : "Redefinir Password"}
                   </Button>
                 </div>
 
