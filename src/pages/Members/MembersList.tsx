@@ -9,7 +9,8 @@ import EntityActionsDropdown from "../../components/ActionsDropdown";
 
 export default function MemberList() {
   const [searchQuery, setSearchQuery] = useState("");
-  const { boxId } = useParams<{ boxId: string }>();
+  const { boxId = "" } = useParams<{ boxId?: string }>();
+
   const [filterStatus, setFilterStatus] = useState<
     "all" | "active" | "inactive"
   >("all");
@@ -18,7 +19,41 @@ export default function MemberList() {
   >("all");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { members, loading, error } = useMembers(boxId!);
+  const { members, loading, error, refetch } = useMembers(boxId!);
+
+  async function handleDeleteMember(userDetailId: string, boxId: string) {
+    try {
+      console.log(userDetailId + boxId);
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-member`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            "X-Client-Info": "crossfit-dashboard@1.0.0",
+          },
+          body: JSON.stringify({
+            user_id: userDetailId,
+            box_id: boxId,
+          }),
+        }
+      );
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Erro ao eliminar membro: ${errorText}`);
+      }
+
+      const result = await res.json();
+      console.log("✅ Membro eliminado:", result);
+      refetch();
+      // Aqui podes atualizar o estado da lista de membros no frontend, se quiseres
+    } catch (error) {
+      console.error("❌ Erro ao eliminar membro:", error);
+    }
+  }
 
   // ---- Filtros ----
   const filteredMembers = members
@@ -198,10 +233,12 @@ export default function MemberList() {
                         </td>
                         <td className="px-6 py-4 text-right">
                           <EntityActionsDropdown
-                            entityId={m.id}
+                            entityId={m.user_id}
                             editPath={`/members/${m.id}/edit`}
                             entityName={m.name}
-                            onDelete={() => {}}
+                            onDelete={() =>
+                              handleDeleteMember(m.user_id, boxId)
+                            }
                             showEdit={false}
                           />
                         </td>

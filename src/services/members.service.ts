@@ -79,7 +79,15 @@ class MembersService {
       .order("joined_at", { ascending: false });
 
     if (error) throw error;
-    return data;
+    // Remove Memberships com deleted_at preenchido
+    const filteredData = data.map((bm: any) => {
+      bm.User_detail.Membership = Array.isArray(bm.User_detail.Membership)
+        ? bm.User_detail.Membership.filter((m: any) => m.deleted_at === null)
+        : [];
+      return bm;
+    });
+
+    return filteredData;
   }
 
   /**

@@ -6,6 +6,7 @@ type MemberAssociateProps = {
 };
 
 export default function MemberAssociate({ boxId }: MemberAssociateProps) {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -15,23 +16,28 @@ export default function MemberAssociate({ boxId }: MemberAssociateProps) {
     setError(null);
     setSuccess(false);
 
+    if (!name.trim()) {
+      setError("O nome é obrigatório.");
+      return;
+    }
+
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setError("O email não é válido.");
       return;
     }
 
     setLoading(true);
-    console.log(email, boxId);
+
     try {
-      // 🔹 Pegar o utilizador atual
       const { data: userData, error: userError } =
         await supabase.auth.getUser();
+
       if (userError || !userData?.user) {
         throw new Error("Não foi possível identificar o utilizador.");
       }
+
       const userId = userData.user.id;
 
-      // 🔹 Invocar a função via fetch para evitar CORS
       const res = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/invite-athlete`,
         {
@@ -42,7 +48,12 @@ export default function MemberAssociate({ boxId }: MemberAssociateProps) {
             Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
             "X-Client-Info": "crossfit-dashboard@1.0.0",
           },
-          body: JSON.stringify({ email, box_id: boxId, invited_by: userId }),
+          body: JSON.stringify({
+            name,
+            email,
+            box_id: boxId,
+            invited_by: userId,
+          }),
         }
       );
 
@@ -51,13 +62,11 @@ export default function MemberAssociate({ boxId }: MemberAssociateProps) {
         throw new Error(`Erro na função: ${res.status} - ${errText}`);
       }
 
-      const data = await res.json();
-
       setSuccess(true);
+      setName("");
       setEmail("");
-    } catch (err: any) {
-      console.error(err);
-      setError(err);
+    } catch (err) {
+      setError("Não foi possível gerar o convite.");
     } finally {
       setLoading(false);
     }
@@ -67,7 +76,17 @@ export default function MemberAssociate({ boxId }: MemberAssociateProps) {
     <div className="p-6 border rounded-lg bg-white dark:bg-gray-800 mx-auto">
       <h2 className="text-lg font-semibold mb-4">Associar novo atleta</h2>
 
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+      <label className="block text-sm font-medium mb-1">Nome do atleta</label>
+      <input
+        type="text"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Nome completo"
+        className="w-full border rounded-lg px-3 py-2 mb-3"
+        required
+      />
+
+      <label className="block text-sm font-medium mb-1">
         Email do utilizador
       </label>
       <input
