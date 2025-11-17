@@ -1,108 +1,133 @@
 import { useState, useEffect } from "react";
+import { supabase } from "../lib/supabase";
 
 export type Plan = {
   id: string;
   box_id: string;
   name: string;
-  description?: string;
+  description?: string | null;
   price: number;
-  maxSessionsPerWeek?: number; // null = ilimitado
-  isActive: boolean;
+  plans_public?: boolean;
+  is_active?: boolean;
   created_at: string;
+  updated_at: string;
 };
 
-const initialPlans: Plan[] = [
-  {
-    id: "1",
-    box_id: "box-1",
-    name: "Livre Trânsito",
-    description: "Todas as aulas ilimitadas por semana + Open Box",
-    price: 79,
-    maxSessionsPerWeek: undefined,
-    isActive: true,
-    created_at: "2024-01-10T09:00:00Z",
-  },
-  {
-    id: "2",
-    box_id: "box-1",
-    name: "3 Aulas / Semana",
-    description: "Acesso a 3 aulas por semana + Open Box",
-    price: 75,
-    maxSessionsPerWeek: 3,
-    isActive: true,
-    created_at: "2024-02-01T09:00:00Z",
-  },
-  {
-    id: "3",
-    box_id: "box-1",
-    name: "2 Aulas / Semana",
-    description: "Acesso a 2 aulas por semana + Open Box",
-    price: 69,
-    maxSessionsPerWeek: 2,
-    isActive: true,
-    created_at: "2024-03-01T09:00:00Z",
-  },
-  {
-    id: "4",
-    box_id: "box-1",
-    name: "1 Aula / Semana",
-    description: "Acesso a 1 aula por semana + Open Box",
-    price: 61,
-    maxSessionsPerWeek: 1,
-    isActive: false,
-    created_at: "2024-04-01T09:00:00Z",
-  },
-];
-
-export function usePlans() {
+export function usePlans(boxId?: string) {
   const [plans, setPlans] = useState<Plan[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // simula fetch inicial
+  async function fetchPlans() {
+    if (!boxId) return;
+
+    setLoading(true);
+    setError(null);
+
+    const { data, error } = await supabase
+      .from("Plan")
+      .select("*")
+      .eq("box_id", boxId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      setError(error.message);
+      setLoading(false);
+      return;
+    }
+
+    console.log(data);
+
+    const mapped: Plan[] = (data || []).map((p: any) => ({
+      id: p.id,
+      box_id: p.box_id,
+      name: p.name,
+      description: p.description,
+      price: Number(p.price),
+      is_active: p.is_active,
+      plans_public: p.plans_public,
+      created_at: p.created_at,
+      updated_at: p.updated_at,
+    }));
+
+    setPlans(mapped);
+    setLoading(false);
+  }
+
   useEffect(() => {
-    const timer = setTimeout(() => {
-      try {
-        setPlans(initialPlans);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    }, 500);
-    return () => clearTimeout(timer);
-  }, []);
+    fetchPlans();
+  }, [boxId]);
 
-  // refetch (simula reload)
-  function refetch() {
-    setPlans(initialPlans);
+  // ADD plan
+  async function addPlan(
+    newPlan: Omit<Plan, "id" | "created_at" | "updated_at">
+  ) {
+    const { data, error } = await supabase
+      .from("Plan")
+      .insert([
+        {
+          box_id: newPlan.box_id,
+          name: newPlan.name,
+          description: newPlan.description,
+          price: newPlan.price,
+          max_sessions: 3,
+          is_active: newPlan.is_active,
+          plans_public: newPlan.plans_public,
+        },
+      ])
+      .select()
+      .single();
+
+    if (error) {
+      setError(error.message);
+      return null;
+    }
+
+    setPlans((prev) => [data, ...prev]);
+    return data;
   }
 
-  // adicionar plano
-  function addPlan(newPlan: Omit<Plan, "id" | "created_at">) {
-    const plan: Plan = {
-      ...newPlan,
-      id: Date.now().toString(),
-      created_at: new Date().toISOString(),
-    };
-    setPlans((prev) => [...prev, plan]);
+  // UPDATE plan
+  async function updatePlan(id: string, updated: Partial<Plan>) {
+    const { data, error } = await supabase
+      .from("Plan")
+      .update({
+        ...updated,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) {
+      setError(error.message);
+      return null;
+    }
+
+    setPlans((prev) => prev.map((p) => (p.id === id ? data : p)));
+    return data;
   }
 
-  // atualizar plano
-  function updatePlan(id: string, updated: Partial<Plan>) {
-    setPlans((prev) =>
-      prev.map((p) =>
-        p.id === id
-          ? { ...p, ...updated, updated_at: new Date().toISOString() }
-          : p
-      )
-    );
-  }
+  // DELETE plan
+  async function deletePlan(id: string) {
+    const { error } = await supabase.from("Plan").delete().eq("id", id);
 
-  // remover plano
-  function deletePlan(id: string) {
+    if (error) {
+      setError(error.message);
+      return false;
+    }
+
     setPlans((prev) => prev.filter((p) => p.id !== id));
+    return true;
   }
 
-  return { plans, loading, error, refetch, addPlan, updatePlan, deletePlan };
+  return {
+    plans,
+    loading,
+    error,
+    refetch: fetchPlans,
+    addPlan,
+    updatePlan,
+    deletePlan,
+  };
 }

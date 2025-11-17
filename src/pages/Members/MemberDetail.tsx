@@ -10,7 +10,8 @@ import EditPlanModal from "../../components/EditPlanModal";
 export default function MemberDetail() {
   const params = useParams();
   const id = params.id!;
-  const { members, loading, error } = useMembers();
+  const { boxId = "" } = useParams<{ boxId?: string }>();
+  const { members, loading, error } = useMembers(boxId, id);
 
   const [isAddPlanModalOpen, setIsAddPlanModalOpen] = useState(false);
   const [isEditPlanModalOpen, setIsEditPlanModalOpen] = useState(false);
@@ -29,7 +30,7 @@ export default function MemberDetail() {
     );
   }
 
-  const member = members.find((m) => m.id === id);
+  const member = members.find((m) => m.user_id === id);
 
   if (!member) {
     return (
@@ -60,7 +61,7 @@ export default function MemberDetail() {
 
       {/* Botão voltar */}
       <Link
-        to="/members"
+        to={`/box/${boxId}/members`}
         className="flex items-center text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
       >
         <ChevronLeftIcon className="h-5 w-5 mr-1" />

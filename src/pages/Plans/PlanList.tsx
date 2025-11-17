@@ -3,12 +3,14 @@ import { Link } from "react-router";
 import PageMeta from "../../components/common/PageMeta";
 import Button from "../../components/ui/button/Button";
 import { PlusIcon } from "../../icons";
+import { useParams } from "react-router-dom";
 import { usePlans } from "../../hooks/usePlans";
 import PlanActionsDropdown from "../../components/plans/PlanActionsDropdown";
 
 export default function PlanList() {
   const [searchQuery, setSearchQuery] = useState("");
-  const { plans, loading, error, refetch } = usePlans();
+  const { boxId = "" } = useParams<{ boxId?: string }>();
+  const { plans, loading, error, refetch } = usePlans(boxId);
 
   const filteredPlans = plans.filter(
     (p) =>
@@ -33,7 +35,7 @@ export default function PlanList() {
             </p>
           </div>
 
-          <Link to="/plans/new">
+          <Link to={`/box/${boxId}/plans/new`}>
             <Button>
               <PlusIcon className="h-4 w-4 mr-2" /> Adicionar Novo Plano
             </Button>
@@ -57,7 +59,7 @@ export default function PlanList() {
             <div className="p-8 text-center">A carregar planos...</div>
           ) : error ? (
             <div className="p-8 text-center text-red-500">
-              Erro: {error}{" "}
+              Erro: {"Não foi possivel proceder com o pedido"}{" "}
               <Button className="ml-2" onClick={refetch}>
                 Tentar Novamente
               </Button>
@@ -66,7 +68,7 @@ export default function PlanList() {
             <div className="p-8 text-center text-gray-500">
               {searchQuery
                 ? "Nenhum plano encontrado com a pesquisa"
-                : "Ainda não existe nenhum plano criado"}
+                : "Não existe nenhum plano criado"}
             </div>
           ) : (
             <>
@@ -80,9 +82,6 @@ export default function PlanList() {
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         Preço (€)
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                        Aulas / Semana
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         Estado
@@ -101,19 +100,14 @@ export default function PlanList() {
                         <td className="px-6 py-4">{p.name}</td>
                         <td className="px-6 py-4">{p.price}€</td>
                         <td className="px-6 py-4">
-                          {p.maxSessionsPerWeek
-                            ? `${p.maxSessionsPerWeek} aulas`
-                            : "Ilimitado"}
-                        </td>
-                        <td className="px-6 py-4">
                           <span
                             className={`px-2 py-1 rounded-full text-xs ${
-                              p.isActive
+                              p.is_active
                                 ? "bg-green-100 text-green-800"
                                 : "bg-red-100 text-red-800"
                             }`}
                           >
-                            {p.isActive ? "Ativo" : "Inativo"}
+                            {p.is_active ? "Ativo" : "Inativo"}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-right">
@@ -136,9 +130,6 @@ export default function PlanList() {
                         </h3>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
                           {p.price}€ —{" "}
-                          {p.maxSessionsPerWeek
-                            ? `${p.maxSessionsPerWeek}/semana`
-                            : "Ilimitado"}
                         </p>
                       </div>
                       <PlanActionsDropdown plan={p} />
@@ -162,7 +153,7 @@ export default function PlanList() {
           </div>
           <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border">
             <div className="text-lg font-semibold text-green-600 dark:text-green-400">
-              {plans.filter((p) => p.isActive).length}
+              {plans.filter((p) => p.is_active).length}
             </div>
             <div className="text-xs text-gray-500 dark:text-gray-400">
               Ativos
@@ -170,7 +161,7 @@ export default function PlanList() {
           </div>
           <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border">
             <div className="text-lg font-semibold text-red-600 dark:text-red-400">
-              {plans.filter((p) => !p.isActive).length}
+              {plans.filter((p) => !p.is_active).length}
             </div>
             <div className="text-xs text-gray-500 dark:text-gray-400">
               Inativos

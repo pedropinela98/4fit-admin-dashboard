@@ -196,7 +196,7 @@ export default function MemberList() {
                       >
                         <td className="px-6 py-4">
                           <Link
-                            to={`/members/${m.id}`}
+                            to={`/box/${boxId}/members/${m.user_id}`}
                             className="text-blue-600 dark:text-blue-400 hover:underline"
                           >
                             {m.name}
@@ -234,7 +234,7 @@ export default function MemberList() {
                         <td className="px-6 py-4 text-right">
                           <EntityActionsDropdown
                             entityId={m.user_id}
-                            editPath={`/members/${m.id}/edit`}
+                            editPath={`/box/${boxId}/members/${m.user_id}`}
                             entityName={m.name}
                             onDelete={() =>
                               handleDeleteMember(m.user_id, boxId)
