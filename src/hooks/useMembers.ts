@@ -2,18 +2,19 @@ import { useState, useEffect, useCallback } from "react";
 import { membersService } from "../services/members.service";
 import type { Member } from "../services/members.service";
 
-export function useMembers(boxId: string) {
+export function useMembers(boxId: string, userId?: string) {
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchMembers = useCallback(async () => {
     if (!boxId) return;
+
     setLoading(true);
     setError(null);
 
     try {
-      const data = await membersService.getMembersByBox(boxId);
+      const data = await membersService.getMembersByBox(boxId, userId);
 
       const mapped: Member[] = data.map((m) => ({
         id: m.id,
@@ -48,7 +49,7 @@ export function useMembers(boxId: string) {
     } finally {
       setLoading(false);
     }
-  }, [boxId]);
+  }, [boxId, userId]); // userId incluído aqui
 
   useEffect(() => {
     fetchMembers();

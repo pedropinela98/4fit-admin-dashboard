@@ -1,19 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Button from "../ui/button/Button";
 
-// mock temporário de tipos de aula
-const mockClassTypes = [
-  { id: "1", name: "CrossFit" },
-  { id: "2", name: "Open Box" },
-  { id: "3", name: "Weightlifting" },
-];
-
-type PlanFormProps = {
-  initialData?: Partial<PlanFormData>;
-  onSubmit: (data: PlanFormData) => void;
-  mode: "create" | "edit";
-};
-
+// Tipos internos do formulário
 export type PlanClassLimit = {
   class_type_id: string;
   included: boolean;
@@ -29,8 +17,24 @@ export type PlanFormData = {
   class_limits: PlanClassLimit[];
 };
 
+export type ClassType = {
+  id: string;
+  box_id: string;
+  name: string;
+  description: string | null;
+  active: boolean;
+};
+
+type PlanFormProps = {
+  initialData?: Partial<PlanFormData>;
+  classTypes?: ClassType[]; // dados do hook
+  onSubmit: (data: PlanFormData) => void;
+  mode: "create" | "edit";
+};
+
 export default function PlanForm({
   initialData,
+  classTypes = [],
   onSubmit,
   mode,
 }: PlanFormProps) {
@@ -43,14 +47,27 @@ export default function PlanForm({
   const [plansPublic, setPlansPublic] = useState(
     initialData?.plans_public ?? true
   );
-  const [classLimits, setClassLimits] = useState<PlanClassLimit[]>(
-    initialData?.class_limits ||
-      mockClassTypes.map((ct) => ({
-        class_type_id: ct.id,
-        included: false,
-        max_sessions_per_week: null,
-      }))
-  );
+  const [classLimits, setClassLimits] = useState<PlanClassLimit[]>([]);
+
+  // Inicializa os limites com base nos tipos de aula e nos dados iniciais
+  useEffect(() => {
+    if (!classTypes) return;
+
+    setClassLimits(
+      classTypes.map((ct) => {
+        const existing = initialData?.class_limits?.find(
+          (l) => l.class_type_id === ct.id
+        );
+        return (
+          existing || {
+            class_type_id: ct.id,
+            included: false,
+            max_sessions_per_week: null,
+          }
+        );
+      })
+    );
+  }, [classTypes, initialData]);
 
   function handleClassLimitChange(
     class_type_id: string,
@@ -111,21 +128,30 @@ export default function PlanForm({
         </label>
         <input
           type="number"
+          step="0.01"
+          min="0"
           value={price}
-          onChange={(e) => setPrice(Number(e.target.value))}
+          onChange={(e) => setPrice(parseFloat(e.target.value))}
+          placeholder="0,00"
           required
           className="mt-1 w-full border rounded-lg px-4 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
         />
       </div>
 
-      {/* Configuração de aulas por tipo */}
+      {/* Limites por tipo de aula */}
       <div>
         <h3 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-2">
           Limites por Tipo de Aula
         </h3>
         <div className="space-y-3">
-          {mockClassTypes.map((ct) => {
-            const limit = classLimits.find((l) => l.class_type_id === ct.id)!;
+          {classTypes.map((ct) => {
+            const limit = classLimits.find(
+              (l) => l.class_type_id === ct.id
+            ) || {
+              class_type_id: ct.id,
+              included: false,
+              max_sessions_per_week: null,
+            };
             return (
               <div
                 key={ct.id}
@@ -165,6 +191,20 @@ export default function PlanForm({
                       }
                       className="w-32 border rounded px-2 py-1 text-sm bg-white dark:bg-gray-800"
                     />
+                    <label className="flex items-center gap-1 text-xs">
+                      <input
+                        type="checkbox"
+                        checked={limit.max_sessions_per_week === null}
+                        onChange={(e) =>
+                          handleClassLimitChange(
+                            ct.id,
+                            "max_sessions_per_week",
+                            e.target.checked ? null : 1
+                          )
+                        }
+                      />
+                      Ilimitado
+                    </label>
                   </div>
                 )}
               </div>

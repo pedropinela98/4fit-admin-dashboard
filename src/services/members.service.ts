@@ -58,28 +58,37 @@ class MembersService {
   /**
    * Get all members for a specific box with their details
    */
-  async getMembersByBox(boxId: string) {
-    const { data, error } = await supabase
+  async getMembersByBox(boxId: string, userId?: string) {
+    console.log(boxId, userId);
+    let query = supabase
       .from("Box_Member")
       .select(
         `
+      *,
+      User_detail (
         *,
-        User_detail (
+        Membership (
           *,
-          Membership (
-            *,
-            Plan (*)
-          )
-        ),
-        Box (*)
-      `
+          Plan (*)
+        )
+      ),
+      Box (*)
+    `
       )
       .eq("box_id", boxId)
       .is("deleted_at", null)
       .order("joined_at", { ascending: false });
 
+    // Se receber userId, filtra também por User_detail.id
+    if (userId) {
+      query = query.eq("user_id", userId);
+    }
+
+    const { data, error } = await query;
+
     if (error) throw error;
-    // Remove Memberships com deleted_at preenchido
+
+    // Remove memberships apagadas
     const filteredData = data.map((bm: any) => {
       bm.User_detail.Membership = Array.isArray(bm.User_detail.Membership)
         ? bm.User_detail.Membership.filter((m: any) => m.deleted_at === null)
