@@ -1,6 +1,5 @@
 // src/pages/plans/PlanEdit.tsx
 import { useParams, useNavigate } from "react-router";
-import { useState } from "react";
 import PageMeta from "../../components/common/PageMeta";
 import PlanForm, { PlanFormData } from "../../components/plans/PlanForm";
 import { ChevronLeftIcon } from "@heroicons/react/24/outline";
@@ -9,7 +8,7 @@ import { supabase } from "../../lib/supabase";
 import { useToast } from "../../components/ui/Toast";
 
 export default function PlanEdit() {
-  const { id } = useParams<{ id: string }>();
+  const { id = "" } = useParams<{ id: string }>();
   const { boxId = "" } = useParams<{ boxId?: string }>();
   const navigate = useNavigate();
 
@@ -31,6 +30,7 @@ export default function PlanEdit() {
           price: data.price,
           is_active: data.is_active,
           plans_public: data.plans_public,
+          periodicity: data.periodicity,
         })
         .eq("id", id)
         .eq("box_id", boxId);
@@ -53,10 +53,10 @@ export default function PlanEdit() {
               plan_id: id,
               class_type_id: cl.class_type_id,
               limit_per_period: cl.max_sessions_per_week ?? 0,
-              is_limitless: cl.max_sessions_per_week === null,
               period_type: "week",
+              is_limitless: cl.max_sessions_per_week === null,
             },
-            { onConflict: ["plan_id", "class_type_id"] }
+            { onConflict: "plan_id,class_type_id" }
           );
         }
       }
@@ -78,9 +78,10 @@ export default function PlanEdit() {
     price: plan.price,
     is_active: plan.is_active,
     plans_public: plan.plans_public,
+    periodicity: plan.periodicity,
     class_limits: classLimits.map((cl) => ({
       class_type_id: cl.classType.id,
-      included: cl.is_limitless || cl.limit > 0,
+      included: cl.is_limitless || (cl.limit !== null && cl.limit > 0),
       max_sessions_per_week: cl.is_limitless ? null : cl.limit,
       is_limitless: cl.is_limitless,
     })),

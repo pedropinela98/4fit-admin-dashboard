@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "../lib/supabase";
+import { Enums, supabase } from "../lib/supabase";
 
 export type Plan = {
   id: string;
@@ -7,6 +7,7 @@ export type Plan = {
   name: string;
   description: string | null;
   price: number;
+  periodicity: "monthly" | "quarterly" | "semester" | "annualy" | null;
   is_active: boolean;
   plans_public: boolean;
   created_at: string;
@@ -31,8 +32,14 @@ export type ClassType = {
 export function usePlanById(boxId?: string, planId?: string) {
   const [plan, setPlan] = useState<Plan | null>(null);
   const [classLimits, setClassLimits] = useState<
-    { classType: ClassType; limit: number | null; period_type: string }[]
+    {
+      classType: ClassType;
+      limit: number | null;
+      period_type: string;
+      is_limitless: boolean;
+    }[]
   >([]);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -70,6 +77,7 @@ export function usePlanById(boxId?: string, planId?: string) {
         name: planRes.data.name,
         description: planRes.data.description,
         price: Number(planRes.data.price),
+        periodicity: planRes.data?.periodicity,
         is_active: planRes.data.is_active,
         plans_public: planRes.data.plans_public,
         created_at: planRes.data.created_at,

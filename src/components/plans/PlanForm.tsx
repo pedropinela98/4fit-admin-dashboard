@@ -14,6 +14,7 @@ export type PlanFormData = {
   price: number;
   is_active: boolean;
   plans_public: boolean;
+  periodicity: "monthly" | "quarterly" | "semester" | "annualy" | null;
   class_limits: PlanClassLimit[];
 };
 
@@ -48,6 +49,9 @@ export default function PlanForm({
     initialData?.plans_public ?? true
   );
   const [classLimits, setClassLimits] = useState<PlanClassLimit[]>([]);
+  const [periodicity, setPeriodicity] = useState(
+    initialData?.periodicity || "monthly"
+  );
 
   // Inicializa os limites com base nos tipos de aula e nos dados iniciais
   useEffect(() => {
@@ -89,6 +93,7 @@ export default function PlanForm({
       price,
       is_active: isActive,
       plans_public: plansPublic,
+      periodicity,
       class_limits: classLimits,
     });
   }
@@ -136,6 +141,28 @@ export default function PlanForm({
           required
           className="mt-1 w-full border rounded-lg px-4 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
         />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          Periodicidade
+        </label>
+        <select
+          value={periodicity}
+          disabled={mode === "edit"}
+          onChange={(e) =>
+            setPeriodicity(
+              e.target.value as "monthly" | "quarterly" | "semester" | "annualy"
+            )
+          }
+          className={`mt-1 w-full border rounded-lg px-4 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white 
+      ${mode === "edit" ? "opacity-60 cursor-not-allowed" : ""}`}
+        >
+          <option value="monthly">Mensal</option>
+          <option value="quarterly">Trimestral</option>
+          <option value="semester">Semestral</option>
+          <option value="annualy">Anual</option>
+        </select>
       </div>
 
       {/* Limites por tipo de aula */}

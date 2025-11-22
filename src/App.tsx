@@ -119,13 +119,16 @@ export default function App() {
             <Route path="/box/:boxId/plans" element={<PlanList />} />
             <Route path="/box/:boxId/plans/new" element={<PlanCreate />} />
             <Route path="/box/:boxId/plans/:id/edit" element={<PlanEdit />} />
-            <Route path="/plans/sessionpacks" element={<SessionPackList />} />
             <Route
-              path="/plans/sessionpacks/new"
+              path="/box/:boxId/sessionpacks"
+              element={<SessionPackList />}
+            />
+            <Route
+              path="/box/:boxId/sessionpacks/new"
               element={<SessionPackCreate />}
             />
             <Route
-              path="/plans/sessionpacks/:id/edit"
+              path="/box/:boxId/sessionpacks/:id/edit"
               element={<SessionPackEdit />}
             />
 

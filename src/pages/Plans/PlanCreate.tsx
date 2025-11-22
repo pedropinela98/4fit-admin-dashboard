@@ -10,9 +10,10 @@ import { useState, useEffect } from "react";
 
 export default function PlanCreate() {
   const navigate = useNavigate();
-  const { boxId = "" } = useParams<{ boxId?: string }>();
+  const { boxId = "" } = useParams<{ boxId: string }>();
   const { addToast } = useToast();
   const [classTypes, setClassTypes] = useState<ClassType[]>([]);
+
   useEffect(() => {
     async function fetchClassTypes() {
       const { data, error } = await supabase
@@ -29,7 +30,7 @@ export default function PlanCreate() {
 
   async function handleCreate(data: PlanFormData) {
     try {
-      // 1️⃣ Inserir o plano
+      // 1 Inserir o plano
       const { data: insertedPlan, error } = await supabase
         .from("Plan")
         .insert([
@@ -40,6 +41,7 @@ export default function PlanCreate() {
             price: data.price,
             is_active: data.is_active,
             plans_public: data.plans_public,
+            periodicity: data.periodicity,
           },
         ])
         .select()

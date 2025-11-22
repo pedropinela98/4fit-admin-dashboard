@@ -1,31 +1,27 @@
-// src/components/sessionpacks/SessionPackForm.tsx
 import { useState } from "react";
 import Button from "../ui/button/Button";
+import { SessionPack } from "../../hooks/useSessionPacks";
+import { SessionPackWithAllowed } from "../../hooks/useSessionPackById";
 
 type SessionPackFormProps = {
-  initialData?: Partial<SessionPack>;
+  initialData?: Partial<SessionPackWithAllowed>;
+  classTypes?: ClassType[];
   onSubmit: (
-    data: Omit<SessionPack, "id" | "created_at" | "updated_at" | "box_id">
+    data: Omit<SessionPack, "id" | "created_at" | "updated_at" | "box_id"> & {
+      allowed_class_types?: string[];
+    }
   ) => void;
   mode: "create" | "edit";
 };
 
-export type SessionPack = {
+export type ClassType = {
   id: string;
   name: string;
-  description?: string;
-  price: number;
-  session_count: number;
-  validity_days: number;
-  pack_public: boolean;
-  is_active: boolean;
-  box_id: string;
-  created_at: string;
-  updated_at: string;
 };
 
 export default function SessionPackForm({
   initialData = {},
+  classTypes = [],
   onSubmit,
   mode,
 }: SessionPackFormProps) {
@@ -41,6 +37,17 @@ export default function SessionPackForm({
   const [packPublic, setPackPublic] = useState(initialData.pack_public ?? true);
   const [isActive, setIsActive] = useState(initialData.is_active ?? true);
 
+  // IDs dos tipos de aulas selecionados
+  const [selectedClassTypes, setSelectedClassTypes] = useState<string[]>(
+    initialData.allowed_class_types || []
+  );
+
+  function toggleClassType(id: string) {
+    setSelectedClassTypes((prev) =>
+      prev.includes(id) ? prev.filter((ctId) => ctId !== id) : [...prev, id]
+    );
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     onSubmit({
@@ -51,6 +58,7 @@ export default function SessionPackForm({
       validity_days: parseInt(validityDays),
       pack_public: packPublic,
       is_active: isActive,
+      allowed_class_types: selectedClassTypes,
     });
   }
 
@@ -128,6 +136,27 @@ export default function SessionPackForm({
           className="mt-1 w-full border rounded-lg px-4 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
         />
       </div>
+
+      {/* Tipos de Aula */}
+      {classTypes.length > 0 && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Tipos de Aula Permitidos
+          </label>
+          <div className="mt-1 flex flex-wrap gap-2">
+            {classTypes.map((ct) => (
+              <label key={ct.id} className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={selectedClassTypes.includes(ct.id)}
+                  onChange={() => toggleClassType(ct.id)}
+                />
+                {ct.name}
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Checkboxes */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-4">

@@ -7,6 +7,7 @@ export type Plan = {
   name: string;
   description?: string | null;
   price: number;
+  periodicity: string;
   plans_public?: boolean;
   is_active?: boolean;
   created_at: string;
@@ -36,14 +37,13 @@ export function usePlans(boxId?: string) {
       return;
     }
 
-    console.log(data);
-
     const mapped: Plan[] = (data || []).map((p: any) => ({
       id: p.id,
       box_id: p.box_id,
       name: p.name,
       description: p.description,
       price: Number(p.price),
+      periodicity: p.periodicity,
       is_active: p.is_active,
       plans_public: p.plans_public,
       created_at: p.created_at,
@@ -57,56 +57,6 @@ export function usePlans(boxId?: string) {
   useEffect(() => {
     fetchPlans();
   }, [boxId]);
-
-  // ADD plan
-  async function addPlan(
-    newPlan: Omit<Plan, "id" | "created_at" | "updated_at">
-  ) {
-    const { data, error } = await supabase
-      .from("Plan")
-      .insert([
-        {
-          box_id: newPlan.box_id,
-          name: newPlan.name,
-          description: newPlan.description,
-          price: newPlan.price,
-          max_sessions: 3,
-          is_active: newPlan.is_active,
-          plans_public: newPlan.plans_public,
-        },
-      ])
-      .select()
-      .single();
-
-    if (error) {
-      setError(error.message);
-      return null;
-    }
-
-    setPlans((prev) => [data, ...prev]);
-    return data;
-  }
-
-  // UPDATE plan
-  async function updatePlan(id: string, updated: Partial<Plan>) {
-    const { data, error } = await supabase
-      .from("Plan")
-      .update({
-        ...updated,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", id)
-      .select()
-      .single();
-
-    if (error) {
-      setError(error.message);
-      return null;
-    }
-
-    setPlans((prev) => prev.map((p) => (p.id === id ? data : p)));
-    return data;
-  }
 
   // DELETE plan
   async function deletePlan(id: string) {
@@ -126,8 +76,6 @@ export function usePlans(boxId?: string) {
     loading,
     error,
     refetch: fetchPlans,
-    addPlan,
-    updatePlan,
     deletePlan,
   };
 }
