@@ -6,7 +6,7 @@ import { PlusIcon } from "../../icons";
 import { useParams } from "react-router-dom";
 import { useSessionPacks } from "../../hooks/useSessionPacks";
 import ActionsDropdown from "../../components/ActionsDropdown";
-import Pagination from "../../components/ui/pagination";
+import Pagination from "../../components/ui/Pagination";
 
 export default function SessionPackList() {
   const [searchQuery, setSearchQuery] = useState("");
