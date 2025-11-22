@@ -6,7 +6,7 @@ import { PlusIcon } from "../../icons";
 import { useParams } from "react-router-dom";
 import { usePlans } from "../../hooks/usePlans";
 import PlanActionsDropdown from "../../components/plans/PlanActionsDropdown";
-import Pagination from "../../components/ui/pagination";
+import Pagination from "../../components/ui/Pagination";
 
 export default function PlanList() {
   const [searchQuery, setSearchQuery] = useState("");
