@@ -67,7 +67,6 @@ export function usePlans(boxId?: string) {
       return false;
     }
 
-    setPlans((prev) => prev.filter((p) => p.id !== id));
     return true;
   }
 

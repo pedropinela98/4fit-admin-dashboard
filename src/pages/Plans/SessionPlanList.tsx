@@ -77,21 +77,21 @@ export default function SessionPackList() {
 
   return (
     <>
-      <PageMeta title="Senhas | Gestão" description="" />
+      <PageMeta title="Planos de Senhas | Gestão" description="" />
 
       <div className="space-y-6">
         {/* Cabeçalho */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-              Senhas
+              Planos de Senhas
             </h1>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Gere os packs de senhas disponíveis
+              Gere os planos de senhas disponíveis
             </p>
           </div>
 
-          <Link to="/plans/sessionpacks/new">
+          <Link to={`/box/${boxId}/sessionpacks/new`}>
             <Button>
               <PlusIcon className="h-4 w-4 mr-2" /> Criar Nova Senha
             </Button>

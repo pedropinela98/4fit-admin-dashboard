@@ -7,23 +7,10 @@ import ClassTypes from "./pages/Classes/ClassTypes";
 import ClassTypeCreate from "./pages/Classes/ClassTypeCreate";
 import NotFound from "./pages/OtherPage/NotFound";
 import UserProfiles from "./pages/UserProfiles";
-import Videos from "./pages/UiElements/Videos";
-import Images from "./pages/UiElements/Images";
-import Alerts from "./pages/UiElements/Alerts";
-import Badges from "./pages/UiElements/Badges";
-import Avatars from "./pages/UiElements/Avatars";
-import Buttons from "./pages/UiElements/Buttons";
-import LineChart from "./pages/Charts/LineChart";
-import BarChart from "./pages/Charts/BarChart";
-import Calendar from "./pages/Calendar";
-import BasicTables from "./pages/Tables/BasicTables";
-import FormElements from "./pages/Forms/FormElements";
 import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
-import MemberBoxForm from "./pages/Boxes/MemberForm";
-import MemberBoxDetail from "./pages/Boxes/MemberDetail";
 import BoxList from "./pages/Boxes/BoxList";
 import BoxForm from "./pages/Boxes/BoxForm";
 import BoxDetailsPage from "./pages/Boxes/BoxDetailsPage";
@@ -47,7 +34,7 @@ import MemberList from "./pages/Members/MembersList";
 import MemberDetail from "./pages/Members/MemberDetail";
 import MemberCreate from "./pages/Members/MemberCreate";
 import PaymentsList from "./pages/Payments/PaymentsList";
-import { ToastProvider, useToast } from "./components/ui/Toast";
+import { ToastProvider } from "./components/ui/Toast";
 
 // 🔒 Importa o componente de proteção
 import ProtectedRoute from "./components/auth/ProtectedRoute";
@@ -137,18 +124,7 @@ export default function App() {
 
             {/* Outros */}
             <Route path="/profile" element={<UserProfiles />} />
-            <Route path="/calendar" element={<Calendar />} />
             <Route path="/blank" element={<Blank />} />
-            <Route path="/form-elements" element={<FormElements />} />
-            <Route path="/basic-tables" element={<BasicTables />} />
-            <Route path="/alerts" element={<Alerts />} />
-            <Route path="/avatars" element={<Avatars />} />
-            <Route path="/badge" element={<Badges />} />
-            <Route path="/buttons" element={<Buttons />} />
-            <Route path="/images" element={<Images />} />
-            <Route path="/videos" element={<Videos />} />
-            <Route path="/line-chart" element={<LineChart />} />
-            <Route path="/bar-chart" element={<BarChart />} />
           </Route>
 
           {/* 🔓 Rotas públicas (auth) */}

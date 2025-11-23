@@ -5,7 +5,13 @@ import { MoreDotIcon, PencilIcon, TrashBinIcon } from "../../icons";
 import { Plan } from "../../hooks/usePlans";
 import { Modal } from "../ui/modal/index";
 
-export default function PlanActionsDropdown({ plan }: { plan: Plan }) {
+export default function PlanActionsDropdown({
+  plan,
+  onDelete,
+}: {
+  plan: Plan;
+  onDelete: (id: string) => void;
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
@@ -120,7 +126,7 @@ export default function PlanActionsDropdown({ plan }: { plan: Plan }) {
 
           <button
             onClick={() => {
-              console.log("Eliminar plano:", plan.id);
+              onDelete(plan.id);
               setShowDeleteModal(false);
             }}
             className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700"

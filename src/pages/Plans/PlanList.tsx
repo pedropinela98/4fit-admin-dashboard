@@ -7,11 +7,13 @@ import { useParams } from "react-router-dom";
 import { usePlans } from "../../hooks/usePlans";
 import PlanActionsDropdown from "../../components/plans/PlanActionsDropdown";
 import Pagination from "../../components/ui/Pagination";
+import { useToast } from "../../components/ui/Toast";
 
 export default function PlanList() {
   const [searchQuery, setSearchQuery] = useState("");
+  const { addToast } = useToast();
   const { boxId = "" } = useParams<{ boxId: string }>();
-  const { plans, loading, error, refetch } = usePlans(boxId);
+  const { plans, loading, error, refetch, deletePlan } = usePlans(boxId);
   const [statusFilter, setStatusFilter] = useState<
     "all" | "active" | "inactive"
   >("all");
@@ -86,6 +88,17 @@ export default function PlanList() {
     } else {
       setSortField(field);
       setSortDirection("asc");
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    const result = await deletePlan(id);
+
+    if (result === true) {
+      await refetch();
+      addToast("Plano removido com sucesso!", "success");
+    } else {
+      addToast("Não foi possivel remover o plano", "error");
     }
   };
 
@@ -273,7 +286,10 @@ export default function PlanList() {
                           </span>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <PlanActionsDropdown plan={p} />
+                          <PlanActionsDropdown
+                            onDelete={(id) => handleDelete(id)}
+                            plan={p}
+                          />
                         </td>
                       </tr>
                     ))}
@@ -299,7 +315,10 @@ export default function PlanList() {
                           {p.price}€ —{" "}
                         </p>
                       </div>
-                      <PlanActionsDropdown plan={p} />
+                      <PlanActionsDropdown
+                        onDelete={(id) => handleDelete(id)}
+                        plan={p}
+                      />
                     </div>
                   </div>
                 ))}

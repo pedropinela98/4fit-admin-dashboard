@@ -137,23 +137,25 @@ export default function DayBoard({
               items={allSectionIds}
               strategy={rectSortingStrategy}
             >
-              <div className="grid grid-cols-1 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 gap-6 sm:gap-4">
                 {sections.map((sec) => (
-                  <SectionCard
-                    key={sec.id}
-                    section={sec}
-                    onChange={(updated) =>
-                      onSectionsChange((prev) =>
-                        prev.map((s) => (s.id === updated.id ? updated : s))
-                      )
-                    }
-                    onDelete={() =>
-                      onSectionsChange((prev) =>
-                        prev.filter((s) => s.id !== sec.id)
-                      )
-                    }
-                    onSave={() => onSaveSection(sec)}
-                  />
+                  <div className="mt-3 mb-3">
+                    <SectionCard
+                      key={sec.id}
+                      section={sec}
+                      onChange={(updated) =>
+                        onSectionsChange((prev) =>
+                          prev.map((s) => (s.id === updated.id ? updated : s))
+                        )
+                      }
+                      onDelete={() =>
+                        onSectionsChange((prev) =>
+                          prev.filter((s) => s.id !== sec.id)
+                        )
+                      }
+                      onSave={() => onSaveSection(sec)}
+                    />
+                  </div>
                 ))}
               </div>
             </SortableContext>
