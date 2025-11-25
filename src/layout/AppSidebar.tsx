@@ -50,7 +50,7 @@ const navItems: NavItem[] = [
       { name: "Add Box", path: "/boxes/new" },
     ],
   },
-  { icon: <GridIcon />, name: "Salas", path: "/rooms" },
+  { icon: <GridIcon />, name: "Salas", path: "/box/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/rooms" },
   {
     icon: <CalenderIcon />,
     name: "Aulas",
