@@ -65,7 +65,7 @@ export default function RoomsActionsDropdown({ room }: { room: Room }) {
             >
               <div className="py-1">
                 <Link
-                  to={`/rooms/${room.id}/edit`}
+                  to={`/box/${room.box_id}/rooms/${room.id}/editRoom`}
                   className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                   onClick={() => setIsOpen(false)}
                 >

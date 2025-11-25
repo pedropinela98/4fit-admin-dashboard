@@ -5,8 +5,8 @@ import { useRooms, Room } from "../../hooks/useRooms";
 import { ChevronLeftIcon } from "@heroicons/react/24/outline";
 
 export default function RoomEdit() {
-  const { id } = useParams<{ id: string }>();
-  const { rooms, loading, updateRoom } = useRooms();
+  const { id, boxId = "" } = useParams<{ id: string; boxId?: string }>();
+  const { rooms, loading, updateRoom } = useRooms(boxId);
   const navigate = useNavigate();
 
   if (loading) {
@@ -22,9 +22,13 @@ export default function RoomEdit() {
 
   const room : Room = maybeRoom;
 
-  function handleEdit(data: Partial<Room>) {
-    updateRoom(room.id, data);
-    navigate("/rooms");
+  async function handleEdit(data: Partial<Room>) {
+    try {
+      await updateRoom(room.id, data);
+      navigate(`/box/${boxId}/rooms`);
+    } catch (err) {
+      console.error('Erro ao atualizar sala:', err);
+    }
   }
 
   return (
@@ -33,7 +37,7 @@ export default function RoomEdit() {
 
       {/* Botão de voltar */}
       <button
-        onClick={() => navigate("/rooms")}
+        onClick={() => navigate(`/box/${boxId}/rooms`)}
         className="flex items-center text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
       >
         <ChevronLeftIcon className="h-5 w-5 mr-1" />
