@@ -16,7 +16,6 @@ const ClassTypeCreate: React.FC = () => {
     description: '',
     color: '#000000',
     duration: 60,
-    room: '',
     capacity_default: 0,
     waitlist_default: 0,
   });
@@ -39,7 +38,6 @@ const ClassTypeCreate: React.FC = () => {
             description: data.description || '',
             color: data.color || '#000000',
             duration: data.duration_default !== undefined && data.duration_default !== null ? data.duration_default : 60,
-            room: data.room !== undefined && data.room !== null ? String(data.room) : '',
             capacity_default: data.capacity_default !== undefined && data.capacity_default !== null ? data.capacity_default : 0,
             waitlist_default: data.waitlist_default !== undefined && data.waitlist_default !== null ? data.waitlist_default : 0,
           });
@@ -71,7 +69,6 @@ const ClassTypeCreate: React.FC = () => {
           updated_at: new Date().toISOString(),
           color: form.color,
           duration: form.duration,
-          room: form.room,
           capacity_default: form.capacity_default,
           waitlist_default: form.waitlist_default,
         })
@@ -89,7 +86,6 @@ const ClassTypeCreate: React.FC = () => {
           updated_at: new Date().toISOString(),
           color: form.color,
           duration: form.duration,
-          room: form.room,
           capacity_default: form.capacity_default,
           waitlist_default: form.waitlist_default,
         }));
@@ -126,10 +122,6 @@ const ClassTypeCreate: React.FC = () => {
         <div style={{ marginBottom: 12 }}>
           <label style={{ display: 'block', marginBottom: 4 }}>Duração (min)</label>
           <InputField name="duration" value={String(form.duration)} onChange={handleChange} type="number" />
-        </div>
-        <div style={{ marginBottom: 12 }}>
-          <label style={{ display: 'block', marginBottom: 4 }}>Sala Utilizada</label>
-          <InputField name="room" value={String(form.room)} onChange={handleChange} />
         </div>
         <div style={{ marginBottom: 12 }}>
           <label style={{ display: 'block', marginBottom: 4 }}>Lista de espera</label>

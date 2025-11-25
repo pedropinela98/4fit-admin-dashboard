@@ -53,7 +53,6 @@ const ClassTypes: React.FC = () => {
     description: '',
     color: '#000000',
     duration: 60,
-    room: '',
   });
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -99,7 +98,6 @@ const ClassTypes: React.FC = () => {
           description: form.description,
           color: form.color,
           duration: form.duration,
-          room: form.room,
         })
         .eq('id', editingId);
       if (!error) {
@@ -119,7 +117,6 @@ const ClassTypes: React.FC = () => {
           description: form.description,
           color: form.color,
           duration: form.duration,
-          room: form.room,
         })
         .select();
       if (data && data.length > 0 && !error) {
@@ -158,7 +155,6 @@ const ClassTypes: React.FC = () => {
                       <p className="text-xs text-gray-600 dark:text-gray-400 truncate mt-1">{ct.description}</p>
                       <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Cor: <span className="inline-block px-2 py-1 rounded" style={{ background: ct.color || '#888', color: '#fff' }}>{ct.color}</span></p>
                       <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Duração: {ct.duration_default} min</p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Sala: {ct.room}</p>
                       <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Capacidade: {ct.capacity_default}</p>
                       <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Lista de espera: {ct.waitlist_default}</p>
                     </div>
@@ -186,7 +182,6 @@ const ClassTypes: React.FC = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Descrição</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Cor</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Duração</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Sala</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Capacidade</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Lista de espera</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Ações</th>
@@ -208,7 +203,6 @@ const ClassTypes: React.FC = () => {
                       <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{ct.description}</td>
                       <td className="px-6 py-4"><span className="inline-block px-2 py-1 rounded" style={{ background: ct.color || '#888', color: '#fff' }}>{ct.color}</span></td>
                       <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{ct.duration_default} min</td>
-                      <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{ct.room}</td>
                       <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{ct.capacity_default}</td>
                       <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{ct.waitlist_default}</td>
                       <td className="px-6 py-4 text-right">
@@ -247,10 +241,6 @@ const ClassTypes: React.FC = () => {
           <div style={{ marginBottom: 12 }}>
             <label style={{ display: 'block', marginBottom: 4 }}>Duração (min)</label>
             <InputField name="duration" value={form.duration} onChange={handleChange} type="number" />
-          </div>
-          <div style={{ marginBottom: 12 }}>
-            <label style={{ display: 'block', marginBottom: 4 }}>Sala utilizada</label>
-            <InputField name="room" value={form.room} onChange={handleChange} />
           </div>
           <div style={{ marginTop: 12, display: 'flex', gap: '8px' }}>
             <button type="submit" style={{ padding: '8px 16px', borderRadius: 6, background: '#3b82f6', color: '#fff', border: 'none' }}>
