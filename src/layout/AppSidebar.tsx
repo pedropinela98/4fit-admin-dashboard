@@ -79,6 +79,10 @@ const navItems: NavItem[] = [
         name: "Planos de Senhas",
         path: "/box/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/sessionpacks",
       },
+      {
+        name: "Seguros",
+        path: "/box/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/insurances",
+      },
     ],
   },
   { icon: <UserCircleIcon />, name: "Staff", path: "/staff" },
