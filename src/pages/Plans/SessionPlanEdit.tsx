@@ -41,7 +41,7 @@ export default function SessionPackEdit() {
     > & { allowed_class_types?: string[] }
   ) {
     if (!sessionPack?.id) {
-      addToast("ID do pack inválido", "error");
+      addToast("ID do plano inválido", "error");
       return;
     }
 
@@ -58,11 +58,11 @@ export default function SessionPackEdit() {
       );
 
       if (!result.success) {
-        addToast("Não foi possível atualizar o pack", "error");
+        addToast("Não foi possível atualizar o plano", "error");
         return;
       }
 
-      addToast("Pack atualizado com sucesso!", "success");
+      addToast("Plano atualizado com sucesso!", "success");
       navigate(`/box/${boxId}/sessionpacks`);
     } catch (err) {
       console.error(err);

@@ -34,6 +34,8 @@ import MemberList from "./pages/Members/MembersList";
 import MemberDetail from "./pages/Members/MemberDetail";
 import MemberCreate from "./pages/Members/MemberCreate";
 import PaymentsList from "./pages/Payments/PaymentsList";
+import InsuranceEdit from "./pages/Plans/InsuranceEdit";
+import InsuranceList from "./pages/Plans/InsuranceList";
 import { ToastProvider } from "./components/ui/Toast";
 
 // 🔒 Importa o componente de proteção
@@ -106,6 +108,7 @@ export default function App() {
             <Route path="/box/:boxId/plans" element={<PlanList />} />
             <Route path="/box/:boxId/plans/new" element={<PlanCreate />} />
             <Route path="/box/:boxId/plans/:id/edit" element={<PlanEdit />} />
+            {/* Planos de senhas */}
             <Route
               path="/box/:boxId/sessionpacks"
               element={<SessionPackList />}
@@ -119,6 +122,12 @@ export default function App() {
               element={<SessionPackEdit />}
             />
 
+            {/* Seguros */}
+            <Route path="/box/:boxId/insurances" element={<InsuranceList />} />
+            <Route
+              path="/box/:boxId/insurances/:id/edit"
+              element={<InsuranceEdit />}
+            />
             {/* Pagamentos */}
             <Route path="/payments" element={<PaymentsList />} />
 
