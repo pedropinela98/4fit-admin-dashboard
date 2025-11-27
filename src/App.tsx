@@ -40,6 +40,7 @@ import { ToastProvider } from "./components/ui/Toast";
 
 // 🔒 Importa o componente de proteção
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import InsuranceCreate from "./pages/Plans/InsuranceCreate";
 
 export default function App() {
   return (
@@ -88,7 +89,10 @@ export default function App() {
             {/* Rooms */}
             <Route path="/box/:boxId/rooms" element={<RoomsList />} />
             <Route path="/box/:boxId/rooms/new" element={<RoomsCreate />} />
-            <Route path="/box/:boxId/rooms/:id/editRoom" element={<RoomsEdit />} />
+            <Route
+              path="/box/:boxId/rooms/:id/editRoom"
+              element={<RoomsEdit />}
+            />
 
             {/* Classes */}
             <Route path="/classes" element={<WeeklySchedule />} />
@@ -127,6 +131,10 @@ export default function App() {
             <Route
               path="/box/:boxId/insurances/:id/edit"
               element={<InsuranceEdit />}
+            />
+            <Route
+              path="/box/:boxId/insurances/new"
+              element={<InsuranceCreate />}
             />
             {/* Pagamentos */}
             <Route path="/payments" element={<PaymentsList />} />

@@ -114,6 +114,28 @@ export function useInsurances(boxId: string) {
     return data;
   };
 
+  // CREATE insurance
+  const addInsurance = async (
+    insurance: Omit<Insurance, "id" | "box_id" | "created_at">
+  ) => {
+    const { data, error } = await supabase
+      .from("Insurance")
+      .insert({
+        ...insurance,
+        box_id: boxId,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Erro ao criar insurance:", error);
+      return null;
+    }
+
+    fetchInsurances();
+    return data;
+  };
+
   return {
     insurances,
     loading,
@@ -121,6 +143,7 @@ export function useInsurances(boxId: string) {
     refetch: fetchInsurances,
     deleteInsurance,
     updateInsurance,
+    addInsurance,
     getInsuranceById,
   };
 }
