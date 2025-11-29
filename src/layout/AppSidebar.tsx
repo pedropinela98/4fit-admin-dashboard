@@ -50,7 +50,11 @@ const navItems: NavItem[] = [
       { name: "Add Box", path: "/boxes/new" },
     ],
   },
-  { icon: <GridIcon />, name: "Salas", path: "/box/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/rooms" },
+  {
+    icon: <GridIcon />,
+    name: "Salas",
+    path: "/box/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/rooms",
+  },
   {
     icon: <CalenderIcon />,
     name: "Aulas",
@@ -85,7 +89,11 @@ const navItems: NavItem[] = [
       },
     ],
   },
-  { icon: <UserCircleIcon />, name: "Staff", path: "/staff" },
+  {
+    icon: <UserCircleIcon />,
+    name: "Staff",
+    path: "/box/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/staff",
+  },
   { icon: <CreditCardIcon />, name: "Pagamentos", path: "/payments" },
 ];
 

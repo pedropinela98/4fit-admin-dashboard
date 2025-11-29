@@ -104,9 +104,9 @@ export default function App() {
             <Route path="/workouts/weeklyview" element={<WeeklyView />} />
 
             {/* Staff */}
-            <Route path="/staff" element={<StaffList />} />
-            <Route path="/staff/new" element={<StaffCreate />} />
-            <Route path="/staff/:id/edit" element={<StaffEdit />} />
+            <Route path="/box/:boxId/staff" element={<StaffList />} />
+            <Route path="/box/:boxId/staff/new" element={<StaffCreate />} />
+            <Route path="/box/:boxId/staff/:id/edit" element={<StaffEdit />} />
 
             {/* Planos */}
             <Route path="/box/:boxId/plans" element={<PlanList />} />

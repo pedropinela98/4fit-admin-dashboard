@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useParams } from "react-router";
 import PageMeta from "../../components/common/PageMeta";
 import Button from "../../components/ui/button/Button";
 import { PlusIcon } from "../../icons";
@@ -8,15 +8,92 @@ import StaffActionsDropdown from "../../components/staff/StaffActionsDropdown";
 
 export default function StaffList() {
   const [searchQuery, setSearchQuery] = useState("");
-  const { staff, loading, error, refetch } = useStaff();
+  const { boxId = "" } = useParams<{ boxId?: string }>();
 
+  const { staff, loading, error, refetch } = useStaff(boxId);
+
+  // Paginação
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // Ordenação
+  const [sortConfig, setSortConfig] = useState<{
+    key: keyof any;
+    direction: "asc" | "desc";
+  } | null>(null);
+
+  function handleSort(key: keyof any) {
+    let direction: "asc" | "desc" = "asc";
+    if (
+      sortConfig &&
+      sortConfig.key === key &&
+      sortConfig.direction === "asc"
+    ) {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  }
+
+  // Tradução dos roles
+  const translatedRole = (role: string) => {
+    switch (role) {
+      case "admin":
+        return "Administrador";
+      case "coach":
+        return "Treinador";
+      case "receptionist":
+        return "Rececionista";
+      default:
+        return role;
+    }
+  };
+
+  // Filtro de pesquisa
   const filteredStaff = staff.filter(
     (s) =>
       s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       s.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.role.some((r) => r.toLowerCase().includes(searchQuery.toLowerCase()))
+      s.role.some((r) =>
+        translatedRole(r).toLowerCase().includes(searchQuery.toLowerCase())
+      )
   );
 
+  // Ordenação aplicada
+  const sortedStaff = sortConfig
+    ? [...filteredStaff].sort((a, b) => {
+        const aVal = (a as any)[sortConfig.key];
+        const bVal = (b as any)[sortConfig.key];
+        if (typeof aVal === "string" && typeof bVal === "string") {
+          return sortConfig.direction === "asc"
+            ? aVal.localeCompare(bVal)
+            : bVal.localeCompare(aVal);
+        }
+        if (typeof aVal === "boolean" && typeof bVal === "boolean") {
+          return sortConfig.direction === "asc"
+            ? Number(aVal) - Number(bVal)
+            : Number(bVal) - Number(aVal);
+        }
+        if (aVal instanceof Date && bVal instanceof Date) {
+          return sortConfig.direction === "asc"
+            ? aVal.getTime() - bVal.getTime()
+            : bVal.getTime() - aVal.getTime();
+        }
+        return 0;
+      })
+    : filteredStaff;
+
+  // Paginação aplicada
+  const totalPages = Math.ceil(sortedStaff.length / itemsPerPage);
+  const paginatedStaff = sortedStaff.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  function handlePageChange(page: number) {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  }
   return (
     <>
       <PageMeta title="Staff | Gestão" description="" />
@@ -29,11 +106,11 @@ export default function StaffList() {
               Staff
             </h1>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Gere os teus administradores, coaches e rececionistas
+              Gere os teus administradores, treinadores e rececionistas
             </p>
           </div>
 
-          <Link to="/staff/new">
+          <Link to={`/box/${boxId}/staff/new`}>
             <Button>
               <PlusIcon className="h-4 w-4 mr-2" /> Adicionar Novo Staff
             </Button>
@@ -62,7 +139,7 @@ export default function StaffList() {
                 Tentar Novamente
               </Button>
             </div>
-          ) : filteredStaff.length === 0 ? (
+          ) : paginatedStaff.length === 0 ? (
             <div className="p-8 text-center text-gray-500">
               {searchQuery
                 ? "Nenhum staff encontrado com a pesquisa"
@@ -75,19 +152,31 @@ export default function StaffList() {
                 <table className="w-full">
                   <thead>
                     <tr className="bg-gray-50 dark:bg-gray-700">
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                      <th
+                        onClick={() => handleSort("name")}
+                        className="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase"
+                      >
                         Nome
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                      <th
+                        onClick={() => handleSort("email")}
+                        className="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase"
+                      >
                         Email
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         Funções
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                      <th
+                        onClick={() => handleSort("active")}
+                        className="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase"
+                      >
                         Estado
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                      <th
+                        onClick={() => handleSort("created_at")}
+                        className="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase"
+                      >
                         Criado
                       </th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
@@ -96,7 +185,7 @@ export default function StaffList() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {filteredStaff.map((s) => (
+                    {paginatedStaff.map((s) => (
                       <tr
                         key={s.id}
                         className="hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -104,9 +193,7 @@ export default function StaffList() {
                         <td className="px-6 py-4">{s.name}</td>
                         <td className="px-6 py-4">{s.email}</td>
                         <td className="px-6 py-4">
-                          {s.role
-                            .map((r) => r.charAt(0).toUpperCase() + r.slice(1))
-                            .join(", ")}
+                          {s.role.map((r) => translatedRole(r)).join(", ")}
                         </td>
                         <td className="px-6 py-4">
                           <span
@@ -133,7 +220,7 @@ export default function StaffList() {
 
               {/* Cards Mobile */}
               <div className="sm:hidden divide-y divide-gray-200 dark:divide-gray-700">
-                {filteredStaff.map((s) => (
+                {paginatedStaff.map((s) => (
                   <div key={s.id} className="p-4">
                     <div className="flex justify-between">
                       <div>
@@ -144,7 +231,7 @@ export default function StaffList() {
                           {s.email}
                         </p>
                         <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {s.role.join(", ")}
+                          {s.role.map((r) => translatedRole(r)).join(", ")}
                         </p>
                       </div>
                       <StaffActionsDropdown staff={s} />
@@ -156,6 +243,29 @@ export default function StaffList() {
                   </div>
                 ))}
               </div>
+
+              {/* Paginação */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-4 py-4">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1 rounded border text-sm disabled:opacity-50"
+                  >
+                    Anterior
+                  </button>
+                  <span className="text-sm">
+                    Página {currentPage} de {totalPages}
+                  </span>
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-1 rounded border text-sm disabled:opacity-50"
+                  >
+                    Próximo
+                  </button>
+                </div>
+              )}
             </>
           )}
         </div>
@@ -175,7 +285,7 @@ export default function StaffList() {
               {staff.filter((s) => s.role.includes("coach")).length}
             </div>
             <div className="text-xs text-gray-500 dark:text-gray-400">
-              Coaches
+              Treinadores
             </div>
           </div>
           <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border">
@@ -188,7 +298,7 @@ export default function StaffList() {
           </div>
           <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border">
             <div className="text-lg font-semibold text-purple-600 dark:text-purple-400">
-              {staff.filter((s) => s.role.includes("rececionista")).length}
+              {staff.filter((s) => s.role.includes("receptionist")).length}
             </div>
             <div className="text-xs text-gray-500 dark:text-gray-400">
               Rececionistas

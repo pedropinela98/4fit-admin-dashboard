@@ -1,83 +1,78 @@
 // src/hooks/useStaff.ts
 import { useState, useEffect } from "react";
+import { supabase } from "../lib/supabase";
 
 export type Staff = {
   id: string;
-  box_id: string;
-  user_id: string;
   name: string;
   email: string;
   phone?: string;
-  role: ("admin" | "coach" | "rececionista")[];
+  bank_account?: string;
+  role: string[];
   active: boolean;
-  start_date: string;
-  end_date?: string;
   created_at: string;
+  start_date?: string;
+  end_date?: string;
 };
 
-// mock data estática
-const initialStaff: Staff[] = [
-  {
-    id: "1",
-    box_id: "box-1",
-    user_id: "user-1",
-    name: "João Silva",
-    email: "joao.silva@example.com",
-    phone: "+351 912 345 678",
-    role: ["admin"], // agora é array
-    active: true,
-    start_date: "2024-01-10",
-    created_at: "2024-01-10T09:00:00Z",
-  },
-  {
-    id: "2",
-    box_id: "box-1",
-    user_id: "user-2",
-    name: "Maria Ferreira",
-    email: "maria.ferreira@example.com",
-    phone: "+351 934 567 890",
-    role: ["coach"], // também array
-    active: true,
-    start_date: "2024-02-01",
-    created_at: "2024-02-01T09:00:00Z",
-  },
-  {
-    id: "3",
-    box_id: "box-1",
-    user_id: "user-3",
-    name: "Pedro Costa",
-    email: "pedro.costa@example.com",
-    phone: "+351 967 111 222",
-    role: ["rececionista", "coach"], // múltiplos roles
-    active: false,
-    start_date: "2023-11-15",
-    end_date: "2024-06-30",
-    created_at: "2023-11-15T09:00:00Z",
-  },
-];
-
-export function useStaff() {
+export function useStaff(boxId: string) {
   const [staff, setStaff] = useState<Staff[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // simula fetch inicial
+  // fetch inicial
   useEffect(() => {
-    const timer = setTimeout(() => {
+    async function fetchStaff() {
+      setLoading(true);
+      setError(null);
       try {
-        setStaff(initialStaff);
+        const { data, error } = await supabase.rpc("get_staff_by_box_id", {
+          p_box_id: boxId,
+        });
+
+        if (error) throw error;
+
+        // mapeia os campos para o tipo Staff
+        const mapped: Staff[] = data.map((s: any) => ({
+          id: s.id,
+          name: s.name,
+          email: s.email,
+          phone: s.phone_number,
+          bank_account: s.bank_account,
+          role: s.role,
+          active: s.active,
+          created_at: s.created_at,
+          // se quiseres podes puxar start_date / end_date de Box_Staff
+        }));
+
+        setStaff(mapped);
       } catch (err: any) {
         setError(err.message);
       } finally {
         setLoading(false);
       }
-    }, 500);
-    return () => clearTimeout(timer);
-  }, []);
+    }
 
-  // refetch (simula reload)
-  function refetch() {
-    setStaff(initialStaff);
+    if (boxId) {
+      fetchStaff();
+    }
+  }, [boxId]);
+
+  // refetch manual
+  async function refetch() {
+    if (!boxId) return;
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.rpc("get_staff_by_box_id", {
+        p_box_id: boxId,
+      });
+      if (error) throw error;
+      setStaff(data);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   // adicionar staff

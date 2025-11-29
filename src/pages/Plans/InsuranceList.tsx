@@ -189,7 +189,7 @@ export default function InsuranceList() {
                 <table className="w-full">
                   <thead>
                     <tr className="bg-gray-50 dark:bg-gray-700">
-                      {["name", "period", "is_active"].map((field) => (
+                      {["name", "period", "price", "is_active"].map((field) => (
                         <th
                           key={field}
                           className="px-6 py-3 text-left text-xs font-medium uppercase cursor-pointer text-gray-500 dark:text-gray-400"
@@ -197,6 +197,7 @@ export default function InsuranceList() {
                         >
                           {field === "name" && "Nome"}
                           {field === "period" && "Período"}
+                          {field === "price" && "Preço"}
                           {field === "is_active" && "Estado"}
                           {sortField === field
                             ? sortDirection === "asc"
@@ -221,6 +222,7 @@ export default function InsuranceList() {
                           {" "}
                           {translatePeriodicity(i.period)}
                         </td>
+                        <td className="px-6 py-4">{i.price}€</td>
                         <td className="px-6 py-4">
                           <span
                             className={`px-2 py-1 rounded-full text-xs ${

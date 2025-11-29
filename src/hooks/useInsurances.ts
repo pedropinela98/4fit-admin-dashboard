@@ -7,6 +7,7 @@ export type Insurance = {
   name: string;
   period: "monthly" | "quarterly" | "semester" | "annualy";
   box_id: string;
+  price: number;
   is_active: boolean | null;
   created_at: string;
 };
@@ -36,6 +37,7 @@ export function useInsurances(boxId: string) {
         name: row.name,
         period: row.period,
         box_id: row.box_id,
+        price: row.price,
         is_active: row.is_active ?? false,
         created_at: row.created_at,
       }));
@@ -69,6 +71,7 @@ export function useInsurances(boxId: string) {
       name: data.name,
       period: data.period,
       box_id: data.box_id,
+      price: data.price,
       is_active: data.is_active ?? false,
       created_at: data.created_at,
     };

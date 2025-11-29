@@ -16,6 +16,7 @@ export default function InsuranceForm({
   const [name, setName] = useState(initialData.name || "");
   const [period, setPeriod] = useState(initialData.period || "monthly");
   const [isActive, setIsActive] = useState(initialData.is_active ?? true);
+  const [price, setPrice] = useState(initialData.price ?? 0); // <-- NOVO
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -24,6 +25,7 @@ export default function InsuranceForm({
       name,
       period,
       is_active: isActive,
+      price, // <-- NOVO
     });
   }
 
@@ -60,6 +62,22 @@ export default function InsuranceForm({
           <option value="semester">Semestral</option>
           <option value="annualy">Anual</option>
         </select>
+      </div>
+
+      {/* Preço */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          Preço (€)
+        </label>
+        <input
+          type="number"
+          value={price}
+          onChange={(e) => setPrice(Number(e.target.value))}
+          min={0}
+          step="0.01"
+          required
+          className="mt-1 w-full border rounded-lg px-4 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+        />
       </div>
 
       {/* Ativo */}

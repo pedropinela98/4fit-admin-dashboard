@@ -4,184 +4,109 @@ import { supabase } from "../lib/supabase";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-interface BoxOption {
+interface InsuranceOption {
   id: string;
   name: string;
   price: number;
-  is_plan: boolean; // true = Plano, false = Session Pack
 }
 
-type AddPlanModalProps = {
+type AddInsuranceModalProps = {
   member: Member;
   endDate?: string;
   onSave: (
-    planId: string,
+    insuranceId: string,
     price: number,
-    discount: number,
     startDate: string,
     isPaid: boolean
   ) => void;
   onClose: () => void;
 };
 
-export default function AddPlanModal({
+export default function AddInsuranceModal({
   member,
-  endDate, // <-- NOVO
+  endDate,
   onSave,
   onClose,
-}: AddPlanModalProps) {
-  const [plans, setPlans] = useState<
-    { id: string; name: string; price: number }[]
-  >([]);
-  const [sessionPacks, setSessionPacks] = useState<
-    { id: string; name: string; price: number }[]
-  >([]);
-  const [planId, setPlanId] = useState("");
+}: AddInsuranceModalProps) {
+  const [insurances, setInsurances] = useState<InsuranceOption[]>([]);
+  const [insuranceId, setInsuranceId] = useState("");
   const [price, setPrice] = useState<number>(0);
-  const [discount, setDiscount] = useState<number>(0);
   const [isPaid, setIsPaid] = useState<boolean | null>(null);
-  const [activeTab, setActiveTab] = useState<"plans" | "packs">("plans");
 
-  // hoje por defeito
   const today = new Date();
   const [startDate, setStartDate] = useState<Date>(today);
 
-  // mínimo = hoje ou dia seguinte ao fim da subscrição (membership ou session pack)
   const minDate = endDate
     ? new Date(new Date(endDate).getTime() + 24 * 60 * 60 * 1000)
     : today;
 
-  // Buscar planos e session packs da box
+  const [discount, setDiscount] = useState<number>(0);
+  const finalPrice = price - (price * discount) / 100;
+  // Buscar insurances diretamente da tabela
   useEffect(() => {
-    async function fetchOptions() {
+    async function fetchInsurances() {
       if (!member.box_id) return;
 
-      const { data, error } = await supabase.rpc("get_box_options", {
-        p_box_id: member.box_id,
-      });
+      const { data, error } = await supabase
+        .from("Insurance")
+        .select("id, name, price")
+        .eq("box_id", member.box_id);
 
       if (error) {
-        console.error("Erro ao buscar opções:", error.message);
+        console.error("Erro ao buscar insurances:", error.message);
         return;
       }
 
-      const options = data as unknown as BoxOption[];
-      setPlans(options.filter((o) => o.is_plan));
-      setSessionPacks(options.filter((o) => !o.is_plan));
+      setInsurances(data ?? []);
     }
 
-    fetchOptions();
+    fetchInsurances();
   }, [member.box_id]);
 
-  function handlePlanChange(
-    id: string,
-    list: { id: string; name: string; price: number }[]
-  ) {
-    setPlanId(id);
-    const selected = list.find((p) => p.id === id);
+  function handleInsuranceChange(id: string) {
+    setInsuranceId(id);
+    const selected = insurances.find((i) => i.id === id);
     if (selected) {
       setPrice(selected.price);
-      setDiscount(0);
     }
   }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!planId || isPaid === null) return;
-    onSave(
-      planId,
-      price,
-      discount,
-      startDate.toISOString().split("T")[0],
-      isPaid
-    );
+    if (!insuranceId || isPaid === null) return;
+    onSave(insuranceId, price, startDate.toISOString().split("T")[0], isPaid);
   }
-
-  useEffect(() => {
-    // sempre que muda de tab, limpar seleção e valores
-    setPlanId("");
-    setPrice(0);
-    setDiscount(0);
-  }, [activeTab]);
-
-  const finalPrice = price - (price * discount) / 100;
 
   return (
     <form onSubmit={handleSubmit} className="p-6 space-y-4">
       <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-        Atribuir novo plano
+        Atribuir novo seguro
       </h2>
 
-      {/* Tabs */}
-      <div className="flex gap-4 border-b mb-4">
-        <button
-          type="button"
-          onClick={() => setActiveTab("plans")}
-          className={`px-3 py-2 text-sm font-medium ${
-            activeTab === "plans"
-              ? "border-b-2 border-blue-600 text-blue-600"
-              : "text-gray-500"
-          }`}
-        >
-          Planos
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab("packs")}
-          className={`px-3 py-2 text-sm font-medium ${
-            activeTab === "packs"
-              ? "border-b-2 border-blue-600 text-blue-600"
-              : "text-gray-500"
-          }`}
-        >
-          Planos de Senhas
-        </button>
-      </div>
-
-      {/* Dropdown condicional */}
-      {activeTab === "plans" ? (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Selecionar Plano
-          </label>
-          <select
-            value={planId}
-            onChange={(e) => handlePlanChange(e.target.value, plans)}
-            className="mt-1 w-full border rounded-lg px-3 py-2"
-            required
-          >
-            <option value="">-- Escolher plano --</option>
-            {plans.map((plan) => (
-              <option key={plan.id} value={plan.id}>
-                {plan.name} - {plan.price}€
-              </option>
-            ))}
-          </select>
-        </div>
-      ) : (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Selecionar Plano de Senhas
-          </label>
-          <select
-            value={planId}
-            onChange={(e) => handlePlanChange(e.target.value, sessionPacks)}
-            className="mt-1 w-full border rounded-lg px-3 py-2"
-            required
-          >
-            <option value="">-- Escolher Plano de Senhas --</option>
-            {sessionPacks.map((sp) => (
-              <option key={sp.id} value={sp.id}>
-                {sp.name} - {sp.price}€
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-      {/* Preço base */}
+      {/* Dropdown de seguros */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          Preço base (€)
+          Selecionar Seguro
+        </label>
+        <select
+          value={insuranceId}
+          onChange={(e) => handleInsuranceChange(e.target.value)}
+          className="mt-1 w-full border rounded-lg px-3 py-2"
+          required
+        >
+          <option value="">-- Escolher seguro --</option>
+          {insurances.map((insurance) => (
+            <option key={insurance.id} value={insurance.id}>
+              {insurance.name} - {insurance.price}€
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Preço */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          Preço (€)
         </label>
         <input
           type="number"
@@ -191,7 +116,6 @@ export default function AddPlanModal({
         />
       </div>
 
-      {/* Desconto */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
           Desconto (%)

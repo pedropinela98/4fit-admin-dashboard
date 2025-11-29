@@ -10,6 +10,13 @@ type StaffFormProps = {
   mode: "create" | "edit";
 };
 
+// Traduções para mostrar ao utilizador
+const roleTranslations: Record<"admin" | "coach" | "receptionist", string> = {
+  admin: "Administrador",
+  coach: "Treinador",
+  receptionist: "Rececionista",
+};
+
 export default function StaffForm({
   initialData = {},
   onSubmit,
@@ -23,7 +30,7 @@ export default function StaffForm({
   );
   const [active, setActive] = useState(initialData.active ?? true);
 
-  function toggleRole(role: "admin" | "coach" | "rececionista") {
+  function toggleRole(role: "admin" | "coach" | "receptionist") {
     setRoles((prev) =>
       prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
     );
@@ -35,7 +42,7 @@ export default function StaffForm({
       name,
       email,
       phone,
-      role: roles,
+      role: roles, // ✅ aqui vão os valores em inglês
       active,
       start_date:
         initialData.start_date || new Date().toISOString().split("T")[0],
@@ -45,6 +52,7 @@ export default function StaffForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Nome */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
           Nome
@@ -58,6 +66,7 @@ export default function StaffForm({
         />
       </div>
 
+      {/* Email */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
           Email
@@ -71,6 +80,7 @@ export default function StaffForm({
         />
       </div>
 
+      {/* Telefone */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
           Telefone
@@ -89,12 +99,12 @@ export default function StaffForm({
           Funções
         </legend>
         <div className="flex flex-wrap gap-3">
-          {["admin", "coach", "rececionista"].map((role) => (
+          {(["admin", "coach", "receptionist"] as const).map((role) => (
             <label
               key={role}
               className={`flex items-center gap-2 px-3 py-1 rounded-full border cursor-pointer text-sm transition
                 ${
-                  roles.includes(role as any)
+                  roles.includes(role)
                     ? "bg-blue-600 text-white border-blue-600"
                     : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600"
                 }`}
@@ -102,17 +112,17 @@ export default function StaffForm({
               <input
                 type="checkbox"
                 className="hidden"
-                checked={roles.includes(role as any)}
-                onChange={() =>
-                  toggleRole(role as "admin" | "coach" | "rececionista")
-                }
+                checked={roles.includes(role)}
+                onChange={() => toggleRole(role)}
               />
-              <span className="capitalize">{role}</span>
+              {/* Mostra tradução em português */}
+              <span>{roleTranslations[role]}</span>
             </label>
           ))}
         </div>
       </fieldset>
 
+      {/* Estado ativo */}
       <div className="flex items-center">
         <input
           id="ativo"
