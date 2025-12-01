@@ -1,4 +1,3 @@
-// src/hooks/useStaff.ts
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 
@@ -15,7 +14,7 @@ export type Staff = {
   end_date?: string;
 };
 
-export function useStaff(boxId: string) {
+export function useStaff(boxId: string, userId?: string | null) {
   const [staff, setStaff] = useState<Staff[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,12 +27,12 @@ export function useStaff(boxId: string) {
       try {
         const { data, error } = await supabase.rpc("get_staff_by_box_id", {
           p_box_id: boxId,
+          p_userdetail_id: userId ?? undefined,
         });
 
         if (error) throw error;
 
-        // mapeia os campos para o tipo Staff
-        const mapped: Staff[] = data.map((s: any) => ({
+        const mapped: Staff[] = (data || []).map((s: any) => ({
           id: s.id,
           name: s.name,
           email: s.email,
@@ -42,7 +41,8 @@ export function useStaff(boxId: string) {
           role: s.role,
           active: s.active,
           created_at: s.created_at,
-          // se quiseres podes puxar start_date / end_date de Box_Staff
+          start_date: s.start_date,
+          end_date: s.end_date,
         }));
 
         setStaff(mapped);
@@ -56,7 +56,7 @@ export function useStaff(boxId: string) {
     if (boxId) {
       fetchStaff();
     }
-  }, [boxId]);
+  }, [boxId, userId]); // ✅ agora refaz o fetch se mudar o userId
 
   // refetch manual
   async function refetch() {
@@ -65,9 +65,10 @@ export function useStaff(boxId: string) {
     try {
       const { data, error } = await supabase.rpc("get_staff_by_box_id", {
         p_box_id: boxId,
+        p_userdetail_id: userId ?? undefined, // ✅ também aqui
       });
       if (error) throw error;
-      setStaff(data);
+      setStaff(data || []);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -75,17 +76,15 @@ export function useStaff(boxId: string) {
     }
   }
 
-  // adicionar staff
   function addStaff(newStaff: Omit<Staff, "id" | "created_at">) {
     const staffMember: Staff = {
       ...newStaff,
-      id: Date.now().toString(), // id único simples
+      id: Date.now().toString(),
       created_at: new Date().toISOString(),
     };
     setStaff((prev) => [...prev, staffMember]);
   }
 
-  // atualizar staff
   function updateStaff(id: string, updated: Partial<Staff>) {
     setStaff((prev) =>
       prev.map((s) =>
@@ -96,7 +95,6 @@ export function useStaff(boxId: string) {
     );
   }
 
-  // remover staff
   function deleteStaff(id: string) {
     setStaff((prev) => prev.filter((s) => s.id !== id));
   }

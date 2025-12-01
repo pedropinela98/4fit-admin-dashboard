@@ -5,12 +5,15 @@ import Button from "../../components/ui/button/Button";
 import { PlusIcon } from "../../icons";
 import { useStaff } from "../../hooks/useStaff";
 import StaffActionsDropdown from "../../components/staff/StaffActionsDropdown";
+import { supabase } from "../../lib/supabase";
+import { useToast } from "../../components/ui/Toast";
 
 export default function StaffList() {
   const [searchQuery, setSearchQuery] = useState("");
   const { boxId = "" } = useParams<{ boxId?: string }>();
 
-  const { staff, loading, error, refetch } = useStaff(boxId);
+  const { staff, loading, error, refetch } = useStaff(boxId, null);
+  const { addToast } = useToast();
 
   // Paginação
   const [currentPage, setCurrentPage] = useState(1);
@@ -94,6 +97,24 @@ export default function StaffList() {
       setCurrentPage(page);
     }
   }
+
+  const handleDelete = async (userId: string) => {
+    try {
+      const { error } = await supabase
+        .from("Box_Staff")
+        .delete()
+        .eq("user_id", userId)
+        .eq("box_id", boxId);
+      if (error) throw error;
+
+      addToast("Staff removido com sucesso!", "success");
+      refetch(); // atualizar a lista
+    } catch (err: any) {
+      console.error("Erro ao remover staff:", err);
+      addToast("Erro ao remover staff", "error");
+    }
+  };
+
   return (
     <>
       <PageMeta title="Staff | Gestão" description="" />
@@ -210,7 +231,11 @@ export default function StaffList() {
                           {new Date(s.created_at).toLocaleDateString("pt-PT")}
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <StaffActionsDropdown staff={s} />
+                          <StaffActionsDropdown
+                            staff={s}
+                            boxId={boxId}
+                            onDelete={handleDelete}
+                          />
                         </td>
                       </tr>
                     ))}
@@ -234,7 +259,11 @@ export default function StaffList() {
                           {s.role.map((r) => translatedRole(r)).join(", ")}
                         </p>
                       </div>
-                      <StaffActionsDropdown staff={s} />
+                      <StaffActionsDropdown
+                        staff={s}
+                        boxId={boxId}
+                        onDelete={handleDelete}
+                      />
                     </div>
                     <p className="mt-2 text-xs text-gray-400">
                       Criado em{" "}

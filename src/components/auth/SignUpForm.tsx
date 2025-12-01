@@ -4,33 +4,82 @@ import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL!,
-  import.meta.env.VITE_SUPABASE_ANON_KEY!
-);
+import { supabase } from "../../lib/supabase";
+import heic2any from "heic2any";
+import { useToast } from "../../components/ui/Toast";
 
 export default function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
   const [loading, setLoading] = useState(true);
   const [validInvite, setValidInvite] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState("");
   const [fname, setFname] = useState("");
   const [lname, setLname] = useState("");
   const [password, setPassword] = useState("");
-  const [success, setSuccess] = useState(false);
+  const { addToast } = useToast();
+  const [phone, setPhone] = useState("");
+  const [iban, setIban] = useState("");
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [gender, setGender] = useState("");
+
   const location = useLocation();
   const navigate = useNavigate();
+  async function toBase64(file: File) {
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+  }
+  async function resizeImage(file: File, maxSizeMB = 50): Promise<File> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const img = new Image();
+        img.src = reader.result as string;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          let width = img.width;
+          let height = img.height;
+
+          // Reduz a resolução proporcionalmente
+          const scaleFactor = Math.sqrt((maxSizeMB * 1024 * 1024) / file.size);
+          if (scaleFactor < 1) {
+            width = width * scaleFactor;
+            height = height * scaleFactor;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d")!;
+          ctx.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob(
+            (blob) => {
+              if (blob)
+                resolve(new File([blob], file.name, { type: file.type }));
+              else reject("Erro ao processar a imagem");
+            },
+            file.type,
+            0.8 // compressão JPEG/PNG
+          );
+        };
+        img.onerror = reject;
+      };
+      reader.onerror = reject;
+    });
+  }
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const token = params.get("token");
 
     if (!token) {
-      setError("❌ Link de convite inválido.");
+      addToast("Link de convite inválido", "error");
       setLoading(false);
       return;
     }
@@ -42,27 +91,29 @@ export default function SignUpForm() {
       });
 
       if (error) {
-        console.error("Erro Supabase:", error);
-        setError("❌ Erro ao validar convite. Tenta novamente mais tarde.");
+        addToast(
+          "Erro ao validar convite. Tenta novamente mais tarde",
+          "error"
+        );
         setLoading(false);
         return;
       }
 
       if (!data) {
-        setError("❌ Este convite já expirou ou não é válido.");
+        addToast("Este convite já expirou ou não é válido", "error");
         setLoading(false);
         return;
       }
 
       // 2️⃣ Busca o email do convite
       const { data: inviteData, error: inviteError } = await supabase
-        .from("invite")
+        .from("Invite")
         .select("email")
         .eq("token", token)
         .single();
 
       if (inviteError || !inviteData) {
-        setError("❌ Erro ao obter o email do convite.");
+        addToast("Erro ao obter o email do convite", "error");
         setLoading(false);
         return;
       }
@@ -77,22 +128,29 @@ export default function SignUpForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setSuccess(false);
 
     // ✅ Validações antes da chamada à API
-    if (!fname.trim() || !lname.trim() || !email.trim() || !password.trim()) {
-      setError("❌ Todos os campos são obrigatórios.");
+    if (
+      !fname.trim() ||
+      !lname.trim() ||
+      !email.trim() ||
+      !password.trim() ||
+      !gender.trim()
+    ) {
+      addToast("Preenche todos os campos obrigatórios", "error");
       return;
     }
 
     if (password.length < 8) {
-      setError("❌ A password deve ter pelo menos 8 caracteres.");
+      addToast("Password deve ter pelo menos 8 caracteres", "error");
       return;
     }
 
     if (!isChecked) {
-      setError("❌ Deves aceitar os Termos e Condições antes de continuar.");
+      addToast(
+        "Deves aceitar os Termos e Condições antes de continuar",
+        "error"
+      );
       return;
     }
 
@@ -114,6 +172,10 @@ export default function SignUpForm() {
             first_name: fname,
             last_name: lname,
             token,
+            phone,
+            gender,
+            iban,
+            photo: photoFile ? await toBase64(photoFile) : null,
           }),
         }
       );
@@ -123,13 +185,11 @@ export default function SignUpForm() {
       if (!response.ok) {
         throw new Error(result.error || "Erro ao criar conta.");
       }
-
-      setSuccess(true);
+      addToast("Conta criada com sucesso 🎉", "success");
       // Espera 2 segundos e redireciona
       setTimeout(() => navigate("/signin"), 2000);
     } catch (err: any) {
-      console.error(err);
-      setError(err.message || "❌ Ocorreu um erro ao criar a conta.");
+      addToast("Erro ao criar conta", "error");
     }
   };
 
@@ -234,6 +294,105 @@ export default function SignUpForm() {
                   </span>
                 </div>
               </div>
+              <div className="flex flex-col gap-1">
+                <Label>
+                  Genero<span className="text-error-500">*</span>
+                </Label>
+                <select
+                  value={gender}
+                  onChange={(e) => setGender(e.target.value)}
+                  className="border px-3 py-2 rounded-md bg-white"
+                  required
+                >
+                  <option value="">Seleciona o género</option>
+                  <option value="Male">Masculino</option>
+                  <option value="Female">Feminino</option>
+                </select>
+              </div>
+
+              <div>
+                <Label>Número de Telemóvel</Label>
+                <Input
+                  type="tel"
+                  placeholder="Insere o teu número"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <Label>IBAN / Conta Bancária</Label>
+                <Input
+                  type="text"
+                  placeholder="Ex: PT50 0002 0123 1234..."
+                  value={iban}
+                  onChange={(e) => setIban(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <Label>Fotografia</Label>
+                <div className="mb-3 flex justify-center">
+                  {photoPreview && (
+                    <img
+                      src={URL.createObjectURL(photoFile)}
+                      alt="Preview"
+                      className="w-24 h-24 rounded-full object-cover border-2 border-gray-300"
+                    />
+                  )}
+                </div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={async (e) => {
+                    let file = e.target.files?.[0];
+                    if (!file) return;
+
+                    // Converter HEIC para JPEG
+                    const fileName = file.name.toLowerCase();
+                    if (
+                      file.type.toLowerCase().includes("heic") ||
+                      file.type.toLowerCase().includes("heif") ||
+                      fileName.endsWith(".heic") ||
+                      fileName.endsWith(".heif")
+                    ) {
+                      try {
+                        const result = await heic2any({
+                          blob: file,
+                          toType: "image/jpeg",
+                        });
+                        const blob = Array.isArray(result) ? result[0] : result; // garante que é Blob
+                        file = new File(
+                          [blob],
+                          file.name.replace(/\.[^/.]+$/, ".jpg"),
+                          { type: "image/jpeg" }
+                        );
+                      } catch {
+                        addToast("Não foi possível converter HEIC", "error");
+                        return;
+                      }
+                    }
+
+                    // Resizing
+                    if (file.size > 50 * 1024 * 1024) {
+                      try {
+                        file = await resizeImage(file, 50);
+                        if (file.size > 50 * 1024 * 1024) {
+                          addToast("Não foi possível converter HEIC", "error");
+                          return;
+                        }
+                      } catch {
+                        addToast("Não foi possível converter HEIC", "error");
+                        return;
+                      }
+                    }
+
+                    setPhotoFile(file);
+                    setPhotoPreview(URL.createObjectURL(file));
+                  }}
+                  className="border p-2 rounded w-full"
+                />
+              </div>
 
               <div className="flex items-center gap-3">
                 <Checkbox checked={isChecked} onChange={setIsChecked} />
@@ -258,15 +417,6 @@ export default function SignUpForm() {
                   Criar Conta
                 </button>
               </div>
-
-              {error && (
-                <p className="text-sm text-red-600 text-center mt-3">{error}</p>
-              )}
-              {success && (
-                <p className="text-sm text-green-600 text-center mt-3">
-                  ✅ Conta criada com sucesso!
-                </p>
-              )}
             </div>
           </form>
         </div>

@@ -24,7 +24,6 @@ export default function StaffForm({
 }: StaffFormProps) {
   const [name, setName] = useState(initialData.name || "");
   const [email, setEmail] = useState(initialData.email || "");
-  const [phone, setPhone] = useState(initialData.phone || "");
   const [roles, setRoles] = useState<Staff["role"]>(
     initialData.role || ["coach"]
   );
@@ -41,8 +40,7 @@ export default function StaffForm({
     onSubmit({
       name,
       email,
-      phone,
-      role: roles, // ✅ aqui vão os valores em inglês
+      role: roles,
       active,
       start_date:
         initialData.start_date || new Date().toISOString().split("T")[0],
@@ -61,6 +59,7 @@ export default function StaffForm({
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          disabled={mode === "edit"}
           required
           className="mt-1 w-full border rounded-lg px-4 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
         />
@@ -74,21 +73,9 @@ export default function StaffForm({
         <input
           type="email"
           value={email}
+          disabled={mode === "edit"}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="mt-1 w-full border rounded-lg px-4 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-        />
-      </div>
-
-      {/* Telefone */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          Telefone
-        </label>
-        <input
-          type="text"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
           className="mt-1 w-full border rounded-lg px-4 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
         />
       </div>
@@ -128,6 +115,7 @@ export default function StaffForm({
           id="ativo"
           type="checkbox"
           checked={active}
+          disabled={mode === "create"}
           onChange={(e) => setActive(e.target.checked)}
           className="h-4 w-4 text-blue-600 border-gray-300 rounded"
         />

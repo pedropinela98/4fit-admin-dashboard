@@ -21,13 +21,12 @@ export default function StaffCreate() {
       }
 
       const authUserId = userData.user.id;
-      console.log(authUserId);
 
       // 🔎 Buscar o user_detail_id correspondente ao utilizador autenticado
       const { data: userDetail, error: detailError } = await supabase
         .from("User_detail")
         .select("id, name")
-        .eq("auth_user_id", authUserId) // assumindo que tens esta coluna na tabela
+        .eq("auth_user_id", authUserId)
         .single();
 
       if (detailError || !userDetail) {
@@ -44,10 +43,6 @@ export default function StaffCreate() {
         .single();
 
       const boxName = boxData?.name || "";
-
-      console.log(data);
-      console.log(userDetail);
-      console.log(boxId, boxName, invitedBy);
 
       // Chamar a edge function
       const res = await fetch(
@@ -68,6 +63,7 @@ export default function StaffCreate() {
             roles: data.role,
             invited_by: invitedBy,
             admin_name: userDetail.name || userData.user.email,
+            is_active: true,
           }),
         }
       );
