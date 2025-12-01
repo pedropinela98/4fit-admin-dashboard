@@ -36,6 +36,7 @@ import MemberCreate from "./pages/Members/MemberCreate";
 import PaymentsList from "./pages/Payments/PaymentsList";
 import InsuranceEdit from "./pages/Plans/InsuranceEdit";
 import InsuranceList from "./pages/Plans/InsuranceList";
+import InsuranceCreate from "./pages/Plans/InsuranceCreate";
 import { ToastProvider } from "./components/ui/Toast";
 import { UserProvider } from "./context/UserContext";
 import BoxSelectionPage from "./pages/Boxes/BoxSelectionPage";
@@ -78,11 +79,20 @@ export default function App() {
               />
               <Route path="/settings/box" element={<BoxSettingsPage />} />
 
-            {/* Classes */}
-            <Route path="/classes" element={<WeeklySchedule />} />
-            <Route path="/box/:boxId/classes/types" element={<ClassTypes />} />
-            <Route path="/box/:boxId/classes/types/new" element={<ClassTypeCreate />} />
-            <Route path="/box/:boxId/classes/types/:id/edit" element={<ClassTypeEdit />} />
+              {/* Classes */}
+              <Route path="/classes" element={<WeeklySchedule />} />
+              <Route
+                path="/box/:boxId/classes/types"
+                element={<ClassTypes />}
+              />
+              <Route
+                path="/box/:boxId/classes/types/new"
+                element={<ClassTypeCreate />}
+              />
+              <Route
+                path="/box/:boxId/classes/types/:id/edit"
+                element={<ClassTypeEdit />}
+              />
               {/* Members */}
               <Route path="/box/:boxId/members" element={<MemberList />} />
               <Route

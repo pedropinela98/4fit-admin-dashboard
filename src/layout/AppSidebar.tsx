@@ -80,8 +80,8 @@ const AppSidebar: React.FC = () => {
       icon: <CalenderIcon />,
       name: "Aulas",
       subItems: [
-        { name: "Tipos de aulas", path: "/classes/types" },
-        { name: "Horário", path: "/classes" },
+        { name: "Tipos de aulas", path: `/box/${boxId}/classes/types` },
+        { name: "Horário", path: `/box/${boxId}/classes` },
       ],
     },
     {
