@@ -42,7 +42,7 @@ import BoxSelectionPage from "./pages/Boxes/BoxSelectionPage";
 
 // 🔒 Importa o componente de proteção
 import ProtectedRoute from "./components/auth/ProtectedRoute";
-import InsuranceCreate from "./pages/Plans/InsuranceCreate";
+import ClassTypeEdit from "./pages/Classes/ClassTypeEdit";
 
 export default function App() {
   return (
@@ -78,6 +78,11 @@ export default function App() {
               />
               <Route path="/settings/box" element={<BoxSettingsPage />} />
 
+            {/* Classes */}
+            <Route path="/classes" element={<WeeklySchedule />} />
+            <Route path="/box/:boxId/classes/types" element={<ClassTypes />} />
+            <Route path="/box/:boxId/classes/types/new" element={<ClassTypeCreate />} />
+            <Route path="/box/:boxId/classes/types/:id/edit" element={<ClassTypeEdit />} />
               {/* Members */}
               <Route path="/box/:boxId/members" element={<MemberList />} />
               <Route
