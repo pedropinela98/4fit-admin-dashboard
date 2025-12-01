@@ -3,12 +3,14 @@ import { Link } from "react-router";
 import PageMeta from "../../components/common/PageMeta";
 import Button from "../../components/ui/button/Button";
 import { PlusIcon } from "../../icons";
+import { useParams } from "react-router-dom";
 import { useRooms } from "../../hooks/useRooms";
 import RoomsActionsDropdown from "../../components/rooms/RoomsActionsDropdown";
 
 export default function RoomsList() {
   const [searchQuery, setSearchQuery] = useState("");
-  const { rooms, loading, error, refetch } = useRooms();
+  const { boxId = "" } = useParams<{ boxId?: string }>();
+  const { rooms, loading, error, refetch } = useRooms(boxId);
 
   const filteredRooms = rooms.filter(
     (s) =>
@@ -32,7 +34,7 @@ export default function RoomsList() {
             </p>
           </div>
 
-          <Link to="/rooms/new">
+          <Link to={`/box/${boxId}/rooms/new`}>
             <Button>
               <PlusIcon className="h-4 w-4 mr-2" /> Adicionar Nova Sala
             </Button>
@@ -86,9 +88,6 @@ export default function RoomsList() {
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         Estado
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                        Criado
-                      </th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
                         Ações
                       </th>
@@ -114,9 +113,6 @@ export default function RoomsList() {
                             {s.active ? "Ativo" : "Inativo"}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                          {new Date(s.created_at).toLocaleDateString("pt-PT")}
-                        </td>
                         <td className="px-6 py-4 text-right">
                           <RoomsActionsDropdown room={s} />
                         </td>
@@ -136,18 +132,23 @@ export default function RoomsList() {
                           {s.name}
                         </h3>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {s.capacity}
+                          Capacidade: {s.capacity}
                         </p>
                         <p className="text-xs text-gray-500 dark:text-gray-400">
                           {s.description}
                         </p>
+                        <span
+                          className={`inline-block mt-2 px-2 py-1 rounded-full text-xs ${
+                            s.active
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {s.active ? "Ativo" : "Inativo"}
+                        </span>
                       </div>
                       <RoomsActionsDropdown room={s} />
                     </div>
-                    <p className="mt-2 text-xs text-gray-400">
-                      Criado em{" "}
-                      {new Date(s.created_at).toLocaleDateString("pt-PT")}
-                    </p>
                   </div>
                 ))}
               </div>

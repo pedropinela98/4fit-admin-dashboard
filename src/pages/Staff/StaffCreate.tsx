@@ -1,16 +1,85 @@
 // src/pages/staff/StaffCreate.tsx
+import { useNavigate, useParams } from "react-router";
 import PageMeta from "../../components/common/PageMeta";
 import StaffForm from "../../components/staff/StaffForm";
-import { useNavigate } from "react-router";
 import { ChevronLeftIcon } from "@heroicons/react/24/outline";
+import { supabase } from "../../lib/supabase";
+import { useToast } from "../../components/ui/Toast";
 
 export default function StaffCreate() {
   const navigate = useNavigate();
+  const { boxId = "" } = useParams<{ boxId?: string }>();
+  const { addToast } = useToast();
 
-  function handleCreate(data: any) {
-    console.log("Novo staff criado:", data);
-    // aqui faria POST para API
-    navigate("/staff"); // redireciona de volta à lista
+  async function handleCreate(data: any) {
+    try {
+      const { data: userData, error: userError } =
+        await supabase.auth.getUser();
+
+      if (userError || !userData?.user) {
+        throw new Error("Não foi possível identificar o utilizador.");
+      }
+
+      const authUserId = userData.user.id;
+
+      // 🔎 Buscar o user_detail_id correspondente ao utilizador autenticado
+      const { data: userDetail, error: detailError } = await supabase
+        .from("User_detail")
+        .select("id, name")
+        .eq("auth_user_id", authUserId)
+        .single();
+
+      if (detailError || !userDetail) {
+        throw new Error("Não foi possível obter o user_detail_id.");
+      }
+
+      const invitedBy = userDetail.id;
+
+      // Obter nome da box
+      const { data: boxData } = await supabase
+        .from("Box")
+        .select("name")
+        .eq("id", boxId)
+        .single();
+
+      const boxName = boxData?.name || "";
+
+      // Chamar a edge function
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/invite-user`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            "X-Client-Info": "crossfit-dashboard@1.0.0",
+          },
+          body: JSON.stringify({
+            name: data.name,
+            email: data.email,
+            box_id: boxId,
+            box_name: boxName,
+            roles: data.role,
+            invited_by: invitedBy,
+            admin_name: userDetail.name || userData.user.email,
+            is_active: true,
+          }),
+        }
+      );
+
+      const result = await res.json();
+
+      if (!res.ok || result.error) {
+        console.log(result.error);
+        throw new Error(result.error || "Erro ao convidar staff");
+      }
+
+      addToast("Staff convidado com sucesso!", "success");
+      navigate(`/box/${boxId}/staff`);
+    } catch (err: any) {
+      addToast("Não foi possível convidar o staff", "error");
+    }
   }
 
   return (
@@ -19,7 +88,7 @@ export default function StaffCreate() {
 
       {/* Botão de voltar */}
       <button
-        onClick={() => navigate("/staff")}
+        onClick={() => navigate(`/box/${boxId}/staff`)}
         className="flex items-center text-sm text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
       >
         <ChevronLeftIcon className="h-5 w-5 mr-1" />

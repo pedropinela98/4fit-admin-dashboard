@@ -15,80 +15,21 @@ import logo from "../icons/logo.svg";
 import logoDark from "../icons/logo-dark.svg";
 import logoIcon from "../icons/logo-icon.svg";
 import { useSidebar } from "../context/SidebarContext";
-import { supabase } from "../lib/supabase"; // 👈 usa o cliente global
+import { useUser } from "../context/UserContext";
 
 type NavItem = {
   name: string;
   icon: React.ReactNode;
   path?: string;
   subItems?: { name: string; path: string }[];
-  superAdminOnly?: boolean; // 👈 flag opcional
+  superAdminOnly?: boolean;
 };
-
-const navItems: NavItem[] = [
-  {
-    icon: <GridIcon />,
-    name: "Dashboard",
-    path: "/",
-  },
-  {
-    icon: <BoxCubeIcon />,
-    name: "Detalhes da Box",
-    path: "/box-details",
-  },
-  {
-    icon: <GroupIcon />,
-    name: "Membros",
-    path: "/box/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/members",
-  },
-  {
-    icon: <BoxCubeIcon />,
-    name: "Boxes",
-    superAdminOnly: true, // 👈 só super admin
-    subItems: [
-      { name: "All Boxes", path: "/boxes" },
-      { name: "Add Box", path: "/boxes/new" },
-    ],
-  },
-  { icon: <GridIcon />, name: "Salas", path: "/rooms" },
-  {
-    icon: <CalenderIcon />,
-    name: "Aulas",
-    subItems: [
-      { name: "Tipos de aulas", path: "/box/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/classes/types" },
-      { name: "Horário", path: "/classes" },
-    ],
-  },
-  {
-    icon: <ListIcon />,
-    name: "Treinos",
-    subItems: [
-      { name: "Planeamento Diário", path: "/workouts" },
-      { name: "Planeamento Semanal", path: "/workouts/weeklyview" },
-    ],
-  },
-  {
-    icon: <TagIcon />,
-    name: "Planos",
-    subItems: [
-      {
-        name: "Planos Mensais",
-        path: "/box/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/plans",
-      },
-      {
-        name: "Planos de Senhas",
-        path: "/box/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/sessionpacks",
-      },
-    ],
-  },
-  { icon: <UserCircleIcon />, name: "Staff", path: "/staff" },
-  { icon: <CreditCardIcon />, name: "Pagamentos", path: "/payments" },
-];
 
 const CACHE_KEY = "superadmin-status";
 const CACHE_DURATION_MS = 5 * 60 * 1000; // 5 minutos
 
 const AppSidebar: React.FC = () => {
+  const { boxId, isSuperAdmin } = useUser(); // ✅ dentro do componente
   const {
     isExpanded,
     isMobileOpen,
@@ -103,46 +44,78 @@ const AppSidebar: React.FC = () => {
     {}
   );
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
   const isActive = useCallback(
     (path: string) => location.pathname === path,
     [location.pathname]
   );
 
-  // Buscar papel do utilizador autenticado (com cache)
-  useEffect(() => {
-    const checkSuperAdmin = async () => {
-      const cached = localStorage.getItem(CACHE_KEY);
-      if (cached) {
-        const { value, timestamp } = JSON.parse(cached);
-        if (Date.now() - timestamp < CACHE_DURATION_MS) {
-          setIsSuperAdmin(value);
-          return;
-        }
-      }
-
-      const { data: userData } = await supabase.auth.getUser();
-      const user = userData?.user;
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from("Box_Staff")
-        .select("role")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      const isSuper = !error && data?.role === "super_admin";
-      setIsSuperAdmin(isSuper);
-
-      localStorage.setItem(
-        CACHE_KEY,
-        JSON.stringify({ value: isSuper, timestamp: Date.now() })
-      );
-    };
-
-    checkSuperAdmin();
-  }, []);
+  // Gera navItems dinamicamente
+  const navItems: NavItem[] = [
+    {
+      icon: <GridIcon />,
+      name: "Dashboard",
+      path: boxId ? `/box/${boxId}` : "#",
+    },
+    {
+      icon: <BoxCubeIcon />,
+      name: "Detalhes da Box",
+      path: boxId ? `/box/${boxId}/box-details` : "#",
+    },
+    {
+      icon: <GroupIcon />,
+      name: "Membros",
+      path: boxId ? `/box/${boxId}/members` : "#",
+    },
+    {
+      icon: <BoxCubeIcon />,
+      name: "Boxes",
+      superAdminOnly: true,
+      subItems: [
+        { name: "All Boxes", path: "/boxes" },
+        { name: "Add Box", path: "/boxes/new" },
+      ],
+    },
+    {
+      icon: <GridIcon />,
+      name: "Salas",
+      path: boxId ? `/box/${boxId}/rooms` : "#",
+    },
+    {
+      icon: <CalenderIcon />,
+      name: "Aulas",
+      subItems: [
+        { name: "Tipos de aulas", path: "/classes/types" },
+        { name: "Horário", path: "/classes" },
+      ],
+    },
+    {
+      icon: <ListIcon />,
+      name: "Treinos",
+      subItems: [
+        { name: "Planeamento Diário", path: "/workouts" },
+        { name: "Planeamento Semanal", path: "/workouts/weeklyview" },
+      ],
+    },
+    {
+      icon: <TagIcon />,
+      name: "Planos",
+      subItems: [
+        { name: "Planos Mensais", path: boxId ? `/box/${boxId}/plans` : "#" },
+        {
+          name: "Planos de Senhas",
+          path: boxId ? `/box/${boxId}/sessionpacks` : "#",
+        },
+        { name: "Seguros", path: boxId ? `/box/${boxId}/insurances` : "#" },
+      ],
+    },
+    {
+      icon: <UserCircleIcon />,
+      name: "Staff",
+      path: boxId ? `/box/${boxId}/staff` : "#",
+    },
+    { icon: <CreditCardIcon />, name: "Pagamentos", path: "/payments" },
+  ];
 
   // 🧭 Ativar submenu correto
   useEffect(() => {
@@ -158,7 +131,7 @@ const AppSidebar: React.FC = () => {
       }
     });
     if (!submenuMatched) setOpenSubmenu(null);
-  }, [location, isActive]);
+  }, [location, isActive, navItems]);
 
   useEffect(() => {
     if (openSubmenu !== null) {

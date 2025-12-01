@@ -6,6 +6,7 @@ import Button from "../../components/ui/button/Button";
 import { PlusIcon } from "../../icons";
 import { useMembers } from "../../hooks/useMembers";
 import EntityActionsDropdown from "../../components/ActionsDropdown";
+import { supabase } from "../../lib/supabase";
 
 export default function MemberList() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -19,39 +20,26 @@ export default function MemberList() {
   >("all");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { members, loading, error, refetch } = useMembers(boxId!);
+  const { members, loading, error, refetch } = useMembers(boxId, null, false);
 
   async function handleDeleteMember(userDetailId: string, boxId: string) {
     try {
       console.log(userDetailId + boxId);
-      const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-member`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-            "X-Client-Info": "crossfit-dashboard@1.0.0",
-          },
-          body: JSON.stringify({
-            user_id: userDetailId,
-            box_id: boxId,
-          }),
-        }
-      );
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Erro ao eliminar membro: ${errorText}`);
+      const { data, error } = await supabase.rpc("soft_delete_user_from_box", {
+        p_user_id: userDetailId,
+        p_box_id: boxId,
+      });
+
+      if (error) {
+        throw new Error(`Erro ao eliminar membro: ${error.message}`);
       }
 
-      const result = await res.json();
-      console.log("✅ Membro eliminado:", result);
+      console.log("✅ Membro eliminado:", data);
       refetch();
       // Aqui podes atualizar o estado da lista de membros no frontend, se quiseres
-    } catch (error) {
-      console.error("❌ Erro ao eliminar membro:", error);
+    } catch (err) {
+      console.error("❌ Erro ao eliminar membro:", err);
     }
   }
 
@@ -63,13 +51,18 @@ export default function MemberList() {
         m.email.toLowerCase().includes(searchQuery.toLowerCase())
     )
     .filter((m) => {
-      if (filterStatus === "active") return m.membership_active;
-      if (filterStatus === "inactive") return !m.membership_active;
+      // membership_active derivado do estado de pagamento
+      const membership_active = m.membership_payment_state === "paid";
+      if (filterStatus === "active") return membership_active;
+      if (filterStatus === "inactive") return !membership_active;
       return true;
     })
     .filter((m) => {
+      // insurance_state derivado do estado de pagamento
+      const insurance_state =
+        m.insurance_payment_state === "paid" ? "valid" : "expired";
       if (filterInsurance === "all") return true;
-      return m.insurance_state === filterInsurance;
+      return insurance_state === filterInsurance;
     });
 
   // ---- Paginação ----
@@ -85,6 +78,9 @@ export default function MemberList() {
       setCurrentPage(page);
     }
   }
+
+  if (loading) return <p>Carregando membros...</p>;
+  if (error) return <p>Erro: {error}</p>;
 
   return (
     <>
@@ -189,61 +185,73 @@ export default function MemberList() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {paginatedMembers.map((m) => (
-                      <tr
-                        key={m.id}
-                        className="hover:bg-gray-50 dark:hover:bg-gray-700"
-                      >
-                        <td className="px-6 py-4">
-                          <Link
-                            to={`/box/${boxId}/members/${m.user_id}`}
-                            className="text-blue-600 dark:text-blue-400 hover:underline"
-                          >
-                            {m.name}
-                          </Link>
-                        </td>
-                        <td className="px-6 py-4">{m.email}</td>
-                        <td className="px-6 py-4">
-                          {m.membership_active ? (
-                            <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
-                              Ativo
-                            </span>
-                          ) : (
-                            <span className="px-2 py-1 rounded-full text-xs bg-red-100 text-red-800">
-                              Inativo
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4">
-                          {m.insurance_state === "valid" && (
-                            <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
-                              Válido
-                            </span>
-                          )}
-                          {m.insurance_state === "expiring_soon" && (
-                            <span className="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800">
-                              A Expirar
-                            </span>
-                          )}
-                          {m.insurance_state === "expired" && (
-                            <span className="px-2 py-1 rounded-full text-xs bg-red-100 text-red-800">
-                              Expirado
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <EntityActionsDropdown
-                            entityId={m.user_id}
-                            editPath={`/box/${boxId}/members/${m.user_id}`}
-                            entityName={m.name}
-                            onDelete={() =>
-                              handleDeleteMember(m.user_id, boxId)
-                            }
-                            showEdit={false}
-                          />
-                        </td>
-                      </tr>
-                    ))}
+                    {paginatedMembers.map((m) => {
+                      const membership_active =
+                        m.membership_payment_state === "paid";
+                      let insurance_state:
+                        | "valid"
+                        | "expiring_soon"
+                        | "expired" = "expired";
+                      if (m.insurance_payment_state === "paid")
+                        insurance_state = "valid";
+                      if (m.insurance_payment_state === "expiring")
+                        insurance_state = "expiring_soon";
+
+                      return (
+                        <tr
+                          key={m.user_id}
+                          className="hover:bg-gray-50 dark:hover:bg-gray-700"
+                        >
+                          <td className="px-6 py-4">
+                            <Link
+                              to={`/box/${boxId}/members/${m.user_id}`}
+                              className="text-blue-600 dark:text-blue-400 hover:underline"
+                            >
+                              {m.name}
+                            </Link>
+                          </td>
+                          <td className="px-6 py-4">{m.email}</td>
+                          <td className="px-6 py-4">
+                            {membership_active ? (
+                              <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
+                                Ativo
+                              </span>
+                            ) : (
+                              <span className="px-2 py-1 rounded-full text-xs bg-red-100 text-red-800">
+                                Inativo
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4">
+                            {insurance_state === "valid" && (
+                              <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
+                                Válido
+                              </span>
+                            )}
+                            {insurance_state === "expiring_soon" && (
+                              <span className="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800">
+                                A Expirar
+                              </span>
+                            )}
+                            {insurance_state === "expired" && (
+                              <span className="px-2 py-1 rounded-full text-xs bg-red-100 text-red-800">
+                                Expirado
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <EntityActionsDropdown
+                              entityId={m.user_id}
+                              editPath={`/box/${boxId}/members/${m.user_id}`}
+                              entityName={m.name}
+                              onDelete={() =>
+                                handleDeleteMember(m.user_id, boxId)
+                              }
+                            />
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -279,7 +287,11 @@ export default function MemberList() {
           {/* Ativos */}
           <div className="p-4 bg-white dark:bg-gray-800 rounded-lg border">
             <div className="text-lg font-semibold text-green-600 dark:text-green-400">
-              {members.filter((m) => m.membership_active).length}
+              {
+                members.filter(
+                  (m) => m.membership_active || m.session_pack_active
+                ).length
+              }
             </div>
             <div className="text-xs text-gray-500 dark:text-gray-400">
               Subscrições Ativas
@@ -303,7 +315,7 @@ export default function MemberList() {
               }
             </div>
             <div className="text-xs text-gray-500 dark:text-gray-400">
-              A Expirar (≤ 30 dias)
+              A Expirar (≤ 5 dias)
             </div>
           </div>
 

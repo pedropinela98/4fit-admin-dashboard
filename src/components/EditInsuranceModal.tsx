@@ -1,36 +1,28 @@
 import { useState } from "react";
 import { Member } from "../hooks/useMembers";
-import { Modal } from "../components/ui/modal"; // importa o teu componente Modal
+import { Modal } from "../components/ui/modal"; // usa o mesmo componente Modal
 
-type EditPlanModalProps = {
+type EditInsuranceModalProps = {
   member: Member;
-  onSave: (
-    isPaid: boolean,
-    planId: string | null,
-    sessionPackId: string | null
-  ) => void;
-  onCancelPlan: () => void;
+  onSave: (isPaid: boolean, insuranceId: string | null) => void;
+  onCancelInsurance: () => void;
   onClose: () => void;
 };
 
-export default function EditPlanModal({
+export default function EditInsuranceModal({
   member,
   onSave,
-  onCancelPlan,
+  onCancelInsurance,
   onClose,
-}: EditPlanModalProps) {
+}: EditInsuranceModalProps) {
   const [isPaid, setIsPaid] = useState(
-    member.membership_payment_state === "paid"
+    member.insurance_payment_state === "paid"
   );
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    onSave(
-      isPaid,
-      member.membership_id ?? null,
-      member.user_session_pack_id ?? null
-    );
+    onSave(isPaid, member.user_insurance_id ?? null);
   }
 
   function handleCancelClick() {
@@ -38,46 +30,46 @@ export default function EditPlanModal({
   }
 
   function confirmCancel() {
-    onCancelPlan();
+    onCancelInsurance();
     setShowConfirmModal(false);
   }
 
   // Dados vindos diretamente do `member`
-  const planName = member.membership_plan_name || "Plano desconhecido";
-  const finalPrice = member.membership_price_paid ?? 0;
-  const startDate = member.membership_start
-    ? new Date(member.membership_start).toLocaleDateString("pt-PT")
+  const insuranceName = member.insurance_name || "Seguro desconhecido";
+  const finalPrice = member.insurance_price_paid ?? 0;
+  const startDate = member.insurance_start
+    ? new Date(member.insurance_start).toLocaleDateString("pt-PT")
     : "-";
-  const endDate = member.membership_end
-    ? new Date(member.membership_end).toLocaleDateString("pt-PT")
+  const endDate = member.insurance_end
+    ? new Date(member.insurance_end).toLocaleDateString("pt-PT")
     : "-";
 
-  const isPaymentLocked = member.membership_payment_state === "paid";
+  const isPaymentLocked = member.insurance_payment_state === "paid";
 
   return (
     <>
       <form onSubmit={handleSubmit} className="p-6 space-y-6">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          Editar plano atual
+          Editar seguro atual
         </h2>
 
-        {/* Nome do plano */}
+        {/* Nome do seguro */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Plano
+            Seguro
           </label>
           <input
             type="text"
-            value={planName}
+            value={insuranceName}
             readOnly
             className="mt-1 w-full border rounded-lg px-3 py-2 bg-gray-100 dark:bg-gray-700 cursor-not-allowed"
           />
         </div>
 
-        {/* Preço final */}
+        {/* Preço pago */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Total a pagar (€)
+            Total pago (€)
           </label>
           <input
             type="number"
@@ -168,7 +160,7 @@ export default function EditPlanModal({
             onClick={handleCancelClick}
             className="px-4 py-2 rounded-lg border border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
           >
-            Cancelar plano
+            Cancelar seguro
           </button>
 
           <div className="flex gap-3">
@@ -201,7 +193,7 @@ export default function EditPlanModal({
           Confirmar cancelamento
         </h3>
         <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
-          Tem a certeza que deseja cancelar o plano atual? Esta ação não pode
+          Tem a certeza que deseja cancelar o seguro atual? Esta ação não pode
           ser desfeita.
         </p>
         <div className="flex justify-end gap-3">
@@ -217,7 +209,7 @@ export default function EditPlanModal({
             onClick={confirmCancel}
             className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700"
           >
-            Cancelar plano
+            Cancelar seguro
           </button>
         </div>
       </Modal>

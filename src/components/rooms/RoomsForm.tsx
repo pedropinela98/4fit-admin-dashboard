@@ -48,7 +48,7 @@ export default function RoomsForm({
 
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          Capacity
+          Capacidade
         </label>
         <input
           type="number"
@@ -61,7 +61,7 @@ export default function RoomsForm({
 
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          Description
+          Descrição
         </label>
         <input
           type="text"

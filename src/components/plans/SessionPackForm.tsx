@@ -171,7 +171,7 @@ export default function SessionPackForm({
       </div>
 
       <Button>
-        {mode === "create" ? "Criar Senha" : "Guardar Alterações"}
+        {mode === "create" ? "Criar Plano de Senhas" : "Guardar Alterações"}
       </Button>
     </form>
   );
