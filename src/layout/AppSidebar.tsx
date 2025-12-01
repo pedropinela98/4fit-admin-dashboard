@@ -25,11 +25,8 @@ type NavItem = {
   superAdminOnly?: boolean;
 };
 
-const CACHE_KEY = "superadmin-status";
-const CACHE_DURATION_MS = 5 * 60 * 1000; // 5 minutos
-
 const AppSidebar: React.FC = () => {
-  const { boxId, isSuperAdmin } = useUser(); // ✅ dentro do componente
+  const { boxId, isSuperAdmin } = useUser();
   const {
     isExpanded,
     isMobileOpen,
@@ -39,10 +36,8 @@ const AppSidebar: React.FC = () => {
   } = useSidebar();
 
   const location = useLocation();
-  const [openSubmenu, setOpenSubmenu] = useState<number | null>(null);
-  const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>(
-    {}
-  );
+  // depois
+  const [openSubmenus, setOpenSubmenus] = useState<number[]>([]);
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const isActive = useCallback(
@@ -50,7 +45,7 @@ const AppSidebar: React.FC = () => {
     [location.pathname]
   );
 
-  // Gera navItems dinamicamente
+  // Nav items dinâmicos
   const navItems: NavItem[] = [
     {
       icon: <GridIcon />,
@@ -117,36 +112,25 @@ const AppSidebar: React.FC = () => {
     { icon: <CreditCardIcon />, name: "Pagamentos", path: "/payments" },
   ];
 
-  // 🧭 Ativar submenu correto
+  // 🧭 Ativar submenu correto ao carregar a página
   useEffect(() => {
-    let submenuMatched = false;
     navItems.forEach((nav, index) => {
       if (nav.subItems) {
         nav.subItems.forEach((subItem) => {
           if (isActive(subItem.path)) {
-            setOpenSubmenu(index);
-            submenuMatched = true;
+            setOpenSubmenus((prev) =>
+              prev.includes(index) ? prev : [...prev, index]
+            );
           }
         });
       }
     });
-    if (!submenuMatched) setOpenSubmenu(null);
   }, [location, isActive, navItems]);
 
-  useEffect(() => {
-    if (openSubmenu !== null) {
-      const key = `main-${openSubmenu}`;
-      if (subMenuRefs.current[key]) {
-        setSubMenuHeight((prev) => ({
-          ...prev,
-          [key]: subMenuRefs.current[key]?.scrollHeight || 0,
-        }));
-      }
-    }
-  }, [openSubmenu]);
-
   const handleSubmenuToggle = (index: number) => {
-    setOpenSubmenu((prev) => (prev === index ? null : index));
+    setOpenSubmenus((prev) =>
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
+    );
   };
 
   const renderMenuItems = (items: NavItem[]) => (
@@ -156,38 +140,67 @@ const AppSidebar: React.FC = () => {
         .map((nav, index) => (
           <li key={nav.name}>
             {nav.subItems ? (
-              <button
-                onClick={() => handleSubmenuToggle(index)}
-                className={`menu-item group ${
-                  openSubmenu === index
-                    ? "menu-item-active"
-                    : "menu-item-inactive"
-                } cursor-pointer ${
-                  !isExpanded && !isHovered
-                    ? "lg:justify-center"
-                    : "lg:justify-start"
-                }`}
-              >
-                <span
-                  className={`menu-item-icon-size ${
-                    openSubmenu === index
-                      ? "menu-item-icon-active"
-                      : "menu-item-icon-inactive"
+              <>
+                <button
+                  onClick={() => handleSubmenuToggle(index)}
+                  className={`menu-item group ${
+                    openSubmenus.includes(index)
+                      ? "menu-item-active"
+                      : "menu-item-inactive"
+                  } cursor-pointer ${
+                    !isExpanded && !isHovered
+                      ? "lg:justify-center"
+                      : "lg:justify-start"
                   }`}
                 >
-                  {nav.icon}
-                </span>
-                {(isExpanded || isHovered || isMobileOpen) && (
-                  <span className="menu-item-text">{nav.name}</span>
-                )}
-                {(isExpanded || isHovered || isMobileOpen) && (
-                  <ChevronDownIcon
-                    className={`ml-auto w-5 h-5 transition-transform duration-200 ${
-                      openSubmenu === index ? "rotate-180 text-brand-500" : ""
+                  <span
+                    className={`menu-item-icon-size ${
+                      openSubmenus.includes(index)
+                        ? "menu-item-active"
+                        : "menu-item-inactive"
                     }`}
-                  />
-                )}
-              </button>
+                  >
+                    {nav.icon}
+                  </span>
+                  {(isExpanded || isHovered || isMobileOpen) && (
+                    <span className="menu-item-text">{nav.name}</span>
+                  )}
+                  {(isExpanded || isHovered || isMobileOpen) && (
+                    <ChevronDownIcon
+                      className={`ml-auto w-5 h-5 transition-transform duration-200 ${
+                        openSubmenus.includes(index)
+                          ? "rotate-180 text-brand-500"
+                          : ""
+                      }`}
+                    />
+                  )}
+                </button>
+
+                {/* Submenu */}
+                <div
+                  className={`overflow-hidden transition-all duration-300 ${
+                    openSubmenus.includes(index) ? "max-h-96" : "max-h-0"
+                  }`}
+                >
+                  <ul className="mt-2 space-y-1 ml-9">
+                    {nav.subItems.map((subItem) => (
+                      <li key={subItem.name}>
+                        <Link
+                          to={subItem.path}
+                          onClick={closeMobileSidebar}
+                          className={`menu-dropdown-item ${
+                            isActive(subItem.path)
+                              ? "menu-dropdown-item-active"
+                              : "menu-dropdown-item-inactive"
+                          }`}
+                        >
+                          {subItem.name}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </>
             ) : (
               nav.path && (
                 <Link
@@ -214,39 +227,6 @@ const AppSidebar: React.FC = () => {
                 </Link>
               )
             )}
-
-            {nav.subItems && (isExpanded || isHovered || isMobileOpen) && (
-              <div
-                ref={(el) => {
-                  subMenuRefs.current[`main-${index}`] = el;
-                }}
-                className="overflow-hidden transition-all duration-300"
-                style={{
-                  height:
-                    openSubmenu === index
-                      ? `${subMenuHeight[`main-${index}`]}px`
-                      : "0px",
-                }}
-              >
-                <ul className="mt-2 space-y-1 ml-9">
-                  {nav.subItems.map((subItem) => (
-                    <li key={subItem.name}>
-                      <Link
-                        to={subItem.path}
-                        onClick={closeMobileSidebar}
-                        className={`menu-dropdown-item ${
-                          isActive(subItem.path)
-                            ? "menu-dropdown-item-active"
-                            : "menu-dropdown-item-inactive"
-                        }`}
-                      >
-                        {subItem.name}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
           </li>
         ))}
     </ul>
@@ -267,7 +247,7 @@ const AppSidebar: React.FC = () => {
       onMouseEnter={() => !isExpanded && setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* 🔹 Logo */}
+      {/* Logo */}
       <div
         className={`py-8 flex ${
           !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
@@ -290,7 +270,7 @@ const AppSidebar: React.FC = () => {
         </Link>
       </div>
 
-      {/* 🔹 Menu */}
+      {/* Menu */}
       <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
         <nav className="mb-6">
           <h2

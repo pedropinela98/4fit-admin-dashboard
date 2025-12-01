@@ -14,7 +14,7 @@ interface UserContextType {
   roles: string[];
   isSuperAdmin: boolean;
   loading: boolean;
-  setBoxId: (boxId: string) => void;
+  setBoxId: (boxId: string | null) => void;
   availableBoxes: { box_id: string; box_name: string; role: string[] }[];
 }
 
@@ -39,6 +39,19 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [availableBoxes, setAvailableBoxes] = useState<
     { box_id: string; box_name: string; role: string[] }[]
   >([]);
+
+  // Função para atualizar boxId e persistir no localStorage
+  const setBoxIdAndPersist = (id: string | null) => {
+    setBoxId(id);
+    if (id) localStorage.setItem("selectedBoxId", id);
+    else localStorage.removeItem("selectedBoxId");
+  };
+
+  // Carrega boxId salvo no localStorage
+  useEffect(() => {
+    const savedBoxId = localStorage.getItem("selectedBoxId");
+    if (savedBoxId) setBoxId(savedBoxId);
+  }, []);
 
   const fetchUserData = async () => {
     setLoading(true);
@@ -103,18 +116,27 @@ export function UserProvider({ children }: { children: ReactNode }) {
       if (error) console.error("Erro ao buscar boxes do staff:", error);
       else boxesData = data;
     }
-    console.log(boxesData);
+
     setAvailableBoxes(boxesData);
 
-    // 🔹 Seleciona box automaticamente se houver apenas 1 ou se for super_admin
+    // 🔹 Seleciona box automaticamente
     if (boxesData.length === 1) {
-      setBoxId(boxesData[0].box_id);
+      setBoxIdAndPersist(boxesData[0].box_id);
       setRoles(boxesData[0].role ?? []);
       setBoxName(boxesData[0].box_name ?? null);
     } else {
-      setBoxId(null);
-      setRoles([]);
-      setBoxName(null);
+      // Se já existe boxId no localStorage e é válida
+      const savedBoxId = localStorage.getItem("selectedBoxId");
+      if (savedBoxId && boxesData.some((b) => b.box_id === savedBoxId)) {
+        setBoxId(savedBoxId);
+        const currentBox = boxesData.find((b) => b.box_id === savedBoxId);
+        setRoles(currentBox?.role ?? []);
+        setBoxName(currentBox?.box_name ?? null);
+      } else {
+        setBoxId(null);
+        setRoles([]);
+        setBoxName(null);
+      }
     }
 
     setLoading(false);
@@ -130,8 +152,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
     return () => listener.subscription.unsubscribe();
   }, []);
 
+  // Atualiza roles e boxName quando boxId muda
   useEffect(() => {
-    // Atualiza roles e boxName quando boxId muda
     if (boxId && availableBoxes.length > 0) {
       const currentBox = availableBoxes.find((b) => b.box_id === boxId);
       setRoles(currentBox?.role ?? []);
@@ -148,7 +170,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         roles,
         isSuperAdmin,
         loading,
-        setBoxId,
+        setBoxId: setBoxIdAndPersist,
         availableBoxes,
       }}
     >
