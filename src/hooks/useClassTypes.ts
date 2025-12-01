@@ -6,16 +6,15 @@ export type ClassType = {
   box_id: string;
   name: string;
   description?: string | null;
-  is_active?: boolean;
   created_at: string;
   updated_at: string;
   color?: string;
   duration_default: number;
-  capacity_default: number;
-  waitlist_default: number;
+  capacity_default?: number;
+  waitlist_default?: number;
 };
 
-export function useClassType(boxId?: string) {
+export function useClassTypes(boxId?: string) {
   const [classTypes, setClassTypes] = useState<ClassType[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +42,6 @@ export function useClassType(boxId?: string) {
       box_id: p.box_id,
       name: p.name,
       description: p.description,
-      is_active: p.is_active,
       created_at: p.created_at,
       updated_at: p.updated_at,
       color: p.color,
@@ -62,8 +60,8 @@ export function useClassType(boxId?: string) {
 
   // DELETE class type
   async function deleteClassType(id: string) {
-    const { error } = await supabase.from("Class_Type").delete().eq("id", id);
-
+    const { error } = await supabase.from("Class_Type").delete().eq("id", id)
+    
     if (error) {
       setError(error.message);
       return false;
@@ -71,6 +69,7 @@ export function useClassType(boxId?: string) {
 
     return true;
   }
+
 
   return {
     classTypes,
@@ -81,54 +80,3 @@ export function useClassType(boxId?: string) {
   };
 }
 
-export function useClassTypeById(id?: string) {
-  const [classType, setClassType] = useState<ClassType[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-
-  async function fetchClassType() {
-    if (!id) return;
-
-    setLoading(true);
-    setError(null);
-
-    const { data, error } = await supabase
-      .from("Class_Type")
-      .select("*")
-      .eq("id", id);
-
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-      return;
-    }
-
-    const mapped: ClassType[] = (data || []).map((p: any) => ({
-      id: p.id,
-      box_id: p.box_id,
-      name: p.name,
-      description: p.description,
-      is_active: p.is_active,
-      created_at: p.created_at,
-      updated_at: p.updated_at,
-      color: p.color,
-      duration_default: Number(p.duration_default),
-      capacity_default: Number(p.capacity_default),
-      waitlist_default: Number(p.waitlist_default)
-    }));
-
-    setClassType(mapped);
-    setLoading(false);
-  }
-
-  useEffect(() => {
-    fetchClassType();
-  }, [id]);
-
-  return {
-    classType,
-    loading,
-    error,
-    refetch: fetchClassType
-  };
-}

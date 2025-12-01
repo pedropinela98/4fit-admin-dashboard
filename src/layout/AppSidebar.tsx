@@ -55,7 +55,7 @@ const navItems: NavItem[] = [
     icon: <CalenderIcon />,
     name: "Aulas",
     subItems: [
-      { name: "Tipos de aulas", path: "/classes/types" },
+      { name: "Tipos de aulas", path: "/box/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb/classes/types" },
       { name: "Horário", path: "/classes" },
     ],
   },

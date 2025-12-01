@@ -38,6 +38,7 @@ import { ToastProvider } from "./components/ui/Toast";
 
 // 🔒 Importa o componente de proteção
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import ClassTypeEdit from "./pages/Classes/ClassTypeEdit";
 
 export default function App() {
   return (
@@ -90,8 +91,9 @@ export default function App() {
 
             {/* Classes */}
             <Route path="/classes" element={<WeeklySchedule />} />
-            <Route path="/classes/types" element={<ClassTypes />} />
-            <Route path="/classes/types/new" element={<ClassTypeCreate />} />
+            <Route path="/box/:boxId/classes/types" element={<ClassTypes />} />
+            <Route path="/box/:boxId/classes/types/new" element={<ClassTypeCreate />} />
+            <Route path="/box/:boxId/classes/types/:id/edit" element={<ClassTypeEdit />} />
 
             {/* Workouts */}
             <Route path="/workouts" element={<Planning />} />
