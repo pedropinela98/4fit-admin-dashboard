@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import { EyeCloseIcon, EyeIcon } from "../../icons";
@@ -6,6 +6,7 @@ import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
 import Button from "../ui/button/Button";
+import { useUser } from "../../context/UserContext";
 
 export default function SignInForm() {
   // --- Estados locais ---
@@ -15,19 +16,9 @@ export default function SignInForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const { refreshUserData } = useUser();
 
   const navigate = useNavigate();
-
-  // --- Verifica se já há sessão ativa ---
-  useEffect(() => {
-    const checkSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data.session) {
-        navigate("/"); // Redireciona se já estiver autenticado
-      }
-    };
-    checkSession();
-  }, [navigate]);
 
   // --- Função de login ---
   const handleLogin = async (e: React.FormEvent) => {
@@ -50,8 +41,8 @@ export default function SignInForm() {
       });
 
       if (error) throw error;
-
-      navigate("/"); // Redireciona para o dashboard após login
+      await refreshUserData();
+      navigate("/");
     } catch (err: any) {
       setError("❌ Email ou password incorretos.");
     } finally {
@@ -89,7 +80,6 @@ export default function SignInForm() {
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
-
               {/* Password */}
               <div>
                 <Label>
@@ -114,28 +104,27 @@ export default function SignInForm() {
                   </span>
                 </div>
               </div>
-
               {/* Checkbox e link */}
               <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Checkbox checked={isChecked} onChange={setIsChecked} />
-                <span className="block font-normal text-gray-700 text-theme-sm dark:text-gray-400">
-                  Manter sessão iniciada
-                </span>
-              </div>
-              <Link
-                to="/forgot-password"
-                className="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400"
-              >
-                Esqueceste-te da password?
-              </Link>
-            </div>              {/* Botão */}
+                <div className="flex items-center gap-3">
+                  <Checkbox checked={isChecked} onChange={setIsChecked} />
+                  <span className="block font-normal text-gray-700 text-theme-sm dark:text-gray-400">
+                    Manter sessão iniciada
+                  </span>
+                </div>
+                <Link
+                  to="/forgot-password"
+                  className="text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400"
+                >
+                  Esqueceste-te da password?
+                </Link>
+              </div>{" "}
+              {/* Botão */}
               <div>
                 <Button className="w-full" size="sm" disabled={loading}>
                   {loading ? "A autenticar..." : "Iniciar Sessão"}
                 </Button>
               </div>
-
               {/* Mensagem de erro */}
               {error && (
                 <p className="text-center text-red-600 text-sm mt-3">{error}</p>

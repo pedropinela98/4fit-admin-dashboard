@@ -19,7 +19,9 @@ export default function ProtectedRoute({
   // Enquanto ainda não verificamos a sessão, mostramos loading
   if (loading) {
     return (
-      <p className="text-center text-gray-500">🔄 A verificar sessão...</p>
+      <div className="flex items-center justify-center h-screen">
+        <div className="w-10 h-10 border-4 border-gray-300 border-t-brand-500 rounded-full animate-spin"></div>
+      </div>
     );
   }
 

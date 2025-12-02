@@ -17,6 +17,7 @@ interface UserContextType {
   loading: boolean;
   setBoxId: (boxId: string | null) => void;
   availableBoxes: { box_id: string; box_name: string; role: string[] }[];
+  refreshUserData: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType>({
@@ -28,6 +29,7 @@ const UserContext = createContext<UserContextType>({
   loading: true,
   setBoxId: () => {},
   availableBoxes: [],
+  refreshUserData: async () => {},
 });
 
 export function UserProvider({ children }: { children: ReactNode }) {
@@ -191,6 +193,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }
   }, [boxId, availableBoxes]);
 
+  const refreshUserData = async () => {
+    await fetchUserData();
+  };
+
   return (
     <UserContext.Provider
       value={{
@@ -202,6 +208,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         loading,
         setBoxId: setBoxIdAndPersist,
         availableBoxes,
+        refreshUserData,
       }}
     >
       {children}
