@@ -134,7 +134,7 @@ export default function UserMetaCard({
     const { data: publicUrlData } = supabase.storage
       .from("PhotosUrls")
       .getPublicUrl(filePath);
-    const newPhotoUrl = publicUrlData.publicUrl;
+    const newPhotoUrl = `${publicUrlData.publicUrl}?t=${Date.now()}`;
     setPhotoUrl(newPhotoUrl);
     setNewPhotoFile(null);
     setUploading(false);
@@ -161,13 +161,15 @@ export default function UserMetaCard({
     } else {
       onUpdate?.({ name, phone });
       closeModal();
+      addToast("Dados atualizados com sucesso", "success");
     }
   };
 
   return (
     <>
-      <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6 flex items-center justify-between">
-        <div className="flex items-center gap-6">
+      <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6 flex flex-col lg:flex-row lg:items-center lg:justify-between">
+        {/* Foto e info */}
+        <div className="flex flex-col items-center gap-4 lg:flex-row lg:items-center lg:gap-6 w-full">
           <div className="w-20 h-20 overflow-hidden border border-gray-200 rounded-full dark:border-gray-800 relative">
             {photoUrl ? (
               <img
@@ -194,7 +196,7 @@ export default function UserMetaCard({
             </label>
           </div>
 
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1 text-center lg:text-left">
             <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90">
               {name}
             </h4>
@@ -205,12 +207,14 @@ export default function UserMetaCard({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={openModal}>
+        {/* Botões */}
+        <div className="flex items-center gap-2 mt-4 justify-center lg:mt-0 lg:ml-4 lg:justify-end">
+          <Button variant="outline" size="sm" onClick={openModal}>
             Editar
           </Button>
           {newPhotoFile && (
             <Button
+              size="sm" // ✅ igual ao de Editar
               className="bg-green-500 hover:bg-green-600"
               onClick={handleSavePhoto}
               disabled={uploading}
