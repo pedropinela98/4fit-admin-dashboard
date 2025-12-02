@@ -16,24 +16,28 @@ export default function ProtectedRoute({
   const { userDetailId, boxId, roles, loading } = useUser();
   const location = useLocation();
 
+  // Enquanto ainda não verificamos a sessão, mostramos loading
   if (loading) {
     return (
       <p className="text-center text-gray-500">🔄 A verificar sessão...</p>
     );
   }
 
+  // Se não há utilizador logado, redireciona para login
   if (!userDetailId) {
     return <Navigate to="/signin" replace state={{ from: location }} />;
   }
 
+  // Se é necessário ser super admin e não é, redireciona para home
   if (requireSuperAdmin && !roles.includes("super_admin")) {
     return <Navigate to="/" replace />;
   }
 
-  // Se não tiver box selecionada e houver mais de uma disponível
+  // Se não tem box selecionada e não estamos a ignorar verificação, redireciona
   if (!skipBoxCheck && !boxId) {
     return <Navigate to="/" replace />;
   }
 
+  // Caso contrário, renderiza o conteúdo protegido
   return <>{children}</>;
 }

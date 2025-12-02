@@ -3,6 +3,7 @@ import {
   useContext,
   useEffect,
   useState,
+  useRef,
   ReactNode,
 } from "react";
 import { supabase } from "../lib/supabase";
@@ -36,23 +37,19 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [roles, setRoles] = useState<string[]>([]);
   const [isSuperAdmin, setIsSuperAdmin] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
+  const lastFetchedRef = useRef<number | null>(null);
   const [availableBoxes, setAvailableBoxes] = useState<
     { box_id: string; box_name: string; role: string[] }[]
   >([]);
 
-  // Função para atualizar boxId e persistir no localStorage
+  // Atualiza boxId e persiste no localStorage
   const setBoxIdAndPersist = (id: string | null) => {
     setBoxId(id);
     if (id) localStorage.setItem("selectedBoxId", id);
     else localStorage.removeItem("selectedBoxId");
   };
 
-  // Carrega boxId salvo no localStorage
-  useEffect(() => {
-    const savedBoxId = localStorage.getItem("selectedBoxId");
-    if (savedBoxId) setBoxId(savedBoxId);
-  }, []);
-
+  // Função para carregar dados do usuário do Supabase
   const fetchUserData = async () => {
     setLoading(true);
 
@@ -65,13 +62,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
       setRoles([]);
       setAvailableBoxes([]);
       setIsSuperAdmin(false);
+      localStorage.removeItem("userDetail");
       setLoading(false);
       return;
     }
 
     const userId = session.user.id;
 
-    // 🔹 RPC para buscar userDetailId e isSuperAdmin
+    // RPC para buscar userDetailId e isSuperAdmin
     const { data: userInfo, error: rpcError } = await supabase.rpc(
       "get_user_detail_info",
       { p_auth_user_id: userId }
@@ -94,14 +92,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
     let boxesData: any[] = [];
 
     if (superAdmin) {
-      // 🔹 Buscar todas as boxes ativas para super_admin
       const { data, error } = await supabase
         .from("Box")
         .select("id, name")
         .eq("active", true)
         .order("name", { ascending: true });
-
-      if (error) console.error("Erro ao buscar boxes ativas:", error);
+      if (error) console.error(error);
       else
         boxesData = data.map((b: any) => ({
           box_id: b.id,
@@ -109,45 +105,79 @@ export function UserProvider({ children }: { children: ReactNode }) {
           role: ["super_admin"],
         }));
     } else {
-      // 🔹 Buscar boxes associadas normalmente via RPC
       const { data, error } = await supabase.rpc("get_staff_by_userdetail_id", {
         p_userdetail_id: udId,
       });
-      if (error) console.error("Erro ao buscar boxes do staff:", error);
+      if (error) console.error(error);
       else boxesData = data;
     }
 
     setAvailableBoxes(boxesData);
 
-    // 🔹 Seleciona box automaticamente
-    if (boxesData.length === 1) {
-      setBoxIdAndPersist(boxesData[0].box_id);
-      setRoles(boxesData[0].role ?? []);
-      setBoxName(boxesData[0].box_name ?? null);
-    } else {
-      // Se já existe boxId no localStorage e é válida
-      const savedBoxId = localStorage.getItem("selectedBoxId");
-      if (savedBoxId && boxesData.some((b) => b.box_id === savedBoxId)) {
-        setBoxId(savedBoxId);
-        const currentBox = boxesData.find((b) => b.box_id === savedBoxId);
-        setRoles(currentBox?.role ?? []);
-        setBoxName(currentBox?.box_name ?? null);
-      } else {
-        setBoxId(null);
-        setRoles([]);
-        setBoxName(null);
-      }
+    // Seleciona box automaticamente
+    let selectedBox: (typeof boxesData)[0] | null = null;
+
+    const savedBoxId = localStorage.getItem("selectedBoxId");
+    if (savedBoxId && boxesData.some((b) => b.box_id === savedBoxId)) {
+      selectedBox = boxesData.find((b) => b.box_id === savedBoxId)!;
+    } else if (boxesData.length === 1) {
+      selectedBox = boxesData[0];
     }
+
+    if (selectedBox) {
+      setBoxIdAndPersist(selectedBox.box_id);
+      setRoles(selectedBox.role ?? []);
+      setBoxName(selectedBox.box_name ?? null);
+    } else {
+      setBoxId(null);
+      setRoles([]);
+      setBoxName(null);
+    }
+
+    // Salva no localStorage para uso rápido
+    localStorage.setItem(
+      "userDetail",
+      JSON.stringify({
+        userDetailId: udId,
+        boxId: selectedBox?.box_id ?? null,
+        boxName: selectedBox?.box_name ?? null,
+        roles: selectedBox?.role ?? [],
+        isSuperAdmin: superAdmin,
+        availableBoxes: boxesData,
+      })
+    );
 
     setLoading(false);
   };
 
+  // Carrega do localStorage ao montar
   useEffect(() => {
-    fetchUserData();
-
-    const { data: listener } = supabase.auth.onAuthStateChange(() => {
+    const stored = localStorage.getItem("userDetail");
+    if (stored) {
+      const data = JSON.parse(stored);
+      setUserDetailId(data.userDetailId);
+      setBoxId(data.boxId);
+      setBoxName(data.boxName);
+      setRoles(data.roles);
+      setIsSuperAdmin(data.isSuperAdmin);
+      setAvailableBoxes(data.availableBoxes);
+      setLoading(false);
+    } else {
       fetchUserData();
-    });
+    }
+
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        const now = Date.now();
+        if (
+          !lastFetchedRef.current ||
+          now - lastFetchedRef.current > 1000 * 60 * 5
+        ) {
+          fetchUserData();
+          lastFetchedRef.current = now;
+        }
+      }
+    );
 
     return () => listener.subscription.unsubscribe();
   }, []);
