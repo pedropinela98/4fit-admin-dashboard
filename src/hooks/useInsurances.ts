@@ -17,8 +17,6 @@ export function useInsurances(boxId: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  console.log(boxId);
-
   // Fetch insurances
   const fetchInsurances = async () => {
     setLoading(true);
