@@ -186,17 +186,6 @@ export default function MemberList() {
                   </thead>
                   <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                     {paginatedMembers.map((m) => {
-                      const membership_active =
-                        m.membership_payment_state === "paid";
-                      let insurance_state:
-                        | "valid"
-                        | "expiring_soon"
-                        | "expired" = "expired";
-                      if (m.insurance_payment_state === "paid")
-                        insurance_state = "valid";
-                      if (m.insurance_payment_state === "expiring")
-                        insurance_state = "expiring_soon";
-
                       return (
                         <tr
                           key={m.user_id}
@@ -212,7 +201,20 @@ export default function MemberList() {
                           </td>
                           <td className="px-6 py-4">{m.email}</td>
                           <td className="px-6 py-4">
-                            {membership_active ? (
+                            {(m.membership_id != null &&
+                              (m.membership_payment_state === "pending" ||
+                                m.membership_payment_state === "expiring")) ||
+                            m.session_pack_payment_state === "pending" ||
+                            m.session_pack_payment_state === "expiring" ? (
+                              <span className="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800">
+                                {m.membership_payment_state === "pending" ||
+                                m.session_pack_payment_state === "pending"
+                                  ? "Pagamento Pendente"
+                                  : "Expirar"}
+                              </span>
+                            ) : (m.membership_id != null &&
+                                m.membership_active) ||
+                              m.session_pack_active ? (
                               <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
                                 Ativo
                               </span>
@@ -223,19 +225,20 @@ export default function MemberList() {
                             )}
                           </td>
                           <td className="px-6 py-4">
-                            {insurance_state === "valid" && (
-                              <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
-                                Válido
-                              </span>
-                            )}
-                            {insurance_state === "expiring_soon" && (
+                            {m.insurance_payment_state === "pending" ||
+                            m.insurance_payment_state === "expiring" ? (
                               <span className="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800">
-                                A Expirar
+                                {m.insurance_payment_state === "pending"
+                                  ? "Pagamento Pendente"
+                                  : "A Expirar"}
                               </span>
-                            )}
-                            {insurance_state === "expired" && (
+                            ) : m.insurance_active ? (
+                              <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
+                                Ativo
+                              </span>
+                            ) : (
                               <span className="px-2 py-1 rounded-full text-xs bg-red-100 text-red-800">
-                                Expirado
+                                Inativo
                               </span>
                             )}
                           </td>

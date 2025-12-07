@@ -34,7 +34,8 @@ export default function SignUpForm() {
       reader.onerror = (error) => reject(error);
     });
   }
-  async function resizeImage(file: File, maxSizeMB = 50): Promise<File> {
+
+  const resizeImage = async (file: File, maxSizeMB = 5): Promise<File> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
@@ -45,19 +46,15 @@ export default function SignUpForm() {
           const canvas = document.createElement("canvas");
           let width = img.width;
           let height = img.height;
-
-          // Reduz a resolução proporcionalmente
           const scaleFactor = Math.sqrt((maxSizeMB * 1024 * 1024) / file.size);
           if (scaleFactor < 1) {
             width = width * scaleFactor;
             height = height * scaleFactor;
           }
-
           canvas.width = width;
           canvas.height = height;
           const ctx = canvas.getContext("2d")!;
           ctx.drawImage(img, 0, 0, width, height);
-
           canvas.toBlob(
             (blob) => {
               if (blob)
@@ -65,14 +62,51 @@ export default function SignUpForm() {
               else reject("Erro ao processar a imagem");
             },
             file.type,
-            0.8 // compressão JPEG/PNG
+            0.8
           );
         };
         img.onerror = reject;
       };
       reader.onerror = reject;
     });
-  }
+  };
+
+  const handlePhotoChange = async (file: File) => {
+    // HEIC → JPEG
+    const ext = file.name.split(".").pop()?.toLowerCase();
+    if (
+      file.type.includes("heic") ||
+      file.type.includes("heif") ||
+      ext === "heic" ||
+      ext === "heif"
+    ) {
+      try {
+        const result = await heic2any({ blob: file, toType: "image/jpeg" });
+        const blob = Array.isArray(result) ? result[0] : result;
+        file = new File([blob], file.name.replace(/\.[^/.]+$/, ".jpg"), {
+          type: "image/jpeg",
+        });
+      } catch {
+        addToast("Não foi possível converter HEIC/HEIF", "error");
+        return;
+      }
+    }
+
+    if (file.size > 50 * 1024 * 1024) {
+      try {
+        file = await resizeImage(file, 50);
+        if (file.size > 50 * 1024 * 1024) {
+          addToast("Imagem demasiado grande", "error");
+          return;
+        }
+      } catch {
+        addToast("Não foi possível processar a imagem", "error");
+        return;
+      }
+    }
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
+  };
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -344,51 +378,9 @@ export default function SignUpForm() {
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={async (e) => {
-                    let file = e.target.files?.[0];
-                    if (!file) return;
-
-                    // Converter HEIC para JPEG
-                    const fileName = file.name.toLowerCase();
-                    if (
-                      file.type.toLowerCase().includes("heic") ||
-                      file.type.toLowerCase().includes("heif") ||
-                      fileName.endsWith(".heic") ||
-                      fileName.endsWith(".heif")
-                    ) {
-                      try {
-                        const result = await heic2any({
-                          blob: file,
-                          toType: "image/jpeg",
-                        });
-                        const blob = Array.isArray(result) ? result[0] : result; // garante que é Blob
-                        file = new File(
-                          [blob],
-                          file.name.replace(/\.[^/.]+$/, ".jpg"),
-                          { type: "image/jpeg" }
-                        );
-                      } catch {
-                        addToast("Não foi possível converter HEIC", "error");
-                        return;
-                      }
-                    }
-
-                    // Resizing
-                    if (file.size > 50 * 1024 * 1024) {
-                      try {
-                        file = await resizeImage(file, 50);
-                        if (file.size > 50 * 1024 * 1024) {
-                          addToast("Não foi possível converter HEIC", "error");
-                          return;
-                        }
-                      } catch {
-                        addToast("Não foi possível converter HEIC", "error");
-                        return;
-                      }
-                    }
-
-                    setPhotoFile(file);
-                    setPhotoPreview(URL.createObjectURL(file));
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handlePhotoChange(file);
                   }}
                   className="border p-2 rounded w-full"
                 />

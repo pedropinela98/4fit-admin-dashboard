@@ -24,8 +24,8 @@ export default function StaffActionsDropdown({
     if (isOpen && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
       setDropdownPosition({
-        top: rect.bottom + window.scrollY + 4,
-        left: rect.right - 192 + window.scrollX, // w-48 = 192px
+        top: rect.bottom + 4,
+        left: rect.right - 192,
       });
     }
   }, [isOpen]);

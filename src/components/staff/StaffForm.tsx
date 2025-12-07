@@ -24,6 +24,7 @@ export default function StaffForm({
 }: StaffFormProps) {
   const [name, setName] = useState(initialData.name || "");
   const [email, setEmail] = useState(initialData.email || "");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [roles, setRoles] = useState<Staff["role"]>(
     initialData.role || ["coach"]
   );
@@ -35,9 +36,11 @@ export default function StaffForm({
     );
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    onSubmit({
+
+    setIsSubmitting(true); // bloqueia o botão
+    await onSubmit({
       name,
       email,
       role: roles,
@@ -46,6 +49,7 @@ export default function StaffForm({
         initialData.start_date || new Date().toISOString().split("T")[0],
       end_date: initialData.end_date,
     });
+    setIsSubmitting(false); // desbloqueia quando o parent confirmar
   }
 
   return (
@@ -127,8 +131,12 @@ export default function StaffForm({
         </label>
       </div>
 
-      <Button>
-        {mode === "create" ? "Criar Staff" : "Guardar Alterações"}
+      <Button disabled={isSubmitting}>
+        {isSubmitting
+          ? "A guardar..."
+          : mode === "create"
+          ? "Criar Staff"
+          : "Guardar Alterações"}
       </Button>
     </form>
   );
