@@ -5,7 +5,7 @@ import { Modal } from "../components/ui/modal"; // usa o mesmo componente Modal
 type EditInsuranceModalProps = {
   member: Member;
   onSave: (isPaid: boolean, insuranceId: string | null) => void;
-  onCancelInsurance: () => void;
+  onCancelInsurance: (insuranceId: string | null) => void;
   onClose: () => void;
 };
 
@@ -30,7 +30,7 @@ export default function EditInsuranceModal({
   }
 
   function confirmCancel() {
-    onCancelInsurance();
+    onCancelInsurance(member.user_insurance_id ?? null);
     setShowConfirmModal(false);
   }
 

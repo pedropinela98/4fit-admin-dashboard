@@ -8,6 +8,7 @@ interface InsuranceOption {
   id: string;
   name: string;
   price: number;
+  period: string;
 }
 
 type AddInsuranceModalProps = {
@@ -17,7 +18,8 @@ type AddInsuranceModalProps = {
     insuranceId: string,
     price: number,
     startDate: string,
-    isPaid: boolean
+    isPaid: boolean,
+    period: string
   ) => void;
   onClose: () => void;
 };
@@ -32,6 +34,7 @@ export default function AddInsuranceModal({
   const [insuranceId, setInsuranceId] = useState("");
   const [price, setPrice] = useState<number>(0);
   const [isPaid, setIsPaid] = useState<boolean | null>(null);
+  const [selectedPeriod, setSelectedPeriod] = useState<string>("");
 
   const today = new Date();
   const [startDate, setStartDate] = useState<Date>(today);
@@ -49,7 +52,7 @@ export default function AddInsuranceModal({
 
       const { data, error } = await supabase
         .from("Insurance")
-        .select("id, name, price")
+        .select("id, name, price,period")
         .eq("box_id", member.box_id);
 
       if (error) {
@@ -68,13 +71,20 @@ export default function AddInsuranceModal({
     const selected = insurances.find((i) => i.id === id);
     if (selected) {
       setPrice(selected.price);
+      setSelectedPeriod(selected.period);
     }
   }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!insuranceId || isPaid === null) return;
-    onSave(insuranceId, price, startDate.toISOString().split("T")[0], isPaid);
+    onSave(
+      insuranceId,
+      price,
+      startDate.toISOString().split("T")[0],
+      isPaid,
+      selectedPeriod
+    );
   }
 
   return (

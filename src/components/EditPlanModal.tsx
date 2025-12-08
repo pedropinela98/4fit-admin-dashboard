@@ -1,26 +1,32 @@
 import { useState } from "react";
 import { Member } from "../hooks/useMembers";
-import { Modal } from "../components/ui/modal"; // importa o teu componente Modal
+import { Modal } from "../components/ui/modal";
 
 type EditPlanModalProps = {
   member: Member;
+  plan: Member | undefined; // <<< NOVO
   onSave: (
     isPaid: boolean,
     planId: string | null,
     sessionPackId: string | null
   ) => void;
-  onCancelPlan: () => void;
+  onCancelPlan: (planId: string | null) => void;
   onClose: () => void;
 };
 
 export default function EditPlanModal({
   member,
+  plan,
   onSave,
   onCancelPlan,
   onClose,
 }: EditPlanModalProps) {
+  // Se é plano futuro, usa-o. Senão usa o atual.
+  const data = plan ?? member;
+
   const [isPaid, setIsPaid] = useState(
-    member.membership_payment_state === "paid"
+    data.membership_payment_state === "paid" ||
+      data.session_pack_payment_state === "paid"
   );
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
@@ -28,8 +34,8 @@ export default function EditPlanModal({
     e.preventDefault();
     onSave(
       isPaid,
-      member.membership_id ?? null,
-      member.user_session_pack_id ?? null
+      data.membership_id ?? null,
+      data.user_session_pack_id ?? null
     );
   }
 
@@ -38,27 +44,39 @@ export default function EditPlanModal({
   }
 
   function confirmCancel() {
-    onCancelPlan();
+    onCancelPlan(data.membership_id ?? null);
     setShowConfirmModal(false);
   }
 
-  // Dados vindos diretamente do `member`
-  const planName = member.membership_plan_name || "Plano desconhecido";
-  const finalPrice = member.membership_price_paid ?? 0;
-  const startDate = member.membership_start
-    ? new Date(member.membership_start).toLocaleDateString("pt-PT")
-    : "-";
-  const endDate = member.membership_end
-    ? new Date(member.membership_end).toLocaleDateString("pt-PT")
-    : "-";
+  const planName =
+    data.membership_plan_name || data.session_pack_name || "Plano desconhecido";
 
-  const isPaymentLocked = member.membership_payment_state === "paid";
+  const finalPrice =
+    data.membership_price_paid ?? data.session_pack_price_paid ?? 0;
+
+  const startDate =
+    data.membership_start || data.session_pack_start
+      ? new Date(
+          data.membership_start || data.session_pack_start
+        ).toLocaleDateString("pt-PT")
+      : "-";
+
+  const endDate =
+    data.membership_end || data.session_pack_end
+      ? new Date(
+          data.membership_end || data.session_pack_end
+        ).toLocaleDateString("pt-PT")
+      : "-";
+
+  const isPaymentLocked =
+    data.membership_payment_state === "paid" ||
+    data.session_pack_payment_state === "paid";
 
   return (
     <>
       <form onSubmit={handleSubmit} className="p-6 space-y-6">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-          Editar plano atual
+          Editar plano
         </h2>
 
         {/* Nome do plano */}
@@ -87,7 +105,7 @@ export default function EditPlanModal({
           />
         </div>
 
-        {/* Data de início */}
+        {/* Data início */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Data de início
@@ -100,7 +118,7 @@ export default function EditPlanModal({
           />
         </div>
 
-        {/* Data de fim */}
+        {/* Data fim */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Data de fim
@@ -118,7 +136,9 @@ export default function EditPlanModal({
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
             Estado do pagamento
           </label>
+
           <div className="flex justify-center gap-4">
+            {/* Pago */}
             <label
               className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${
                 isPaid
@@ -134,11 +154,11 @@ export default function EditPlanModal({
                 onChange={() => setIsPaid(true)}
                 disabled={isPaymentLocked}
                 className="h-4 w-4 text-green-600"
-                required
               />
               <span className="text-sm">Pago</span>
             </label>
 
+            {/* Pendente */}
             <label
               className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${
                 !isPaid
@@ -154,14 +174,13 @@ export default function EditPlanModal({
                 onChange={() => setIsPaid(false)}
                 disabled={isPaymentLocked}
                 className="h-4 w-4 text-yellow-600"
-                required
               />
               <span className="text-sm">Pendente</span>
             </label>
           </div>
         </div>
 
-        {/* Botões */}
+        {/* BOTÕES */}
         <div className="flex justify-between gap-3 mt-6">
           <button
             type="button"
@@ -179,6 +198,7 @@ export default function EditPlanModal({
             >
               Fechar
             </button>
+
             {!isPaymentLocked && (
               <button
                 type="submit"
@@ -191,7 +211,7 @@ export default function EditPlanModal({
         </div>
       </form>
 
-      {/* Modal de confirmação */}
+      {/* CONFIRMAR CANCELAMENTO */}
       <Modal
         isOpen={showConfirmModal}
         onClose={() => setShowConfirmModal(false)}
@@ -200,10 +220,12 @@ export default function EditPlanModal({
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           Confirmar cancelamento
         </h3>
+
         <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
           Tem a certeza que deseja cancelar o plano atual? Esta ação não pode
           ser desfeita.
         </p>
+
         <div className="flex justify-end gap-3">
           <button
             type="button"
@@ -212,6 +234,7 @@ export default function EditPlanModal({
           >
             Voltar
           </button>
+
           <button
             type="button"
             onClick={confirmCancel}

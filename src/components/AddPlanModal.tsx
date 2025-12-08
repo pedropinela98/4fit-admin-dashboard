@@ -3,6 +3,7 @@ import { Member } from "../hooks/useMembers";
 import { supabase } from "../lib/supabase";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { is } from "date-fns/locale";
 
 interface BoxOption {
   id: string;
@@ -14,12 +15,14 @@ interface BoxOption {
 type AddPlanModalProps = {
   member: Member;
   endDate?: string;
+  isMembership: boolean;
   onSave: (
     planId: string,
     price: number,
     discount: number,
     startDate: string,
-    isPaid: boolean
+    isPaid: boolean,
+    isMembership: boolean
   ) => void;
   onClose: () => void;
 };
@@ -27,6 +30,7 @@ type AddPlanModalProps = {
 export default function AddPlanModal({
   member,
   endDate, // <-- NOVO
+  isMembership,
   onSave,
   onClose,
 }: AddPlanModalProps) {
@@ -87,13 +91,15 @@ export default function AddPlanModal({
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!planId || isPaid === null) return;
+    console.log(planId, isMembership);
+    if (!planId || (isPaid === null && isMembership)) return;
     onSave(
       planId,
       price,
       discount,
       startDate.toISOString().split("T")[0],
-      isPaid
+      isPaid ?? false,
+      isMembership
     );
   }
 
@@ -113,33 +119,38 @@ export default function AddPlanModal({
       </h2>
 
       {/* Tabs */}
-      <div className="flex gap-4 border-b mb-4">
-        <button
-          type="button"
-          onClick={() => setActiveTab("plans")}
-          className={`px-3 py-2 text-sm font-medium ${
-            activeTab === "plans"
-              ? "border-b-2 border-blue-600 text-blue-600"
-              : "text-gray-500"
-          }`}
-        >
-          Planos
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab("packs")}
-          className={`px-3 py-2 text-sm font-medium ${
-            activeTab === "packs"
-              ? "border-b-2 border-blue-600 text-blue-600"
-              : "text-gray-500"
-          }`}
-        >
-          Planos de Senhas
-        </button>
-      </div>
+      {isMembership ? (
+        <div className="flex gap-4 border-b mb-4">
+          <button
+            type="button"
+            onClick={() => setActiveTab("plans")}
+            className={`px-3 py-2 text-sm font-medium ${
+              activeTab === "plans"
+                ? "border-b-2 border-blue-600 text-blue-600"
+                : "text-gray-500"
+            }`}
+          >
+            Planos
+          </button>
+        </div>
+      ) : (
+        <div className="flex gap-4 border-b mb-4">
+          <button
+            type="button"
+            onClick={() => setActiveTab("packs")}
+            className={`px-3 py-2 text-sm font-medium ${
+              activeTab === "packs"
+                ? "border-b-2 border-blue-600 text-blue-600"
+                : "text-gray-500"
+            }`}
+          >
+            Planos de Senhas
+          </button>
+        </div>
+      )}
 
       {/* Dropdown condicional */}
-      {activeTab === "plans" ? (
+      {isMembership ? (
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Selecionar Plano
@@ -178,6 +189,7 @@ export default function AddPlanModal({
           </select>
         </div>
       )}
+
       {/* Preço base */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -243,50 +255,52 @@ export default function AddPlanModal({
       </div>
 
       {/* Estado do pagamento */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Estado do pagamento
-        </label>
-        <div className="flex gap-4">
-          <label
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition ${
-              isPaid === true
-                ? "border-green-500 bg-green-50 dark:bg-green-900/20"
-                : "border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-            }`}
-          >
-            <input
-              type="radio"
-              name="paymentStatus"
-              value="paid"
-              checked={isPaid === true}
-              onChange={() => setIsPaid(true)}
-              className="h-4 w-4 text-green-600"
-              required
-            />
-            <span className="text-sm">Pago</span>
+      {isMembership ? (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Estado do pagamento
           </label>
+          <div className="flex gap-4">
+            <label
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition ${
+                isPaid === true
+                  ? "border-green-500 bg-green-50 dark:bg-green-900/20"
+                  : "border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              }`}
+            >
+              <input
+                type="radio"
+                name="paymentStatus"
+                value="paid"
+                checked={isPaid === true}
+                onChange={() => setIsPaid(true)}
+                className="h-4 w-4 text-green-600"
+                required
+              />
+              <span className="text-sm">Pago</span>
+            </label>
 
-          <label
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition ${
-              isPaid === false
-                ? "border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20"
-                : "border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-            }`}
-          >
-            <input
-              type="radio"
-              name="paymentStatus"
-              value="pending"
-              checked={isPaid === false}
-              onChange={() => setIsPaid(false)}
-              className="h-4 w-4 text-yellow-600"
-              required
-            />
-            <span className="text-sm">Pendente</span>
-          </label>
+            <label
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer transition ${
+                isPaid === false
+                  ? "border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20"
+                  : "border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              }`}
+            >
+              <input
+                type="radio"
+                name="paymentStatus"
+                value="pending"
+                checked={isPaid === false}
+                onChange={() => setIsPaid(false)}
+                className="h-4 w-4 text-yellow-600"
+                required
+              />
+              <span className="text-sm">Pendente</span>
+            </label>
+          </div>
         </div>
-      </div>
+      ) : null}
 
       {/* Botões */}
       <div className="flex justify-end gap-3 mt-6">
