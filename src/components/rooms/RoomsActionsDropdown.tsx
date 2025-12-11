@@ -3,9 +3,16 @@ import { Link } from "react-router";
 import { createPortal } from "react-dom";
 import { MoreDotIcon, PencilIcon, TrashBinIcon } from "../../icons";
 import { Room } from "../../hooks/useRooms";
+import { Modal } from "../ui/modal/index";
 
-export default function RoomsActionsDropdown({ room }: { room: Room }) {
+interface RoomsActionsDropdownProps {
+  room: Room;
+  onDelete: (roomId: string) => void | Promise<void>;
+}
+
+export default function RoomsActionsDropdown({ room, onDelete }: RoomsActionsDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
 
@@ -33,6 +40,13 @@ export default function RoomsActionsDropdown({ room }: { room: Room }) {
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, [isOpen]);
+
+  // Fechar dropdown quando o modal abre
+  useEffect(() => {
+    if (showDeleteModal) {
+      setIsOpen(false);
+    }
+  }, [showDeleteModal]);
 
   return (
     <>
@@ -76,14 +90,7 @@ export default function RoomsActionsDropdown({ room }: { room: Room }) {
                   className="flex items-center w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
                   onClick={() => {
                     setIsOpen(false);
-                    if (
-                      confirm(
-                        `Tens a certeza que queres remover ${room.name}?`
-                      )
-                    ) {
-                      console.log("Eliminar sala:", room.id);
-                      // aqui no futuro podes chamar o deleteRoom do hook/API
-                    }
+                    setShowDeleteModal(true);
                   }}
                 >
                   <TrashBinIcon className="h-4 w-4 mr-3" />
@@ -94,6 +101,42 @@ export default function RoomsActionsDropdown({ room }: { room: Room }) {
           </>,
           document.body
         )}
+
+      {/* MODAL de confirmação */}
+      <Modal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        className="max-w-md p-6 text-left"
+      >
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+          Remover sala
+        </h2>
+
+        <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
+          Tens a certeza que pretendes remover a sala{" "}
+          <span className="font-semibold">"{room.name}"</span>? Esta ação não
+          pode ser desfeita.
+        </p>
+
+        <div className="flex justify-end gap-3">
+          <button
+            onClick={() => setShowDeleteModal(false)}
+            className="px-4 py-2 rounded-lg border text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+          >
+            Cancelar
+          </button>
+
+          <button
+            onClick={() => {
+              onDelete(room.id);
+              setShowDeleteModal(false);
+            }}
+            className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700"
+          >
+            Remover
+          </button>
+        </div>
+      </Modal>
     </>
   );
 }
