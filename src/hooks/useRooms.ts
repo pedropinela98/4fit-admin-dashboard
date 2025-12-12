@@ -112,17 +112,33 @@ export function useRooms(boxId: string) {
 
   const deleteRoom = async (roomId: string) => {
     try {
-      const { error: supabaseError } = await supabase
+      console.log('Attempting to delete room:', roomId);
+      
+      // Use direct update approach (RPC not needed for now)
+      const { data, error: supabaseError } = await supabase
         .from('Room')
-        .delete()
-        .eq('id', roomId);
+        .update({ active: false })
+        .eq('id', roomId)
+        .select();
 
-      if (supabaseError) throw supabaseError;
+      if (supabaseError) {
+        console.error('Error deleting room:', supabaseError);
+        return false;
+      }
 
-      setRooms(prev => prev.filter(room => room.id !== roomId));
+      console.log('Room deletion successful:', data);
+
+      // Update local state to reflect the soft deletion
+      setRooms(prev => 
+        prev.map(room => 
+          room.id === roomId ? { ...room, active: false } : room
+        )
+      );
+
+      return true;
     } catch (err) {
-      console.error('Error deleting room:', err);
-      throw err;
+      console.error('Error deleting room (exception):', err);
+      return false;
     }
   };
 

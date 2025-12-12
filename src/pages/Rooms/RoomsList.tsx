@@ -6,11 +6,24 @@ import { PlusIcon } from "../../icons";
 import { useParams } from "react-router-dom";
 import { useRooms } from "../../hooks/useRooms";
 import RoomsActionsDropdown from "../../components/rooms/RoomsActionsDropdown";
+import { useToast } from "../../components/ui/Toast";
 
 export default function RoomsList() {
   const [searchQuery, setSearchQuery] = useState("");
+  const { addToast } = useToast();
   const { boxId = "" } = useParams<{ boxId?: string }>();
-  const { rooms, loading, error, refetch } = useRooms(boxId);
+  const { rooms, loading, error, refetch, deleteRoom } = useRooms(boxId);
+
+  const handleDelete = async (id: string) => {
+    const result = await deleteRoom(id);
+
+    if (result === true) {
+      await refetch();
+      addToast("Sala removida com sucesso!", "success");
+    } else {
+      addToast("Não foi possível remover a sala", "error");
+    }
+  };
 
   const filteredRooms = rooms.filter(
     (s) =>
@@ -114,7 +127,7 @@ export default function RoomsList() {
                           </span>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <RoomsActionsDropdown room={s} />
+                          <RoomsActionsDropdown room={s} onDelete={handleDelete} />
                         </td>
                       </tr>
                     ))}
@@ -147,7 +160,7 @@ export default function RoomsList() {
                           {s.active ? "Ativo" : "Inativo"}
                         </span>
                       </div>
-                      <RoomsActionsDropdown room={s} />
+                      <RoomsActionsDropdown room={s} onDelete={handleDelete} />
                     </div>
                   </div>
                 ))}
