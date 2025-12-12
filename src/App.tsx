@@ -80,7 +80,7 @@ export default function App() {
               <Route path="/settings/box" element={<BoxSettingsPage />} />
 
               {/* Classes */}
-              <Route path="/classes" element={<WeeklySchedule />} />
+              <Route path="/box/:boxId/classes" element={<WeeklySchedule />} />
               <Route
                 path="/box/:boxId/classes/types"
                 element={<ClassTypes />}
