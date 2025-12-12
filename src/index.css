@@ -187,6 +187,20 @@ layer(base);
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
+  button:disabled,
+  [role="button"]:disabled {
+    @apply opacity-50 cursor-not-allowed bg-gray-300 text-gray-500;
+  }
+
+  /* Inputs desativados */
+  input:disabled {
+    @apply opacity-50 cursor-not-allowed bg-gray-100 text-gray-500;
+  }
+
+  /* Selects desativados */
+  select:disabled {
+    @apply opacity-50 cursor-not-allowed bg-gray-100 text-gray-500;
+  }
   body {
     @apply relative font-normal font-outfit z-1 bg-gray-50;
   }

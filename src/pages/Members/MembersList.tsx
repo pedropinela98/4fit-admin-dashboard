@@ -122,9 +122,15 @@ export default function MemberList() {
               onChange={(e) => setFilterStatus(e.target.value as any)}
               className="border rounded-lg px-3 py-2"
             >
-              <option value="all">Todas Subscrições</option>
-              <option value="active">Ativos</option>
-              <option value="inactive">Inativos</option>
+              <option className="bg-white dark:bg-gray-900" value="all">
+                Todas Subscrições
+              </option>
+              <option className="bg-white dark:bg-gray-900" value="active">
+                Ativos
+              </option>
+              <option className="bg-white dark:bg-gray-900" value="inactive">
+                Inativos
+              </option>
             </select>
 
             {/* Filtro Seguro */}
@@ -133,10 +139,21 @@ export default function MemberList() {
               onChange={(e) => setFilterInsurance(e.target.value as any)}
               className="border rounded-lg px-3 py-2"
             >
-              <option value="all">Todos Seguros</option>
-              <option value="valid">Válidos</option>
-              <option value="expiring_soon">A Expirar</option>
-              <option value="expired">Expirados</option>
+              <option className="bg-white dark:bg-gray-900" value="all">
+                Todos Seguros
+              </option>
+              <option className="bg-white dark:bg-gray-900" value="valid">
+                Válidos
+              </option>
+              <option
+                className="bg-white dark:bg-gray-900"
+                value="expiring_soon"
+              >
+                A Expirar
+              </option>
+              <option className="bg-white dark:bg-gray-900" value="expired">
+                Expirados
+              </option>
             </select>
           </div>
         </div>

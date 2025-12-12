@@ -708,8 +708,31 @@ export default function WeeklySchedule() {
             </div>
           </div>
 
-          {/* Coach e Sala */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/*  Sala */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium mb-1">Sala</label>
+              <select
+                value={edit.roomId}
+                disabled={edit.notIsEditable}
+                onChange={(e) =>
+                  setEdit((s) => ({ ...s, roomId: e.target.value }))
+                }
+                className="w-full rounded-md border border-gray-200 dark:border-gray-700 p-2"
+              >
+                {rooms.map((r) => (
+                  <option
+                    className="bg-white dark:bg-gray-900"
+                    key={r.id}
+                    value={r.id}
+                  >
+                    {r.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Coach e capacidade */}
             <div>
               <label className="block text-sm font-medium mb-1">Coach</label>
               <select
@@ -721,31 +744,18 @@ export default function WeeklySchedule() {
                 className="w-full rounded-md border border-gray-200 dark:border-gray-700 p-2"
               >
                 {coaches.map((c) => (
-                  <option key={c.id} value={c.id}>
+                  <option
+                    className="bg-white dark:bg-gray-900"
+                    key={c.id}
+                    value={c.id}
+                  >
                     {c.name}
                   </option>
                 ))}
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-1">Sala</label>
-              <select
-                value={edit.roomId}
-                disabled={edit.notIsEditable}
-                onChange={(e) =>
-                  setEdit((s) => ({ ...s, roomId: e.target.value }))
-                }
-                className="w-full rounded-md border border-gray-200 dark:border-gray-700 p-2"
-              >
-                {rooms.map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {r.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
+            {/* Capacidade */}
             <div>
               <label className="block text-sm font-medium mb-1">
                 Capacidade
